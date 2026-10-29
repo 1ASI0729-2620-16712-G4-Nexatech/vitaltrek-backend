@@ -168,4 +168,280 @@
     <data name="AuthenticatedUserSchema" xml:space="preserve">
         <value>Authenticated user information with its bearer token.</value>
     </data>
+    <data name="OperationSuccess" xml:space="preserve">
+        <value>The operation completed successfully.</value>
+    </data>
+    <data name="OperationCreated" xml:space="preserve">
+        <value>The resource was created.</value>
+    </data>
+    <data name="OperationNotFound" xml:space="preserve">
+        <value>The resource does not exist or is not accessible.</value>
+    </data>
+    <data name="OperationConflict" xml:space="preserve">
+        <value>The operation conflicts with the current state of the resource.</value>
+    </data>
+    <data name="RequiredRouteName" xml:space="preserve">
+        <value>Route name is required.</value>
+    </data>
+    <data name="RequiredOrigin" xml:space="preserve">
+        <value>Origin is required.</value>
+    </data>
+    <data name="RequiredDestination" xml:space="preserve">
+        <value>Destination is required.</value>
+    </data>
+    <data name="RequiredDifficulty" xml:space="preserve">
+        <value>Difficulty is required.</value>
+    </data>
+    <data name="RequiredStatus" xml:space="preserve">
+        <value>Status is required.</value>
+    </data>
+    <data name="RequiredRouteId" xml:space="preserve">
+        <value>A valid route identifier is required.</value>
+    </data>
+    <data name="RequiredCheckpointId" xml:space="preserve">
+        <value>A valid checkpoint identifier is required.</value>
+    </data>
+    <data name="RequiredLocation" xml:space="preserve">
+        <value>Location is required.</value>
+    </data>
+    <data name="RequiredBluetoothId" xml:space="preserve">
+        <value>Bluetooth identifier is required.</value>
+    </data>
+    <data name="RequiredTitle" xml:space="preserve">
+        <value>Title is required.</value>
+    </data>
+    <data name="RequiredContent" xml:space="preserve">
+        <value>Content is required.</value>
+    </data>
+    <data name="RequiredInstructions" xml:space="preserve">
+        <value>Instructions are required.</value>
+    </data>
+    <data name="InvalidDistance" xml:space="preserve">
+        <value>Distance must be greater than zero.</value>
+    </data>
+    <data name="InvalidElevationGain" xml:space="preserve">
+        <value>Elevation gain must be between {1} and {2} meters.</value>
+    </data>
+    <data name="InvalidEstimatedDuration" xml:space="preserve">
+        <value>Estimated duration must be at least one minute.</value>
+    </data>
+    <data name="InvalidSequenceOrder" xml:space="preserve">
+        <value>Sequence order must be between {1} and {2}.</value>
+    </data>
+    <data name="InvalidLatitude" xml:space="preserve">
+        <value>Latitude must be between -90 and 90.</value>
+    </data>
+    <data name="InvalidLongitude" xml:space="preserve">
+        <value>Longitude must be between -180 and 180.</value>
+    </data>
+    <data name="InvalidMinutes" xml:space="preserve">
+        <value>Minutes must be between {1} and {2}.</value>
+    </data>
+    <data name="InvalidDisplayOrder" xml:space="preserve">
+        <value>Display order must be between {1} and {2}.</value>
+    </data>
+    <data name="InvalidRouteRequest" xml:space="preserve">
+        <value>The route request contains invalid values.</value>
+    </data>
+    <data name="RouteNameDuplicated" xml:space="preserve">
+        <value>The agency already has a route with this name.</value>
+    </data>
+    <data name="RouteNotFound" xml:space="preserve">
+        <value>The route was not found.</value>
+    </data>
+    <data name="RouteRequiresCheckpoint" xml:space="preserve">
+        <value>The route requires at least one checkpoint before it can be enabled.</value>
+    </data>
+    <data name="RouteStatusNotSupported" xml:space="preserve">
+        <value>Only the status 'enabled' can be requested.</value>
+    </data>
+    <data name="InvalidCheckpointRequest" xml:space="preserve">
+        <value>The checkpoint request contains invalid values.</value>
+    </data>
+    <data name="CheckpointNotFound" xml:space="preserve">
+        <value>The checkpoint was not found.</value>
+    </data>
+    <data name="CheckpointSequenceDuplicated" xml:space="preserve">
+        <value>The route already has a checkpoint in this position.</value>
+    </data>
+    <data name="CheckpointBluetoothIdDuplicated" xml:space="preserve">
+        <value>The Bluetooth identifier is already registered.</value>
+    </data>
+    <data name="ExpectedTimeWindowLimitsInvalid" xml:space="preserve">
+        <value>The maximum limit must be greater than the minimum limit.</value>
+    </data>
+    <data name="ExpectedTimeWindowSegmentInvalid" xml:space="preserve">
+        <value>The checkpoints must be consecutive checkpoints of the route.</value>
+    </data>
+    <data name="ExpectedTimeWindowDuplicated" xml:space="preserve">
+        <value>This segment already has an expected time window.</value>
+    </data>
+    <data name="ExpectedTimeWindowNotFound" xml:space="preserve">
+        <value>The expected time window was not found.</value>
+    </data>
+    <data name="InvalidRouteNoteRequest" xml:space="preserve">
+        <value>The route note request contains invalid values.</value>
+    </data>
+    <data name="RouteNoteNotFound" xml:space="preserve">
+        <value>The route note was not found.</value>
+    </data>
+    <data name="RouteNoteDisplayOrderDuplicated" xml:space="preserve">
+        <value>The route already has a note in this display position.</value>
+    </data>
+    <data name="InvalidSafetyProtocolRequest" xml:space="preserve">
+        <value>The safety protocol request contains invalid values.</value>
+    </data>
+    <data name="SafetyProtocolNotFound" xml:space="preserve">
+        <value>The safety protocol was not found.</value>
+    </data>
+    <data name="SafetyProtocolDuplicated" xml:space="preserve">
+        <value>The route already has a safety protocol.</value>
+    </data>
+    <data name="GetAllRoutesSummary" xml:space="preserve">
+        <value>Gets the agency routes</value>
+    </data>
+    <data name="GetAllRoutesDescription" xml:space="preserve">
+        <value>Returns the routes of the authenticated user's agency.</value>
+    </data>
+    <data name="GetRouteByIdSummary" xml:space="preserve">
+        <value>Gets a route by id</value>
+    </data>
+    <data name="GetRouteByIdDescription" xml:space="preserve">
+        <value>Returns a route of the agency.</value>
+    </data>
+    <data name="CreateRouteSummary" xml:space="preserve">
+        <value>Creates a route</value>
+    </data>
+    <data name="CreateRouteDescription" xml:space="preserve">
+        <value>Registers a route in draft status. Requires the operations administrator role.</value>
+    </data>
+    <data name="UpdateRouteStatusSummary" xml:space="preserve">
+        <value>Enables a route</value>
+    </data>
+    <data name="UpdateRouteStatusDescription" xml:space="preserve">
+        <value>Enables a route for tour planning. The route requires at least one checkpoint.</value>
+    </data>
+    <data name="GetAllCheckpointsSummary" xml:space="preserve">
+        <value>Gets the agency checkpoints</value>
+    </data>
+    <data name="GetAllCheckpointsDescription" xml:space="preserve">
+        <value>Returns the checkpoints of the agency ordered by sequence. Use routeId to filter by route.</value>
+    </data>
+    <data name="GetCheckpointByIdSummary" xml:space="preserve">
+        <value>Gets a checkpoint by id</value>
+    </data>
+    <data name="GetCheckpointByIdDescription" xml:space="preserve">
+        <value>Returns a checkpoint of the agency.</value>
+    </data>
+    <data name="CreateCheckpointSummary" xml:space="preserve">
+        <value>Creates a checkpoint</value>
+    </data>
+    <data name="CreateCheckpointDescription" xml:space="preserve">
+        <value>Registers a checkpoint with a unique position in the route and a unique Bluetooth identifier.</value>
+    </data>
+    <data name="GetAllExpectedTimeWindowsSummary" xml:space="preserve">
+        <value>Gets the expected time windows</value>
+    </data>
+    <data name="GetAllExpectedTimeWindowsDescription" xml:space="preserve">
+        <value>Returns the expected time windows of the agency. Use routeId to filter by route.</value>
+    </data>
+    <data name="GetExpectedTimeWindowByIdSummary" xml:space="preserve">
+        <value>Gets an expected time window by id</value>
+    </data>
+    <data name="GetExpectedTimeWindowByIdDescription" xml:space="preserve">
+        <value>Returns an expected time window of the agency.</value>
+    </data>
+    <data name="CreateExpectedTimeWindowSummary" xml:space="preserve">
+        <value>Creates an expected time window</value>
+    </data>
+    <data name="CreateExpectedTimeWindowDescription" xml:space="preserve">
+        <value>Sets the expected duration of a segment between two consecutive checkpoints.</value>
+    </data>
+    <data name="GetAllRouteNotesSummary" xml:space="preserve">
+        <value>Gets the route notes</value>
+    </data>
+    <data name="GetAllRouteNotesDescription" xml:space="preserve">
+        <value>Returns the route notes of the agency. Use routeId to filter by route.</value>
+    </data>
+    <data name="GetRouteNoteByIdSummary" xml:space="preserve">
+        <value>Gets a route note by id</value>
+    </data>
+    <data name="GetRouteNoteByIdDescription" xml:space="preserve">
+        <value>Returns a route note of the agency.</value>
+    </data>
+    <data name="CreateRouteNoteSummary" xml:space="preserve">
+        <value>Creates a route note</value>
+    </data>
+    <data name="CreateRouteNoteDescription" xml:space="preserve">
+        <value>Registers a route note uploaded by the agency.</value>
+    </data>
+    <data name="UpdateRouteNoteSummary" xml:space="preserve">
+        <value>Updates a route note</value>
+    </data>
+    <data name="UpdateRouteNoteDescription" xml:space="preserve">
+        <value>Updates the title, content and display order of a route note.</value>
+    </data>
+    <data name="GetAllSafetyProtocolsSummary" xml:space="preserve">
+        <value>Gets the safety protocols</value>
+    </data>
+    <data name="GetAllSafetyProtocolsDescription" xml:space="preserve">
+        <value>Returns the safety protocols of the agency. Use routeId to filter by route.</value>
+    </data>
+    <data name="GetSafetyProtocolByIdSummary" xml:space="preserve">
+        <value>Gets a safety protocol by id</value>
+    </data>
+    <data name="GetSafetyProtocolByIdDescription" xml:space="preserve">
+        <value>Returns a safety protocol of the agency.</value>
+    </data>
+    <data name="CreateSafetyProtocolSummary" xml:space="preserve">
+        <value>Creates a safety protocol</value>
+    </data>
+    <data name="CreateSafetyProtocolDescription" xml:space="preserve">
+        <value>Configures the single safety protocol of a route.</value>
+    </data>
+    <data name="UpdateSafetyProtocolSummary" xml:space="preserve">
+        <value>Updates a safety protocol</value>
+    </data>
+    <data name="UpdateSafetyProtocolDescription" xml:space="preserve">
+        <value>Updates the instructions and status of a safety protocol.</value>
+    </data>
+    <data name="RouteSchema" xml:space="preserve">
+        <value>Route information.</value>
+    </data>
+    <data name="CreateRouteSchema" xml:space="preserve">
+        <value>Data required to register a route.</value>
+    </data>
+    <data name="UpdateRouteStatusSchema" xml:space="preserve">
+        <value>Requested route status.</value>
+    </data>
+    <data name="CheckpointSchema" xml:space="preserve">
+        <value>Checkpoint information.</value>
+    </data>
+    <data name="CreateCheckpointSchema" xml:space="preserve">
+        <value>Data required to register a checkpoint.</value>
+    </data>
+    <data name="ExpectedTimeWindowSchema" xml:space="preserve">
+        <value>Expected time window of a route segment.</value>
+    </data>
+    <data name="CreateExpectedTimeWindowSchema" xml:space="preserve">
+        <value>Data required to set an expected time window.</value>
+    </data>
+    <data name="RouteNoteSchema" xml:space="preserve">
+        <value>Route note information.</value>
+    </data>
+    <data name="CreateRouteNoteSchema" xml:space="preserve">
+        <value>Data required to register a route note.</value>
+    </data>
+    <data name="UpdateRouteNoteSchema" xml:space="preserve">
+        <value>Data required to update a route note.</value>
+    </data>
+    <data name="SafetyProtocolSchema" xml:space="preserve">
+        <value>Safety protocol information.</value>
+    </data>
+    <data name="CreateSafetyProtocolSchema" xml:space="preserve">
+        <value>Data required to configure a safety protocol.</value>
+    </data>
+    <data name="UpdateSafetyProtocolSchema" xml:space="preserve">
+        <value>Data required to update a safety protocol.</value>
+    </data>
 </root>

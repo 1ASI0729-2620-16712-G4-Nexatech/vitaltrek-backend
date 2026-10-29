@@ -39,7 +39,7 @@ public static class IamDemoDataSeeder
                 Role.OperationsAdministrator, demoAgency.Id),
             new User(new Username("guide@vitaltrek.demo"), passwordHash, "Elena Vargas",
                 Role.FieldGuide, demoAgency.Id, fieldGuideId: 1),
-            new User(new Username("guide2@vitaltrek.demo"), passwordHash, "Diego Quispe",
+            new User(new Username("guide2@vitaltrek.demo"), passwordHash, "Diego Huamán",
                 Role.FieldGuide, demoAgency.Id, fieldGuideId: 2),
             new User(new Username("tourist@vitaltrek.demo"), passwordHash, "Valeria Torres",
                 Role.AdventureTourist, demoAgency.Id, identityDocument: "70010001"),
