@@ -55,7 +55,8 @@ public static class ModelBuilderExtensions
         builder.Entity<ExpectedTimeWindow>().HasOne<Checkpoint>().WithMany()
             .HasForeignKey(window => window.ToCheckpointId).IsRequired().OnDelete(DeleteBehavior.Restrict);
         builder.Entity<ExpectedTimeWindow>()
-            .HasIndex(window => new { window.RouteId, window.FromCheckpointId, window.ToCheckpointId }).IsUnique();
+            .HasIndex(window => new { window.RouteId, window.FromCheckpointId, window.ToCheckpointId }).IsUnique()
+            .HasDatabaseName("ux_expected_time_windows_segment");
         builder.Entity<ExpectedTimeWindow>().HasIndex(window => window.AgencyId);
 
         // Route notes
