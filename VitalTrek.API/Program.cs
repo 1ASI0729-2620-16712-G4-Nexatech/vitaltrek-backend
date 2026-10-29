@@ -3,11 +3,20 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Scalar.AspNetCore;
+using VitalTrek.API.ExpeditionSetup.Application.Internal.CommandServices;
+using VitalTrek.API.ExpeditionSetup.Application.Internal.QueryServices;
+using VitalTrek.API.ExpeditionSetup.Application.Services;
+using VitalTrek.API.ExpeditionSetup.Domain.Repositories;
+using VitalTrek.API.ExpeditionSetup.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.ExpeditionSetup.Infrastructure.Persistence.EntityFrameworkCore.Seeding;
+using VitalTrek.API.ExpeditionSetup.Interfaces.Rest.Transform;
 using VitalTrek.API.IAM.Application.ACL;
 using VitalTrek.API.IAM.Application.Internal.CommandServices;
 using VitalTrek.API.IAM.Application.Internal.OutboundServices;
 using VitalTrek.API.IAM.Application.Internal.QueryServices;
 using VitalTrek.API.IAM.Application.Services;
+using VitalTrek.API.IAM.Domain.Model.Aggregates;
+using VitalTrek.API.IAM.Domain.Model.ValueObjects;
 using VitalTrek.API.IAM.Domain.Repositories;
 using VitalTrek.API.IAM.Infrastructure.Hashing.BCrypt.Services;
 using VitalTrek.API.IAM.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
@@ -83,6 +92,8 @@ builder.Services.AddOpenApi(options =>
     options.AddOperationTransformer(BearerSecuritySchemeTransformer.TransformOperationAsync);
     options.AddOperationTransformer(IamLocalizedOpenApiAssembler.TransformOperationAsync);
     options.AddSchemaTransformer(IamLocalizedOpenApiAssembler.TransformSchemaAsync);
+    options.AddOperationTransformer(ExpeditionSetupLocalizedOpenApiAssembler.TransformOperationAsync);
+    options.AddSchemaTransformer(ExpeditionSetupLocalizedOpenApiAssembler.TransformSchemaAsync);
 });
 
 // CORS Configuration for the VitalTrek Web Applications.
@@ -131,6 +142,23 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHashingService, HashingService>();
 builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
 
+// Expedition Setup Bounded Context Injection Configuration
+builder.Services.AddScoped<IRouteRepository, RouteRepository>();
+builder.Services.AddScoped<ICheckpointRepository, CheckpointRepository>();
+builder.Services.AddScoped<IExpectedTimeWindowRepository, ExpectedTimeWindowRepository>();
+builder.Services.AddScoped<IRouteNoteRepository, RouteNoteRepository>();
+builder.Services.AddScoped<ISafetyProtocolRepository, SafetyProtocolRepository>();
+builder.Services.AddScoped<IRouteCommandService, RouteCommandService>();
+builder.Services.AddScoped<IRouteQueryService, RouteQueryService>();
+builder.Services.AddScoped<ICheckpointCommandService, CheckpointCommandService>();
+builder.Services.AddScoped<ICheckpointQueryService, CheckpointQueryService>();
+builder.Services.AddScoped<IExpectedTimeWindowCommandService, ExpectedTimeWindowCommandService>();
+builder.Services.AddScoped<IExpectedTimeWindowQueryService, ExpectedTimeWindowQueryService>();
+builder.Services.AddScoped<IRouteNoteCommandService, RouteNoteCommandService>();
+builder.Services.AddScoped<IRouteNoteQueryService, RouteNoteQueryService>();
+builder.Services.AddScoped<ISafetyProtocolCommandService, SafetyProtocolCommandService>();
+builder.Services.AddScoped<ISafetyProtocolQueryService, SafetyProtocolQueryService>();
+
 var app = builder.Build();
 
 // Apply pending migrations on startup (safe to call even when schema is up to date)
@@ -142,6 +170,11 @@ using (var scope = app.Services.CreateScope())
 
     // Demonstration data is only inserted into an empty database.
     IamDemoDataSeeder.Seed(context, services.GetRequiredService<IHashingService>());
+    var demoAgencyId = context.Set<User>()
+        .Where(user => user.Username == new Username("admin@vitaltrek.demo"))
+        .Select(user => user.AgencyId)
+        .FirstOrDefault();
+    ExpeditionSetupDemoDataSeeder.Seed(context, demoAgencyId);
 }
 
 // Configure the HTTP request pipeline.
