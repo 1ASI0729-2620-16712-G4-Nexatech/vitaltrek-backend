@@ -24,4 +24,148 @@
     <data name="ResourceNotFound" xml:space="preserve">
         <value>No se encontró el recurso solicitado.</value>
     </data>
+    <data name="OperationBadRequest" xml:space="preserve">
+        <value>La solicitud contiene valores inválidos.</value>
+    </data>
+    <data name="OperationUnauthorized" xml:space="preserve">
+        <value>Se requiere autenticación. Envíe un token bearer válido.</value>
+    </data>
+    <data name="OperationForbidden" xml:space="preserve">
+        <value>El rol autenticado no puede realizar esta operación.</value>
+    </data>
+    <data name="OperationServerError" xml:space="preserve">
+        <value>Error inesperado del servidor.</value>
+    </data>
+    <data name="AuthenticationRequired" xml:space="preserve">
+        <value>Se requiere autenticación para acceder a este recurso.</value>
+    </data>
+    <data name="AccessForbidden" xml:space="preserve">
+        <value>No tiene permiso para realizar esta operación.</value>
+    </data>
+    <data name="RequiredAgencyName" xml:space="preserve">
+        <value>El nombre de la agencia es obligatorio.</value>
+    </data>
+    <data name="RequiredName" xml:space="preserve">
+        <value>El nombre es obligatorio.</value>
+    </data>
+    <data name="RequiredUsername" xml:space="preserve">
+        <value>El nombre de usuario es obligatorio.</value>
+    </data>
+    <data name="RequiredPassword" xml:space="preserve">
+        <value>La contraseña es obligatoria.</value>
+    </data>
+    <data name="RequiredRole" xml:space="preserve">
+        <value>El rol es obligatorio.</value>
+    </data>
+    <data name="PasswordMinLength" xml:space="preserve">
+        <value>La contraseña debe tener al menos {1} caracteres.</value>
+    </data>
+    <data name="UsernameAlreadyExists" xml:space="preserve">
+        <value>Ya existe una cuenta con este nombre de usuario.</value>
+    </data>
+    <data name="InvalidCredentials" xml:space="preserve">
+        <value>Usuario o contraseña inválidos.</value>
+    </data>
+    <data name="InvalidSignUpRequest" xml:space="preserve">
+        <value>La solicitud de registro contiene valores inválidos.</value>
+    </data>
+    <data name="InvalidUserRequest" xml:space="preserve">
+        <value>La solicitud de usuario contiene valores inválidos.</value>
+    </data>
+    <data name="UserRoleNotAllowed" xml:space="preserve">
+        <value>Los administradores solo pueden crear cuentas de guía de campo o turista de aventura.</value>
+    </data>
+    <data name="LinkedIdentityAlreadyExists" xml:space="preserve">
+        <value>Este guía o documento de identidad ya está vinculado a otra cuenta de la agencia.</value>
+    </data>
+    <data name="UserNotFound" xml:space="preserve">
+        <value>No se encontró el usuario.</value>
+    </data>
+    <data name="UnexpectedErrorSigningUp" xml:space="preserve">
+        <value>Ocurrió un error inesperado al registrar la agencia.</value>
+    </data>
+    <data name="UnexpectedErrorSigningIn" xml:space="preserve">
+        <value>Ocurrió un error inesperado al iniciar sesión.</value>
+    </data>
+    <data name="UnexpectedErrorCreatingUser" xml:space="preserve">
+        <value>Ocurrió un error inesperado al crear el usuario.</value>
+    </data>
+    <data name="SignUpSummary" xml:space="preserve">
+        <value>Registra una agencia</value>
+    </data>
+    <data name="SignUpDescription" xml:space="preserve">
+        <value>Crea una nueva agencia y la cuenta de su primer administrador de operaciones.</value>
+    </data>
+    <data name="SignUpCreated" xml:space="preserve">
+        <value>Se crearon la agencia y su administrador.</value>
+    </data>
+    <data name="SignUpBadRequest" xml:space="preserve">
+        <value>Los datos de registro son inválidos.</value>
+    </data>
+    <data name="SignUpConflict" xml:space="preserve">
+        <value>El nombre de usuario ya está registrado.</value>
+    </data>
+    <data name="SignInSummary" xml:space="preserve">
+        <value>Inicia sesión</value>
+    </data>
+    <data name="SignInDescription" xml:space="preserve">
+        <value>Valida las credenciales y devuelve el perfil del usuario con un token bearer válido por 12 horas.</value>
+    </data>
+    <data name="SignInSuccess" xml:space="preserve">
+        <value>El usuario fue autenticado.</value>
+    </data>
+    <data name="SignInUnauthorized" xml:space="preserve">
+        <value>El usuario o la contraseña son inválidos.</value>
+    </data>
+    <data name="GetAllUsersSummary" xml:space="preserve">
+        <value>Obtiene los usuarios de la agencia</value>
+    </data>
+    <data name="GetAllUsersDescription" xml:space="preserve">
+        <value>Devuelve las cuentas de usuario de la agencia del administrador autenticado.</value>
+    </data>
+    <data name="GetAllUsersSuccess" xml:space="preserve">
+        <value>Los usuarios de la agencia.</value>
+    </data>
+    <data name="GetUserByIdSummary" xml:space="preserve">
+        <value>Obtiene un usuario por id</value>
+    </data>
+    <data name="GetUserByIdDescription" xml:space="preserve">
+        <value>Devuelve una cuenta de usuario. Los administradores pueden leer las cuentas de su agencia; los demás usuarios solo su propia cuenta.</value>
+    </data>
+    <data name="GetUserByIdSuccess" xml:space="preserve">
+        <value>La cuenta de usuario.</value>
+    </data>
+    <data name="GetUserByIdNotFound" xml:space="preserve">
+        <value>El usuario no existe o no es accesible.</value>
+    </data>
+    <data name="CreateUserSummary" xml:space="preserve">
+        <value>Crea un usuario</value>
+    </data>
+    <data name="CreateUserDescription" xml:space="preserve">
+        <value>Crea una cuenta de guía de campo o turista de aventura en la agencia del administrador autenticado.</value>
+    </data>
+    <data name="CreateUserCreated" xml:space="preserve">
+        <value>Se creó la cuenta de usuario.</value>
+    </data>
+    <data name="CreateUserBadRequest" xml:space="preserve">
+        <value>Los datos del usuario son inválidos o el rol no está permitido.</value>
+    </data>
+    <data name="CreateUserConflict" xml:space="preserve">
+        <value>El nombre de usuario o la identidad vinculada ya están en uso.</value>
+    </data>
+    <data name="SignUpSchema" xml:space="preserve">
+        <value>Datos requeridos para registrar una agencia y su administrador.</value>
+    </data>
+    <data name="SignInSchema" xml:space="preserve">
+        <value>Credenciales para iniciar sesión.</value>
+    </data>
+    <data name="CreateUserSchema" xml:space="preserve">
+        <value>Datos requeridos para crear una cuenta de guía de campo o turista de aventura.</value>
+    </data>
+    <data name="UserSchema" xml:space="preserve">
+        <value>Información de la cuenta de usuario.</value>
+    </data>
+    <data name="AuthenticatedUserSchema" xml:space="preserve">
+        <value>Información del usuario autenticado con su token bearer.</value>
+    </data>
 </root>

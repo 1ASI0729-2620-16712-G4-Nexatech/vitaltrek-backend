@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using VitalTrek.API.IAM.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Interceptors;
 
@@ -26,7 +27,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         base.OnModelCreating(builder);
 
-        // Bounded context configurations are applied here, e.g. builder.ApplyIamConfiguration();
+        // Bounded context configurations
+        builder.ApplyIamConfiguration();
 
         builder.UseSnakeCaseNamingConvention();
     }

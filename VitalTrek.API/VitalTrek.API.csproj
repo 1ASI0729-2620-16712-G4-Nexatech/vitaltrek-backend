@@ -23,6 +23,9 @@
         </PackageReference>
         <!-- MySQL Entity Framework Core provider related packages -->
         <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.12" />
+        <!-- Security related packages -->
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14" />
         <!-- Naming convention conversion related packages -->
         <PackageReference Include="Humanizer" Version="3.0.10" />
     </ItemGroup>
