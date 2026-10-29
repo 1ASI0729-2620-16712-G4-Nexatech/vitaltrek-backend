@@ -1,0 +1,5 @@
+@VitalTrek.API_HostAddress = http://localhost:5213
+
+### OpenAPI document
+GET {{VitalTrek.API_HostAddress}}/openapi/v1.json
+Accept: application/json

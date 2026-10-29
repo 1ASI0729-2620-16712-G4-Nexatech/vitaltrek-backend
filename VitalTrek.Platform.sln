@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VitalRek.Api", "VitalRek.Api\VitalRek.Api.csproj", "{3F9F02F1-D731-4A99-98BF-FFED0787515A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VitalTrek.API", "VitalTrek.API\VitalTrek.API.csproj", "{3F9F02F1-D731-4A99-98BF-FFED0787515A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
