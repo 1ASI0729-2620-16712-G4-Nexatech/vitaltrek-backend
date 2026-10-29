@@ -1,0 +1,26 @@
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using VitalTrek.API.Shared.Infrastructure.Interfaces.Asp.Configuration.Extensions;
+
+namespace VitalTrek.API.Shared.Infrastructure.Interfaces.Asp.Configuration;
+
+/// <summary>
+///     Application model convention that transforms controller route templates into lowercase kebab-case.
+/// </summary>
+public class KebabCaseRouteNamingConvention : IControllerModelConvention
+{
+    private static AttributeRouteModel? ReplaceControllerTemplate(SelectorModel selector, string name)
+    {
+        return selector.AttributeRouteModel != null
+            ? new AttributeRouteModel { Template = selector.AttributeRouteModel.Template?.Replace("[controller]", name.ToKebabCase()) }
+            : null;
+    }
+
+    /// <inheritdoc />
+    public void Apply(ControllerModel controller)
+    {
+        foreach (var selector in controller.Selectors)
+            selector.AttributeRouteModel = ReplaceControllerTemplate(selector, controller.ControllerName);
+        foreach (var action in controller.Actions.SelectMany(a => a.Selectors))
+            action.AttributeRouteModel = ReplaceControllerTemplate(action, controller.ControllerName);
+    }
+}
