@@ -18,7 +18,13 @@ public static class ExpeditionSetupLocalizedOpenApiAssembler
         "GetAllCheckpoints", "GetCheckpointById", "CreateCheckpoint",
         "GetAllExpectedTimeWindows", "GetExpectedTimeWindowById", "CreateExpectedTimeWindow",
         "GetAllRouteNotes", "GetRouteNoteById", "CreateRouteNote", "UpdateRouteNote",
-        "GetAllSafetyProtocols", "GetSafetyProtocolById", "CreateSafetyProtocol", "UpdateSafetyProtocol"
+        "GetAllSafetyProtocols", "GetSafetyProtocolById", "CreateSafetyProtocol", "UpdateSafetyProtocol",
+        "GetAllFieldGuides", "GetFieldGuideById", "CreateFieldGuide",
+        "GetAllWearableDevices", "GetWearableDeviceById", "CreateWearableDevice",
+        "GetAllExpeditionGroups", "GetExpeditionGroupById", "CreateExpeditionGroup", "AssignFieldGuide",
+        "GetAllManifestEntries", "GetManifestEntryById", "CreateManifestEntry",
+        "GetAllParticipantPreparations", "GetParticipantPreparationById", "AssignWearableDevice",
+        "RegisterEmergencyContact", "UpdateConsent"
     ];
 
     private static readonly Dictionary<string, string> ResponseResources = new()
@@ -47,7 +53,20 @@ public static class ExpeditionSetupLocalizedOpenApiAssembler
         [typeof(UpdateRouteNoteResource)] = "UpdateRouteNoteSchema",
         [typeof(SafetyProtocolResource)] = "SafetyProtocolSchema",
         [typeof(CreateSafetyProtocolResource)] = "CreateSafetyProtocolSchema",
-        [typeof(UpdateSafetyProtocolResource)] = "UpdateSafetyProtocolSchema"
+        [typeof(UpdateSafetyProtocolResource)] = "UpdateSafetyProtocolSchema",
+        [typeof(FieldGuideResource)] = "FieldGuideSchema",
+        [typeof(CreateFieldGuideResource)] = "CreateFieldGuideSchema",
+        [typeof(WearableDeviceResource)] = "WearableDeviceSchema",
+        [typeof(CreateWearableDeviceResource)] = "CreateWearableDeviceSchema",
+        [typeof(ExpeditionGroupResource)] = "ExpeditionGroupSchema",
+        [typeof(CreateExpeditionGroupResource)] = "CreateExpeditionGroupSchema",
+        [typeof(AssignFieldGuideResource)] = "AssignFieldGuideSchema",
+        [typeof(ManifestEntryResource)] = "ManifestEntrySchema",
+        [typeof(CreateManifestEntryResource)] = "CreateManifestEntrySchema",
+        [typeof(ParticipantPreparationResource)] = "ParticipantPreparationSchema",
+        [typeof(AssignWearableDeviceResource)] = "AssignWearableDeviceSchema",
+        [typeof(EmergencyContactResource)] = "EmergencyContactSchema",
+        [typeof(UpdateConsentResource)] = "UpdateConsentSchema"
     };
 
     /// <summary>

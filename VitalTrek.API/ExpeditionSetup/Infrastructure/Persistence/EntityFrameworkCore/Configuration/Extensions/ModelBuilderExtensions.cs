@@ -80,5 +80,72 @@ public static class ModelBuilderExtensions
             .IsRequired().OnDelete(DeleteBehavior.Cascade);
         builder.Entity<SafetyProtocol>().HasIndex(protocol => protocol.RouteId).IsUnique();
         builder.Entity<SafetyProtocol>().HasIndex(protocol => protocol.AgencyId);
+
+        // Field guides
+        builder.Entity<FieldGuide>().HasKey(guide => guide.Id);
+        builder.Entity<FieldGuide>().Property(guide => guide.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<FieldGuide>().Property(guide => guide.Name).IsRequired().HasMaxLength(120);
+        builder.Entity<FieldGuide>().HasOne<Agency>().WithMany().HasForeignKey(guide => guide.AgencyId).IsRequired();
+
+        // Expedition groups
+        builder.Entity<ExpeditionGroup>().HasKey(group => group.Id);
+        builder.Entity<ExpeditionGroup>().Property(group => group.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<ExpeditionGroup>().Property(group => group.Name).IsRequired().HasMaxLength(120);
+        builder.Entity<ExpeditionGroup>().Property(group => group.DepartureDate)
+            .HasConversion(date => date.ToDateTime(TimeOnly.MinValue), value => DateOnly.FromDateTime(value))
+            .HasColumnType("date").IsRequired();
+        builder.Entity<ExpeditionGroup>().Property(group => group.Status)
+            .HasConversion(status => status.ToCode(), code => ExpeditionGroupStatusExtensions.FromCode(code))
+            .IsRequired().HasMaxLength(20);
+        builder.Entity<ExpeditionGroup>().Ignore(group => group.IsScheduled);
+        builder.Entity<ExpeditionGroup>().HasOne<Agency>().WithMany().HasForeignKey(group => group.AgencyId)
+            .IsRequired().OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<ExpeditionGroup>().HasOne<Route>().WithMany().HasForeignKey(group => group.RouteId)
+            .IsRequired().OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<ExpeditionGroup>().HasOne<FieldGuide>().WithMany().HasForeignKey(group => group.FieldGuideId)
+            .IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+        builder.Entity<ExpeditionGroup>().HasIndex(group => new { group.FieldGuideId, group.DepartureDate });
+
+        // Tourist manifest
+        builder.Entity<ManifestEntry>().HasKey(entry => entry.Id);
+        builder.Entity<ManifestEntry>().Property(entry => entry.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<ManifestEntry>().Property(entry => entry.FullName).IsRequired().HasMaxLength(120);
+        builder.Entity<ManifestEntry>().Property(entry => entry.IdentityDocument).IsRequired().HasMaxLength(20);
+        builder.Entity<ManifestEntry>().HasOne<ExpeditionGroup>().WithMany().HasForeignKey(entry => entry.ExpeditionGroupId)
+            .IsRequired().OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<ManifestEntry>().HasIndex(entry => new { entry.ExpeditionGroupId, entry.IdentityDocument })
+            .IsUnique().HasDatabaseName("ux_manifest_entries_group_document");
+        builder.Entity<ManifestEntry>().HasIndex(entry => new { entry.AgencyId, entry.IdentityDocument });
+
+        // Wearable inventory
+        builder.Entity<WearableDevice>().HasKey(device => device.Id);
+        builder.Entity<WearableDevice>().Property(device => device.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<WearableDevice>().Property(device => device.Code).IsRequired().HasMaxLength(40);
+        builder.Entity<WearableDevice>().Property(device => device.Status)
+            .HasConversion(status => status.ToCode(), code => WearableDeviceStatusExtensions.FromCode(code))
+            .IsRequired().HasMaxLength(20);
+        builder.Entity<WearableDevice>().Ignore(device => device.IsAvailable);
+        builder.Entity<WearableDevice>().HasOne<Agency>().WithMany().HasForeignKey(device => device.AgencyId).IsRequired();
+        builder.Entity<WearableDevice>().HasIndex(device => device.Code).IsUnique();
+
+        // Participant preparations
+        builder.Entity<ParticipantPreparation>().HasKey(preparation => preparation.Id);
+        builder.Entity<ParticipantPreparation>().Property(preparation => preparation.Id).IsRequired().ValueGeneratedOnAdd();
+        builder.Entity<ParticipantPreparation>().Property(preparation => preparation.EmergencyContactName).HasMaxLength(120);
+        builder.Entity<ParticipantPreparation>().Property(preparation => preparation.EmergencyContactPhone).HasMaxLength(25);
+        builder.Entity<ParticipantPreparation>().Property(preparation => preparation.EmergencyContactRelationship).HasMaxLength(60);
+        builder.Entity<ParticipantPreparation>().Property(preparation => preparation.ReturnCondition)
+            .HasConversion(condition => condition.HasValue ? condition.Value.ToCode() : null,
+                code => code == null ? null : WearableDeviceStatusExtensions.FromCode(code))
+            .HasMaxLength(20);
+        builder.Entity<ParticipantPreparation>().Ignore(preparation => preparation.EmergencyContact);
+        builder.Entity<ParticipantPreparation>().Ignore(preparation => preparation.IsReady);
+        builder.Entity<ParticipantPreparation>().HasOne<ExpeditionGroup>().WithMany()
+            .HasForeignKey(preparation => preparation.ExpeditionGroupId).IsRequired().OnDelete(DeleteBehavior.Cascade);
+        builder.Entity<ParticipantPreparation>().HasOne<ManifestEntry>().WithMany()
+            .HasForeignKey(preparation => preparation.MemberId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<ParticipantPreparation>().HasOne<WearableDevice>().WithMany()
+            .HasForeignKey(preparation => preparation.WearableId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<ParticipantPreparation>().HasIndex(preparation => preparation.MemberId).IsUnique();
     }
 }

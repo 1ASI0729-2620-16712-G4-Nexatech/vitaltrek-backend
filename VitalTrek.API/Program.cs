@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Scalar.AspNetCore;
+using VitalTrek.API.ExpeditionSetup.Application.ACL;
 using VitalTrek.API.ExpeditionSetup.Application.Internal.CommandServices;
 using VitalTrek.API.ExpeditionSetup.Application.Internal.QueryServices;
 using VitalTrek.API.ExpeditionSetup.Application.Services;
 using VitalTrek.API.ExpeditionSetup.Domain.Repositories;
 using VitalTrek.API.ExpeditionSetup.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 using VitalTrek.API.ExpeditionSetup.Infrastructure.Persistence.EntityFrameworkCore.Seeding;
+using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 using VitalTrek.API.ExpeditionSetup.Interfaces.Rest.Transform;
 using VitalTrek.API.IAM.Application.ACL;
 using VitalTrek.API.IAM.Application.Internal.CommandServices;
@@ -158,6 +160,22 @@ builder.Services.AddScoped<IRouteNoteCommandService, RouteNoteCommandService>();
 builder.Services.AddScoped<IRouteNoteQueryService, RouteNoteQueryService>();
 builder.Services.AddScoped<ISafetyProtocolCommandService, SafetyProtocolCommandService>();
 builder.Services.AddScoped<ISafetyProtocolQueryService, SafetyProtocolQueryService>();
+builder.Services.AddScoped<IFieldGuideRepository, FieldGuideRepository>();
+builder.Services.AddScoped<IExpeditionGroupRepository, ExpeditionGroupRepository>();
+builder.Services.AddScoped<IManifestEntryRepository, ManifestEntryRepository>();
+builder.Services.AddScoped<IWearableDeviceRepository, WearableDeviceRepository>();
+builder.Services.AddScoped<IParticipantPreparationRepository, ParticipantPreparationRepository>();
+builder.Services.AddScoped<IFieldGuideCommandService, FieldGuideCommandService>();
+builder.Services.AddScoped<IFieldGuideQueryService, FieldGuideQueryService>();
+builder.Services.AddScoped<IExpeditionGroupCommandService, ExpeditionGroupCommandService>();
+builder.Services.AddScoped<IExpeditionGroupQueryService, ExpeditionGroupQueryService>();
+builder.Services.AddScoped<IManifestEntryCommandService, ManifestEntryCommandService>();
+builder.Services.AddScoped<IManifestEntryQueryService, ManifestEntryQueryService>();
+builder.Services.AddScoped<IWearableDeviceCommandService, WearableDeviceCommandService>();
+builder.Services.AddScoped<IWearableDeviceQueryService, WearableDeviceQueryService>();
+builder.Services.AddScoped<IParticipantPreparationCommandService, ParticipantPreparationCommandService>();
+builder.Services.AddScoped<IParticipantPreparationQueryService, ParticipantPreparationQueryService>();
+builder.Services.AddScoped<IExpeditionSetupContextFacade, ExpeditionSetupContextFacade>();
 
 var app = builder.Build();
 
@@ -175,6 +193,7 @@ using (var scope = app.Services.CreateScope())
         .Select(user => user.AgencyId)
         .FirstOrDefault();
     ExpeditionSetupDemoDataSeeder.Seed(context, demoAgencyId);
+    ExpeditionSetupDemoDataSeeder.SeedExpeditionGroups(context, demoAgencyId);
 }
 
 // Configure the HTTP request pipeline.

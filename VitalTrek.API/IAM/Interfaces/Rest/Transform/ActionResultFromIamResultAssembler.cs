@@ -83,6 +83,8 @@ public static class ActionResultFromIamResultAssembler
                 ECreateUserError.RoleNotAllowed => controller.BadRequest(localizer["UserRoleNotAllowed"].Value),
                 ECreateUserError.InvalidData => controller.BadRequest(localizer["InvalidUserRequest"].Value),
                 ECreateUserError.DuplicateUsername => controller.Conflict(localizer["UsernameAlreadyExists"].Value),
+                ECreateUserError.LinkedIdentityNotFound =>
+                    controller.BadRequest(localizer["LinkedIdentityNotFound"].Value),
                 ECreateUserError.LinkedIdentityAlreadyExists =>
                     controller.Conflict(localizer["LinkedIdentityAlreadyExists"].Value),
                 _ => UnexpectedError(controller, localizer, "UnexpectedErrorCreatingUser")

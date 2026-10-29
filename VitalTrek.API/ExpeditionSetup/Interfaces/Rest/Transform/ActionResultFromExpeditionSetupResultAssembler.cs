@@ -66,6 +66,44 @@ public static class ActionResultFromExpeditionSetupResultAssembler
             ESafetyProtocolError.RouteNotFound => controller.BadRequest(localizer["RouteNotFound"].Value),
             ESafetyProtocolError.SafetyProtocolNotFound => controller.NotFound(localizer["SafetyProtocolNotFound"].Value),
             ESafetyProtocolError.DuplicateProtocol => controller.Conflict(localizer["SafetyProtocolDuplicated"].Value),
+            ECreateFieldGuideError.InvalidData => controller.BadRequest(localizer["InvalidFieldGuideRequest"].Value),
+            ECreateExpeditionGroupError.InvalidData => controller.BadRequest(localizer["InvalidExpeditionGroupRequest"].Value),
+            ECreateExpeditionGroupError.RouteNotFound => controller.BadRequest(localizer["RouteNotFound"].Value),
+            ECreateExpeditionGroupError.RouteNotEnabled => controller.Conflict(localizer["RouteNotEnabledForGroups"].Value),
+            ECreateExpeditionGroupError.DepartureDateInPast =>
+                controller.BadRequest(localizer["DepartureDateInPast"].Value),
+            EAssignFieldGuideError.ExpeditionGroupNotFound => controller.NotFound(localizer["ExpeditionGroupNotFound"].Value),
+            EAssignFieldGuideError.FieldGuideNotFound => controller.BadRequest(localizer["FieldGuideNotFound"].Value),
+            EAssignFieldGuideError.ExpeditionGroupNotScheduled =>
+                controller.Conflict(localizer["ExpeditionGroupNotScheduled"].Value),
+            EAssignFieldGuideError.ScheduleConflict => controller.Conflict(localizer["FieldGuideScheduleConflict"].Value),
+            ECreateManifestEntryError.InvalidData => controller.BadRequest(localizer["InvalidManifestEntryRequest"].Value),
+            ECreateManifestEntryError.ExpeditionGroupNotFound =>
+                controller.BadRequest(localizer["ExpeditionGroupNotFound"].Value),
+            ECreateManifestEntryError.ExpeditionGroupNotScheduled =>
+                controller.Conflict(localizer["ExpeditionGroupNotScheduled"].Value),
+            ECreateManifestEntryError.DuplicateIdentityDocument =>
+                controller.Conflict(localizer["ManifestEntryDocumentDuplicated"].Value),
+            ECreateManifestEntryError.IdentityDocumentDateConflict =>
+                controller.Conflict(localizer["ManifestEntryDateConflict"].Value),
+            ECreateManifestEntryError.CapacityExceeded =>
+                controller.Conflict(localizer["ManifestEntryCapacityExceeded"].Value),
+            ECreateWearableDeviceError.InvalidData => controller.BadRequest(localizer["InvalidWearableDeviceRequest"].Value),
+            ECreateWearableDeviceError.DuplicateCode => controller.Conflict(localizer["WearableDeviceCodeDuplicated"].Value),
+            EParticipantPreparationError.InvalidData =>
+                controller.BadRequest(localizer["InvalidParticipantPreparationRequest"].Value),
+            EParticipantPreparationError.ParticipantPreparationNotFound =>
+                controller.NotFound(localizer["ParticipantPreparationNotFound"].Value),
+            EParticipantPreparationError.ExpeditionGroupNotModifiable =>
+                controller.Conflict(localizer["ExpeditionGroupNotModifiable"].Value),
+            EParticipantPreparationError.WearableDeviceNotFound =>
+                controller.BadRequest(localizer["WearableDeviceNotFound"].Value),
+            EParticipantPreparationError.WearableDeviceUnavailable =>
+                controller.Conflict(localizer["WearableDeviceUnavailable"].Value),
+            EParticipantPreparationError.WearableDeviceRequired =>
+                controller.Conflict(localizer["WearableDeviceRequired"].Value),
+            EParticipantPreparationError.EmergencyContactRequired =>
+                controller.Conflict(localizer["EmergencyContactRequired"].Value),
             _ => Unexpected(controller, localizer)
         };
 

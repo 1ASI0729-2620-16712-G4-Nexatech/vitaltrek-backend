@@ -26,6 +26,11 @@ public enum ECreateUserError
     LinkedIdentityAlreadyExists,
 
     /// <summary>
+    ///     The field guide profile or identity document does not exist in the agency.
+    /// </summary>
+    LinkedIdentityNotFound,
+
+    /// <summary>
     ///     An unexpected persistence or system error occurred.
     /// </summary>
     UnexpectedError
