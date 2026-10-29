@@ -141,6 +141,249 @@ namespace VitalTrek.API.Migrations
                     b.ToTable("expected_time_windows");
                 });
 
+            modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ExpeditionGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("DepartureDate")
+                        .HasColumnType("date")
+                        .HasColumnName("departure_date");
+
+                    b.Property<int?>("FieldGuideId")
+                        .HasColumnType("int")
+                        .HasColumnName("field_guide_id");
+
+                    b.Property<DateTimeOffset?>("FinishedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("finished_at");
+
+                    b.Property<int>("MaximumCapacity")
+                        .HasColumnType("int")
+                        .HasColumnName("maximum_capacity");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("RouteId")
+                        .HasColumnType("int")
+                        .HasColumnName("route_id");
+
+                    b.Property<DateTimeOffset?>("StartedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_expedition_groups");
+
+                    b.HasIndex("AgencyId")
+                        .HasDatabaseName("i_x_expedition_groups_agency_id");
+
+                    b.HasIndex("RouteId")
+                        .HasDatabaseName("i_x_expedition_groups_route_id");
+
+                    b.HasIndex("FieldGuideId", "DepartureDate")
+                        .HasDatabaseName("i_x_expedition_groups_field_guide_id_departure_date");
+
+                    b.ToTable("expedition_groups");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.FieldGuide", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_field_guides");
+
+                    b.HasIndex("AgencyId")
+                        .HasDatabaseName("i_x_field_guides_agency_id");
+
+                    b.ToTable("field_guides");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ManifestEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("ExpeditionGroupId")
+                        .HasColumnType("int")
+                        .HasColumnName("expedition_group_id");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("full_name");
+
+                    b.Property<string>("IdentityDocument")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("identity_document");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_manifest_entries");
+
+                    b.HasIndex("AgencyId", "IdentityDocument")
+                        .HasDatabaseName("i_x_manifest_entries_agency_id_identity_document");
+
+                    b.HasIndex("ExpeditionGroupId", "IdentityDocument")
+                        .IsUnique()
+                        .HasDatabaseName("ux_manifest_entries_group_document");
+
+                    b.ToTable("manifest_entries");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ParticipantPreparation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Activated")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("activated");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<int>("BaselineMax")
+                        .HasColumnType("int")
+                        .HasColumnName("baseline_max");
+
+                    b.Property<int>("BaselineMin")
+                        .HasColumnType("int")
+                        .HasColumnName("baseline_min");
+
+                    b.Property<bool>("Consent")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("consent");
+
+                    b.Property<DateTimeOffset?>("ConsentRecordedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("consent_recorded_at");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EmergencyContactName")
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("emergency_contact_name");
+
+                    b.Property<string>("EmergencyContactPhone")
+                        .HasMaxLength(25)
+                        .HasColumnType("varchar(25)")
+                        .HasColumnName("emergency_contact_phone");
+
+                    b.Property<string>("EmergencyContactRelationship")
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)")
+                        .HasColumnName("emergency_contact_relationship");
+
+                    b.Property<int>("ExpeditionGroupId")
+                        .HasColumnType("int")
+                        .HasColumnName("expedition_group_id");
+
+                    b.Property<int>("MemberId")
+                        .HasColumnType("int")
+                        .HasColumnName("member_id");
+
+                    b.Property<string>("ReturnCondition")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("return_condition");
+
+                    b.Property<DateTimeOffset?>("ReturnedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("returned_at");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int?>("WearableId")
+                        .HasColumnType("int")
+                        .HasColumnName("wearable_id");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_participant_preparations");
+
+                    b.HasIndex("ExpeditionGroupId")
+                        .HasDatabaseName("i_x_participant_preparations_expedition_group_id");
+
+                    b.HasIndex("MemberId")
+                        .IsUnique()
+                        .HasDatabaseName("i_x_participant_preparations_member_id");
+
+                    b.HasIndex("WearableId")
+                        .HasDatabaseName("i_x_participant_preparations_wearable_id");
+
+                    b.ToTable("participant_preparations");
+                });
+
             modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Route", b =>
                 {
                     b.Property<int>("Id")
@@ -313,6 +556,50 @@ namespace VitalTrek.API.Migrations
                     b.ToTable("safety_protocols");
                 });
 
+            modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.WearableDevice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_wearable_devices");
+
+                    b.HasIndex("AgencyId")
+                        .HasDatabaseName("i_x_wearable_devices_agency_id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("i_x_wearable_devices_code");
+
+                    b.ToTable("wearable_devices");
+                });
+
             modelBuilder.Entity("VitalTrek.API.IAM.Domain.Model.Aggregates.Agency", b =>
                 {
                     b.Property<int>("Id")
@@ -442,6 +729,72 @@ namespace VitalTrek.API.Migrations
                         .HasConstraintName("f_k_expected_time_windows_checkpoints_to_checkpoint_id");
                 });
 
+            modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ExpeditionGroup", b =>
+                {
+                    b.HasOne("VitalTrek.API.IAM.Domain.Model.Aggregates.Agency", null)
+                        .WithMany()
+                        .HasForeignKey("AgencyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("f_k_expedition_groups__agency_agency_id");
+
+                    b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.FieldGuide", null)
+                        .WithMany()
+                        .HasForeignKey("FieldGuideId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("f_k_expedition_groups__field_guide_field_guide_id");
+
+                    b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Route", null)
+                        .WithMany()
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("f_k_expedition_groups__route_route_id");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.FieldGuide", b =>
+                {
+                    b.HasOne("VitalTrek.API.IAM.Domain.Model.Aggregates.Agency", null)
+                        .WithMany()
+                        .HasForeignKey("AgencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_field_guides__agency_agency_id");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ManifestEntry", b =>
+                {
+                    b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ExpeditionGroup", null)
+                        .WithMany()
+                        .HasForeignKey("ExpeditionGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_manifest_entries_expedition_groups_expedition_group_id");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ParticipantPreparation", b =>
+                {
+                    b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ExpeditionGroup", null)
+                        .WithMany()
+                        .HasForeignKey("ExpeditionGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_participant_preparations_expedition_groups_expedition_group");
+
+                    b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ManifestEntry", null)
+                        .WithMany()
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("f_k_participant_preparations_manifest_entries_member_id");
+
+                    b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.WearableDevice", null)
+                        .WithMany()
+                        .HasForeignKey("WearableId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("f_k_participant_preparations__wearable_device_wearable_id");
+                });
+
             modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Route", b =>
                 {
                     b.HasOne("VitalTrek.API.IAM.Domain.Model.Aggregates.Agency", null)
@@ -470,6 +823,16 @@ namespace VitalTrek.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("f_k_safety_protocols_routes_route_id");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.WearableDevice", b =>
+                {
+                    b.HasOne("VitalTrek.API.IAM.Domain.Model.Aggregates.Agency", null)
+                        .WithMany()
+                        .HasForeignKey("AgencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_wearable_devices__agency_agency_id");
                 });
 
             modelBuilder.Entity("VitalTrek.API.IAM.Domain.Model.Aggregates.User", b =>

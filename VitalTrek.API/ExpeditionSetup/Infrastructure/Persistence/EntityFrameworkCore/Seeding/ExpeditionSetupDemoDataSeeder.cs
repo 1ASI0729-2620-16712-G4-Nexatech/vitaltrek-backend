@@ -1,6 +1,7 @@
 using VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates;
 using VitalTrek.API.ExpeditionSetup.Domain.Model.Commands;
 using VitalTrek.API.ExpeditionSetup.Domain.Model.ValueObjects;
+using VitalTrek.API.Shared.Domain.Model;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using Route = VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Route;
 
@@ -78,5 +79,84 @@ public static class ExpeditionSetupDemoDataSeeder
             if (checkpoints.Count > 0) route.Enable(checkpoints.Count);
             context.SaveChanges();
         }
+    }
+
+    /// <summary>
+    ///     Seeds the demonstration field guides, wearables, expedition groups, manifests and preparations of the demo
+    ///     agency when it has no field guides. Departure dates are relative to the current date so the groups stay valid.
+    /// </summary>
+    /// <param name="context">The application database context.</param>
+    /// <param name="agencyId">The demo agency identifier.</param>
+    public static void SeedExpeditionGroups(AppDbContext context, int agencyId)
+    {
+        if (agencyId <= 0 || context.Set<FieldGuide>().Any(guide => guide.AgencyId == agencyId)) return;
+        var routes = context.Set<Route>().Where(route => route.AgencyId == agencyId).ToDictionary(route => route.Name, route => route.Id);
+        if (!routes.ContainsKey("Cordillera Huayhuash Circuit") || !routes.ContainsKey("Santa Cruz Trek") ||
+            !routes.ContainsKey("Marcahuasi Stone Forest Route")) return;
+
+        var guides = new[] { "Elena Vargas", "Diego Huamán", "Lucía Paredes", "Mateo Salazar" }
+            .Select(name => new FieldGuide(new CreateFieldGuideCommand(agencyId, name))).ToList();
+        context.Set<FieldGuide>().AddRange(guides);
+        var wearables = Enumerable.Range(1, 20)
+            .Select(number => new WearableDevice(new CreateWearableDeviceCommand(agencyId, $"VT-W-{number:D3}"))).ToList();
+        context.Set<WearableDevice>().AddRange(wearables);
+        context.SaveChanges();
+
+        var today = AgencyCalendar.Today();
+        (string Name, string Route, int DaysFromToday, int Capacity, FieldGuide? Guide)[] demoGroups =
+        [
+            ("Huayhuash Summit Team", "Cordillera Huayhuash Circuit", 1, 12, guides[0]),
+            ("Santa Cruz Glacier Team", "Santa Cruz Trek", 0, 10, guides[1]),
+            ("Marcahuasi Weekend Group", "Marcahuasi Stone Forest Route", 5, 14, guides[2]),
+            ("Huayhuash Acclimatization Group", "Cordillera Huayhuash Circuit", 6, 8, guides[3]),
+            ("Santa Cruz Orientation Group", "Santa Cruz Trek", 7, 10, null)
+        ];
+        var groups = demoGroups.Select(demo =>
+        {
+            var group = new ExpeditionGroup(new CreateExpeditionGroupCommand(agencyId, routes[demo.Route], demo.Name,
+                today.AddDays(demo.DaysFromToday), demo.Capacity), today);
+            if (demo.Guide is not null) group.AssignFieldGuide(demo.Guide.Id);
+            return group;
+        }).ToList();
+        context.Set<ExpeditionGroup>().AddRange(groups);
+        context.SaveChanges();
+
+        (int Group, string FullName, string Document)[] demoParticipants =
+        [
+            (0, "Valeria Torres", "70010001"), (0, "Andrés Medina", "70010002"), (0, "Camila Rojas", "70010003"),
+            (0, "Sofía Herrera", "70010004"), (0, "Bruno Castillo", "70010005"),
+            (1, "Mariana Flores", "70020001"), (1, "Joaquín Ramos", "70020002"), (1, "Renata Silva", "70020003"),
+            (1, "Pablo Núñez", "70020004"),
+            (2, "Daniela Cruz", "70030001"), (2, "Martín Vega", "70030002"), (2, "Ariana Castro", "70030003"),
+            (3, "Gabriel Soto", "70040001"), (3, "Elisa Navarro", "70040002")
+        ];
+        var entries = demoParticipants.Select(participant => new ManifestEntry(new CreateManifestEntryCommand(agencyId,
+            groups[participant.Group].Id, participant.FullName, participant.Document, null))).ToList();
+        context.Set<ManifestEntry>().AddRange(entries);
+        context.SaveChanges();
+
+        var now = DateTimeOffset.UtcNow;
+        var demoContact = new EmergencyContact("Demo Emergency Contact", "+51 900 000 000", "Family");
+        for (var index = 0; index < entries.Count; index++)
+        {
+            var entry = entries[index];
+            var preparation = new ParticipantPreparation(agencyId, entry.ExpeditionGroupId, entry.Id);
+            // The first nine participants (groups 1 and 2) already have a wearable; all of them except the demo
+            // tourist account (Valeria Torres) completed their consent.
+            if (index < 9)
+            {
+                wearables[index].MarkAssigned();
+                preparation.AssignWearable(wearables[index].Id);
+                if (index > 0)
+                {
+                    preparation.RegisterEmergencyContact(demoContact);
+                    preparation.GrantConsent(now);
+                }
+            }
+            context.Set<ParticipantPreparation>().Add(preparation);
+        }
+
+        groups[1].Start(now);
+        context.SaveChanges();
     }
 }

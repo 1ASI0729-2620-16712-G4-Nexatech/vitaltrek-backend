@@ -444,4 +444,247 @@
     <data name="UpdateSafetyProtocolSchema" xml:space="preserve">
         <value>Datos requeridos para actualizar un protocolo de seguridad.</value>
     </data>
+    <data name="RequiredDepartureDate" xml:space="preserve">
+        <value>La fecha de salida es obligatoria.</value>
+    </data>
+    <data name="InvalidMaximumCapacity" xml:space="preserve">
+        <value>La capacidad máxima debe estar entre {1} y {2}.</value>
+    </data>
+    <data name="RequiredFieldGuideId" xml:space="preserve">
+        <value>Se requiere un identificador de guía válido.</value>
+    </data>
+    <data name="RequiredExpeditionGroupId" xml:space="preserve">
+        <value>Se requiere un identificador de grupo válido.</value>
+    </data>
+    <data name="RequiredFullName" xml:space="preserve">
+        <value>El nombre completo es obligatorio.</value>
+    </data>
+    <data name="RequiredIdentityDocument" xml:space="preserve">
+        <value>El documento de identidad es obligatorio.</value>
+    </data>
+    <data name="RequiredWearableCode" xml:space="preserve">
+        <value>El código del wearable es obligatorio.</value>
+    </data>
+    <data name="RequiredWearableDeviceId" xml:space="preserve">
+        <value>Se requiere un identificador de wearable válido.</value>
+    </data>
+    <data name="RequiredPhone" xml:space="preserve">
+        <value>El teléfono es obligatorio.</value>
+    </data>
+    <data name="LinkedIdentityNotFound" xml:space="preserve">
+        <value>El guía o el documento de identidad no existe en la agencia.</value>
+    </data>
+    <data name="InvalidFieldGuideRequest" xml:space="preserve">
+        <value>La solicitud de guía contiene valores inválidos.</value>
+    </data>
+    <data name="FieldGuideNotFound" xml:space="preserve">
+        <value>No se encontró el guía.</value>
+    </data>
+    <data name="InvalidWearableDeviceRequest" xml:space="preserve">
+        <value>La solicitud de wearable contiene valores inválidos.</value>
+    </data>
+    <data name="WearableDeviceNotFound" xml:space="preserve">
+        <value>No se encontró el wearable.</value>
+    </data>
+    <data name="WearableDeviceCodeDuplicated" xml:space="preserve">
+        <value>El código del wearable ya está registrado.</value>
+    </data>
+    <data name="WearableDeviceUnavailable" xml:space="preserve">
+        <value>El wearable está asignado a otro participante o no está disponible.</value>
+    </data>
+    <data name="WearableDeviceRequired" xml:space="preserve">
+        <value>Debe asignarse un wearable antes de otorgar el consentimiento.</value>
+    </data>
+    <data name="EmergencyContactRequired" xml:space="preserve">
+        <value>Debe registrarse un contacto de emergencia antes de otorgar el consentimiento.</value>
+    </data>
+    <data name="InvalidExpeditionGroupRequest" xml:space="preserve">
+        <value>La solicitud de grupo contiene valores inválidos.</value>
+    </data>
+    <data name="ExpeditionGroupNotFound" xml:space="preserve">
+        <value>No se encontró el grupo de expedición.</value>
+    </data>
+    <data name="RouteNotEnabledForGroups" xml:space="preserve">
+        <value>La ruta debe estar habilitada antes de crear grupos.</value>
+    </data>
+    <data name="DepartureDateInPast" xml:space="preserve">
+        <value>La fecha de salida no puede ser anterior a hoy.</value>
+    </data>
+    <data name="ExpeditionGroupNotScheduled" xml:space="preserve">
+        <value>El grupo de expedición ya inició o finalizó.</value>
+    </data>
+    <data name="ExpeditionGroupNotModifiable" xml:space="preserve">
+        <value>El estado actual del grupo no permite este cambio.</value>
+    </data>
+    <data name="FieldGuideScheduleConflict" xml:space="preserve">
+        <value>El guía está asignado a otro grupo en la misma fecha. Confirme la asignación para continuar.</value>
+    </data>
+    <data name="InvalidManifestEntryRequest" xml:space="preserve">
+        <value>La solicitud de manifiesto contiene valores inválidos.</value>
+    </data>
+    <data name="ManifestEntryNotFound" xml:space="preserve">
+        <value>No se encontró el registro del manifiesto.</value>
+    </data>
+    <data name="ManifestEntryDocumentDuplicated" xml:space="preserve">
+        <value>El participante ya está incluido en el manifiesto.</value>
+    </data>
+    <data name="ManifestEntryDateConflict" xml:space="preserve">
+        <value>El participante está registrado en otro grupo con la misma fecha de salida.</value>
+    </data>
+    <data name="ManifestEntryCapacityExceeded" xml:space="preserve">
+        <value>El grupo alcanzó su capacidad máxima.</value>
+    </data>
+    <data name="InvalidParticipantPreparationRequest" xml:space="preserve">
+        <value>La solicitud de preparación contiene valores inválidos.</value>
+    </data>
+    <data name="ParticipantPreparationNotFound" xml:space="preserve">
+        <value>No se encontró la preparación del participante.</value>
+    </data>
+    <data name="GetAllFieldGuidesSummary" xml:space="preserve">
+        <value>Obtiene los guías</value>
+    </data>
+    <data name="GetAllFieldGuidesDescription" xml:space="preserve">
+        <value>Devuelve los perfiles de guía de la agencia.</value>
+    </data>
+    <data name="GetFieldGuideByIdSummary" xml:space="preserve">
+        <value>Obtiene un guía por id</value>
+    </data>
+    <data name="GetFieldGuideByIdDescription" xml:space="preserve">
+        <value>Devuelve un perfil de guía de la agencia.</value>
+    </data>
+    <data name="CreateFieldGuideSummary" xml:space="preserve">
+        <value>Crea un guía</value>
+    </data>
+    <data name="CreateFieldGuideDescription" xml:space="preserve">
+        <value>Registra un perfil de guía. Requiere el rol de administrador de operaciones.</value>
+    </data>
+    <data name="GetAllWearableDevicesSummary" xml:space="preserve">
+        <value>Obtiene el inventario de wearables</value>
+    </data>
+    <data name="GetAllWearableDevicesDescription" xml:space="preserve">
+        <value>Devuelve los wearables de la agencia y su estado.</value>
+    </data>
+    <data name="GetWearableDeviceByIdSummary" xml:space="preserve">
+        <value>Obtiene un wearable por id</value>
+    </data>
+    <data name="GetWearableDeviceByIdDescription" xml:space="preserve">
+        <value>Devuelve un wearable de la agencia.</value>
+    </data>
+    <data name="CreateWearableDeviceSummary" xml:space="preserve">
+        <value>Registra un wearable</value>
+    </data>
+    <data name="CreateWearableDeviceDescription" xml:space="preserve">
+        <value>Registra un wearable disponible en el inventario.</value>
+    </data>
+    <data name="GetAllExpeditionGroupsSummary" xml:space="preserve">
+        <value>Obtiene los grupos de expedición</value>
+    </data>
+    <data name="GetAllExpeditionGroupsDescription" xml:space="preserve">
+        <value>Devuelve los grupos visibles para el solicitante: toda la agencia para administradores, los asignados para guías y los propios para turistas. Use routeId para filtrar por ruta.</value>
+    </data>
+    <data name="GetExpeditionGroupByIdSummary" xml:space="preserve">
+        <value>Obtiene un grupo por id</value>
+    </data>
+    <data name="GetExpeditionGroupByIdDescription" xml:space="preserve">
+        <value>Devuelve un grupo visible para el solicitante.</value>
+    </data>
+    <data name="CreateExpeditionGroupSummary" xml:space="preserve">
+        <value>Crea un grupo de expedición</value>
+    </data>
+    <data name="CreateExpeditionGroupDescription" xml:space="preserve">
+        <value>Crea un grupo programado para una ruta habilitada con una fecha de salida no pasada.</value>
+    </data>
+    <data name="AssignFieldGuideSummary" xml:space="preserve">
+        <value>Asigna el guía</value>
+    </data>
+    <data name="AssignFieldGuideDescription" xml:space="preserve">
+        <value>Asigna el guía responsable. Un guía con otro grupo en la misma fecha requiere ConfirmScheduleConflict.</value>
+    </data>
+    <data name="GetAllManifestEntriesSummary" xml:space="preserve">
+        <value>Obtiene los manifiestos</value>
+    </data>
+    <data name="GetAllManifestEntriesDescription" xml:space="preserve">
+        <value>Devuelve los registros de manifiesto visibles para el solicitante. Use expeditionGroupId para filtrar por grupo.</value>
+    </data>
+    <data name="GetManifestEntryByIdSummary" xml:space="preserve">
+        <value>Obtiene un registro del manifiesto por id</value>
+    </data>
+    <data name="GetManifestEntryByIdDescription" xml:space="preserve">
+        <value>Devuelve un registro de manifiesto visible para el solicitante.</value>
+    </data>
+    <data name="CreateManifestEntrySummary" xml:space="preserve">
+        <value>Registra un participante</value>
+    </data>
+    <data name="CreateManifestEntryDescription" xml:space="preserve">
+        <value>Registra un turista en el manifiesto de un grupo programado, validando duplicados, cruces de fecha y capacidad.</value>
+    </data>
+    <data name="GetAllParticipantPreparationsSummary" xml:space="preserve">
+        <value>Obtiene las preparaciones</value>
+    </data>
+    <data name="GetAllParticipantPreparationsDescription" xml:space="preserve">
+        <value>Devuelve las preparaciones visibles para el solicitante. Use expeditionGroupId para filtrar por grupo.</value>
+    </data>
+    <data name="GetParticipantPreparationByIdSummary" xml:space="preserve">
+        <value>Obtiene una preparación por id</value>
+    </data>
+    <data name="GetParticipantPreparationByIdDescription" xml:space="preserve">
+        <value>Devuelve una preparación visible para el solicitante.</value>
+    </data>
+    <data name="AssignWearableDeviceSummary" xml:space="preserve">
+        <value>Asigna un wearable</value>
+    </data>
+    <data name="AssignWearableDeviceDescription" xml:space="preserve">
+        <value>Asigna un wearable disponible a un participante de un grupo programado.</value>
+    </data>
+    <data name="RegisterEmergencyContactSummary" xml:space="preserve">
+        <value>Registra el contacto de emergencia</value>
+    </data>
+    <data name="RegisterEmergencyContactDescription" xml:space="preserve">
+        <value>Registra el contacto de emergencia del turista autenticado.</value>
+    </data>
+    <data name="UpdateConsentSummary" xml:space="preserve">
+        <value>Otorga o revoca el consentimiento</value>
+    </data>
+    <data name="UpdateConsentDescription" xml:space="preserve">
+        <value>Otorga el consentimiento de monitoreo y activa el wearable, o lo revoca y desactiva el wearable.</value>
+    </data>
+    <data name="FieldGuideSchema" xml:space="preserve">
+        <value>Perfil de guía.</value>
+    </data>
+    <data name="CreateFieldGuideSchema" xml:space="preserve">
+        <value>Datos requeridos para registrar un guía.</value>
+    </data>
+    <data name="WearableDeviceSchema" xml:space="preserve">
+        <value>Wearable del inventario.</value>
+    </data>
+    <data name="CreateWearableDeviceSchema" xml:space="preserve">
+        <value>Datos requeridos para registrar un wearable.</value>
+    </data>
+    <data name="ExpeditionGroupSchema" xml:space="preserve">
+        <value>Información del grupo de expedición.</value>
+    </data>
+    <data name="CreateExpeditionGroupSchema" xml:space="preserve">
+        <value>Datos requeridos para crear un grupo de expedición.</value>
+    </data>
+    <data name="AssignFieldGuideSchema" xml:space="preserve">
+        <value>Asignación de guía.</value>
+    </data>
+    <data name="ManifestEntrySchema" xml:space="preserve">
+        <value>Participante de un manifiesto.</value>
+    </data>
+    <data name="CreateManifestEntrySchema" xml:space="preserve">
+        <value>Datos requeridos para registrar un participante.</value>
+    </data>
+    <data name="ParticipantPreparationSchema" xml:space="preserve">
+        <value>Preparación de un participante antes del tour.</value>
+    </data>
+    <data name="AssignWearableDeviceSchema" xml:space="preserve">
+        <value>Asignación de wearable.</value>
+    </data>
+    <data name="EmergencyContactSchema" xml:space="preserve">
+        <value>Contacto de emergencia de un participante.</value>
+    </data>
+    <data name="UpdateConsentSchema" xml:space="preserve">
+        <value>Decisión de consentimiento de monitoreo.</value>
+    </data>
 </root>

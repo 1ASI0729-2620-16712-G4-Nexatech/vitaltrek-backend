@@ -42,4 +42,43 @@ public static class ExpeditionSetupCommandFromResourceAssembler
     public static UpdateSafetyProtocolCommand ToCommandFromResource(UpdateSafetyProtocolResource resource,
         int safetyProtocolId, int agencyId) =>
         new(agencyId, safetyProtocolId, resource.Instructions, SafetyProtocolStatusExtensions.FromCode(resource.Status));
+
+    /// <summary>Transforms a <see cref="CreateFieldGuideResource"/> into a <see cref="CreateFieldGuideCommand"/>.</summary>
+    public static CreateFieldGuideCommand ToCommandFromResource(CreateFieldGuideResource resource, int agencyId) =>
+        new(agencyId, resource.Name);
+
+    /// <summary>Transforms a <see cref="CreateExpeditionGroupResource"/> into a <see cref="CreateExpeditionGroupCommand"/>.</summary>
+    public static CreateExpeditionGroupCommand ToCommandFromResource(CreateExpeditionGroupResource resource, int agencyId) =>
+        new(agencyId, resource.RouteId, resource.Name,
+            resource.DepartureDate ?? throw new ArgumentException("Departure date is required.", nameof(resource)),
+            resource.MaximumCapacity);
+
+    /// <summary>Transforms an <see cref="AssignFieldGuideResource"/> into an <see cref="AssignFieldGuideCommand"/>.</summary>
+    public static AssignFieldGuideCommand ToCommandFromResource(AssignFieldGuideResource resource, int expeditionGroupId,
+        int agencyId) =>
+        new(agencyId, expeditionGroupId, resource.FieldGuideId, resource.ConfirmScheduleConflict);
+
+    /// <summary>Transforms a <see cref="CreateManifestEntryResource"/> into a <see cref="CreateManifestEntryCommand"/>.</summary>
+    public static CreateManifestEntryCommand ToCommandFromResource(CreateManifestEntryResource resource, AccessScope scope) =>
+        new(scope.AgencyId, resource.ExpeditionGroupId, resource.FullName, resource.IdentityDocument, scope.FieldGuideId);
+
+    /// <summary>Transforms a <see cref="CreateWearableDeviceResource"/> into a <see cref="CreateWearableDeviceCommand"/>.</summary>
+    public static CreateWearableDeviceCommand ToCommandFromResource(CreateWearableDeviceResource resource, int agencyId) =>
+        new(agencyId, resource.Code);
+
+    /// <summary>Transforms an <see cref="AssignWearableDeviceResource"/> into an <see cref="AssignWearableDeviceCommand"/>.</summary>
+    public static AssignWearableDeviceCommand ToCommandFromResource(AssignWearableDeviceResource resource,
+        int participantPreparationId, AccessScope scope) =>
+        new(scope.AgencyId, participantPreparationId, resource.WearableDeviceId, scope.FieldGuideId);
+
+    /// <summary>Transforms an <see cref="EmergencyContactResource"/> into a <see cref="RegisterEmergencyContactCommand"/>.</summary>
+    public static RegisterEmergencyContactCommand ToCommandFromResource(EmergencyContactResource resource,
+        int participantPreparationId, AccessScope scope) =>
+        new(scope.AgencyId, participantPreparationId, resource.Name, resource.Phone, resource.Relationship,
+            scope.IdentityDocument ?? string.Empty);
+
+    /// <summary>Transforms an <see cref="UpdateConsentResource"/> into an <see cref="UpdateConsentCommand"/>.</summary>
+    public static UpdateConsentCommand ToCommandFromResource(UpdateConsentResource resource, int participantPreparationId,
+        AccessScope scope) =>
+        new(scope.AgencyId, participantPreparationId, resource.Granted, scope.IdentityDocument ?? string.Empty);
 }

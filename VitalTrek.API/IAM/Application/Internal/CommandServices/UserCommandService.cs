@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 using VitalTrek.API.IAM.Application.Errors;
 using VitalTrek.API.IAM.Application.Internal.OutboundServices;
 using VitalTrek.API.IAM.Application.Services;
@@ -19,6 +20,7 @@ namespace VitalTrek.API.IAM.Application.Internal.CommandServices;
 /// <param name="agencyRepository">The agency repository.</param>
 /// <param name="hashingService">The password hashing service.</param>
 /// <param name="tokenService">The access token service.</param>
+/// <param name="expeditionSetupContextFacade">Facade used to verify the linked field guide or manifest identity.</param>
 /// <param name="unitOfWork">The unit of work used to commit changes.</param>
 /// <param name="logger">Logger for diagnostics.</param>
 public class UserCommandService(
@@ -26,6 +28,7 @@ public class UserCommandService(
     IAgencyRepository agencyRepository,
     IHashingService hashingService,
     ITokenService tokenService,
+    IExpeditionSetupContextFacade expeditionSetupContextFacade,
     IUnitOfWork unitOfWork,
     ILogger<UserCommandService> logger) : IUserCommandService
 {
@@ -121,6 +124,14 @@ public class UserCommandService(
 
         if (await userRepository.ExistsByUsernameAsync(command.Username, cancellationToken))
             return new Result<User, ECreateUserError>.Failure(ECreateUserError.DuplicateUsername);
+
+        var linkedIdentityRegistered = command.Role == Role.FieldGuide
+            ? command.FieldGuideId is > 0 && await expeditionSetupContextFacade.ExistsFieldGuide(command.AgencyId,
+                command.FieldGuideId.Value, cancellationToken)
+            : !string.IsNullOrWhiteSpace(command.IdentityDocument) && await expeditionSetupContextFacade
+                .ExistsManifestIdentityDocument(command.AgencyId, command.IdentityDocument.Trim(), cancellationToken);
+        if (!linkedIdentityRegistered)
+            return new Result<User, ECreateUserError>.Failure(ECreateUserError.LinkedIdentityNotFound);
 
         var linkedIdentityExists = command.Role == Role.FieldGuide
             ? command.FieldGuideId is > 0 && await userRepository.ExistsByAgencyIdAndFieldGuideIdAsync(
