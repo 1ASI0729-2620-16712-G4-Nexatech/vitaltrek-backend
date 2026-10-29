@@ -3,6 +3,21 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Scalar.AspNetCore;
+using VitalTrek.API.IAM.Application.ACL;
+using VitalTrek.API.IAM.Application.Internal.CommandServices;
+using VitalTrek.API.IAM.Application.Internal.OutboundServices;
+using VitalTrek.API.IAM.Application.Internal.QueryServices;
+using VitalTrek.API.IAM.Application.Services;
+using VitalTrek.API.IAM.Domain.Repositories;
+using VitalTrek.API.IAM.Infrastructure.Hashing.BCrypt.Services;
+using VitalTrek.API.IAM.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.IAM.Infrastructure.Persistence.EntityFrameworkCore.Seeding;
+using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Extensions;
+using VitalTrek.API.IAM.Infrastructure.Pipeline.OpenApi;
+using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Configuration;
+using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Services;
+using VitalTrek.API.IAM.Interfaces.ACL;
+using VitalTrek.API.IAM.Interfaces.Rest.Transform;
 using VitalTrek.API.Resources;
 using VitalTrek.API.Shared.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Interfaces.Asp.Configuration;
@@ -64,15 +79,18 @@ builder.Services.AddOpenApi(options =>
             "RESTful API for VitalTrek, a safety and operations platform for adventure tourism in low-connectivity areas.";
         return Task.CompletedTask;
     });
+    options.AddDocumentTransformer(BearerSecuritySchemeTransformer.TransformDocumentAsync);
+    options.AddOperationTransformer(BearerSecuritySchemeTransformer.TransformOperationAsync);
+    options.AddOperationTransformer(IamLocalizedOpenApiAssembler.TransformOperationAsync);
+    options.AddSchemaTransformer(IamLocalizedOpenApiAssembler.TransformSchemaAsync);
 });
 
 // CORS Configuration for the VitalTrek Web Applications.
-const string webApplicationsCorsPolicy = "VitalTrekWebApplications";
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+const string allowAllCorsPolicy = "AllowAllPolicy";
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(webApplicationsCorsPolicy, policy =>
-        policy.WithOrigins(allowedOrigins)
+    options.AddPolicy(allowAllCorsPolicy, policy =>
+        policy.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
@@ -101,6 +119,18 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 // Shared Bounded Context Injection Configuration
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+// IAM Bounded Context Injection Configuration
+builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
+builder.Services.PostConfigure<TokenSettings>(settings =>
+    settings.Secret = Environment.ExpandEnvironmentVariables(settings.Secret));
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
+builder.Services.AddScoped<IUserCommandService, UserCommandService>();
+builder.Services.AddScoped<IUserQueryService, UserQueryService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IHashingService, HashingService>();
+builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
+
 var app = builder.Build();
 
 // Apply pending migrations on startup (safe to call even when schema is up to date)
@@ -109,6 +139,9 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();
     context.Database.Migrate();
+
+    // Demonstration data is only inserted into an empty database.
+    IamDemoDataSeeder.Seed(context, services.GetRequiredService<IHashingService>());
 }
 
 // Configure the HTTP request pipeline.
@@ -125,7 +158,10 @@ app.UseRequestLocalization(localizationOptions);
 
 app.UseHttpsRedirection();
 
-app.UseCors(webApplicationsCorsPolicy);
+app.UseCors(allowAllCorsPolicy);
+
+// Resolve the authenticated user from the bearer token before reaching the controllers.
+app.UseRequestAuthorization();
 
 app.UseAuthorization();
 
