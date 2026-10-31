@@ -9,4 +9,5 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=builder /app/out .
 EXPOSE 8080
-ENTRYPOINT ["dotnet", "VitalTrek.API.dll"]
+# Cloud providers such as Render inject the listening port through the PORT variable.
+ENTRYPOINT ["sh", "-c", "ASPNETCORE_HTTP_PORTS=${PORT:-8080} exec dotnet VitalTrek.API.dll"]
