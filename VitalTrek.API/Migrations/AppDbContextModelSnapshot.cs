@@ -19,6 +19,70 @@ namespace VitalTrek.API.Migrations
                 .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("VitalTrek.API.CheckpointSync.Domain.Model.Aggregates.CheckpointPassage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<int>("CheckpointId")
+                        .HasColumnType("int")
+                        .HasColumnName("checkpoint_id");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("FieldGuideId")
+                        .HasColumnType("int")
+                        .HasColumnName("field_guide_id");
+
+                    b.Property<DateTimeOffset>("PassedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("passed_at");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int")
+                        .HasColumnName("session_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("SyncedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("synced_at");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_checkpoint_passages");
+
+                    b.HasIndex("AgencyId")
+                        .HasDatabaseName("i_x_checkpoint_passages_agency_id");
+
+                    b.HasIndex("CheckpointId")
+                        .HasDatabaseName("i_x_checkpoint_passages_checkpoint_id");
+
+                    b.HasIndex("FieldGuideId")
+                        .HasDatabaseName("i_x_checkpoint_passages_field_guide_id");
+
+                    b.HasIndex("SessionId", "CheckpointId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_checkpoint_passages_session_checkpoint");
+
+                    b.ToTable("checkpoint_passages");
+                });
+
             modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Checkpoint", b =>
                 {
                     b.Property<int>("Id")
