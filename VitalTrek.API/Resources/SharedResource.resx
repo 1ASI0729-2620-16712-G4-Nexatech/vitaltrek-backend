@@ -687,4 +687,52 @@
     <data name="UpdateConsentSchema" xml:space="preserve">
         <value>Monitoring consent decision.</value>
     </data>
+    <data name="InvalidCheckpointPassageRequest" xml:space="preserve">
+        <value>The checkpoint passage data is invalid. The passage time cannot be in the future.</value>
+    </data>
+    <data name="TrackingSessionNotFound" xml:space="preserve">
+        <value>The tracking session does not exist in the agency.</value>
+    </data>
+    <data name="TrackingSessionNotActive" xml:space="preserve">
+        <value>The tracking session is not active.</value>
+    </data>
+    <data name="CheckpointNotInSessionRoute" xml:space="preserve">
+        <value>The checkpoint does not belong to the route of the tracking session.</value>
+    </data>
+    <data name="CheckpointPassageNotFound" xml:space="preserve">
+        <value>The checkpoint passage does not exist.</value>
+    </data>
+    <data name="CheckpointPassageFilterRequired" xml:space="preserve">
+        <value>Provide exactly one filter: sessionId or checkpointId.</value>
+    </data>
+    <data name="RequiredSessionId" xml:space="preserve">
+        <value>A valid tracking session is required.</value>
+    </data>
+    <data name="RequiredPassedAt" xml:space="preserve">
+        <value>The moment the checkpoint was passed is required.</value>
+    </data>
+    <data name="RecordCheckpointPassageSummary" xml:space="preserve">
+        <value>Records a checkpoint passage</value>
+    </data>
+    <data name="RecordCheckpointPassageDescription" xml:space="preserve">
+        <value>Records the passage of the authenticated field guide through a checkpoint of an active session. It is idempotent: if the passage was already recorded, the existing record is returned with 200 and no duplicate is created.</value>
+    </data>
+    <data name="GetPassageByIdSummary" xml:space="preserve">
+        <value>Gets a checkpoint passage by id</value>
+    </data>
+    <data name="GetPassageByIdDescription" xml:space="preserve">
+        <value>Returns a checkpoint passage of the agency.</value>
+    </data>
+    <data name="GetPassagesSummary" xml:space="preserve">
+        <value>Gets checkpoint passages</value>
+    </data>
+    <data name="GetPassagesDescription" xml:space="preserve">
+        <value>Returns the passages of a session (sessionId) or of a checkpoint (checkpointId) ordered by passage time. Exactly one filter is required.</value>
+    </data>
+    <data name="CheckpointPassageSchema" xml:space="preserve">
+        <value>Checkpoint passage information. The status is synced or delayedsync.</value>
+    </data>
+    <data name="RecordCheckpointPassageSchema" xml:space="preserve">
+        <value>Data required to record a checkpoint passage.</value>
+    </data>
 </root>

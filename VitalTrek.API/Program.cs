@@ -3,6 +3,15 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Scalar.AspNetCore;
+using VitalTrek.API.CheckpointSync.Application.ACL;
+using VitalTrek.API.CheckpointSync.Application.Internal.CommandServices;
+using VitalTrek.API.CheckpointSync.Application.Internal.OutboundServices.ACL;
+using VitalTrek.API.CheckpointSync.Application.Internal.QueryServices;
+using VitalTrek.API.CheckpointSync.Application.Services;
+using VitalTrek.API.CheckpointSync.Domain.Repositories;
+using VitalTrek.API.CheckpointSync.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.CheckpointSync.Interfaces.ACL;
+using VitalTrek.API.CheckpointSync.Interfaces.Rest.Transform;
 using VitalTrek.API.ExpeditionSetup.Application.ACL;
 using VitalTrek.API.ExpeditionSetup.Application.Internal.CommandServices;
 using VitalTrek.API.ExpeditionSetup.Application.Internal.QueryServices;
@@ -103,6 +112,8 @@ builder.Services.AddOpenApi(options =>
     options.AddSchemaTransformer(IamLocalizedOpenApiAssembler.TransformSchemaAsync);
     options.AddOperationTransformer(ExpeditionSetupLocalizedOpenApiAssembler.TransformOperationAsync);
     options.AddSchemaTransformer(ExpeditionSetupLocalizedOpenApiAssembler.TransformSchemaAsync);
+    options.AddOperationTransformer(CheckpointSyncLocalizedOpenApiAssembler.TransformOperationAsync);
+    options.AddSchemaTransformer(CheckpointSyncLocalizedOpenApiAssembler.TransformSchemaAsync);
 });
 
 // CORS Configuration for the VitalTrek Web Applications.
@@ -192,6 +203,13 @@ builder.Services.AddScoped<ITrackingSessionQueryService, TrackingSessionQuerySer
 builder.Services.AddScoped<ITelemetryRecordCommandService, TelemetryRecordCommandService>();
 builder.Services.AddScoped<ITelemetryRecordQueryService, TelemetryRecordQueryService>();
 builder.Services.AddScoped<IFieldTrackingContextFacade, FieldTrackingContextFacade>();
+
+// Checkpoint Sync Bounded Context Injection Configuration
+builder.Services.AddScoped<ICheckpointPassageRepository, CheckpointPassageRepository>();
+builder.Services.AddScoped<ICheckpointPassageCommandService, CheckpointPassageCommandService>();
+builder.Services.AddScoped<ICheckpointPassageQueryService, CheckpointPassageQueryService>();
+builder.Services.AddScoped<ExternalFieldTrackingService>();
+builder.Services.AddScoped<ICheckpointSyncContextFacade, CheckpointSyncContextFacade>();
 
 var app = builder.Build();
 

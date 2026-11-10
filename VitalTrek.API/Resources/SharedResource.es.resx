@@ -687,4 +687,52 @@
     <data name="UpdateConsentSchema" xml:space="preserve">
         <value>Decisión de consentimiento de monitoreo.</value>
     </data>
+    <data name="InvalidCheckpointPassageRequest" xml:space="preserve">
+        <value>Los datos del paso por punto de control no son válidos. La hora de paso no puede estar en el futuro.</value>
+    </data>
+    <data name="TrackingSessionNotFound" xml:space="preserve">
+        <value>La sesión de seguimiento no existe en la agencia.</value>
+    </data>
+    <data name="TrackingSessionNotActive" xml:space="preserve">
+        <value>La sesión de seguimiento no está activa.</value>
+    </data>
+    <data name="CheckpointNotInSessionRoute" xml:space="preserve">
+        <value>El punto de control no pertenece a la ruta de la sesión de seguimiento.</value>
+    </data>
+    <data name="CheckpointPassageNotFound" xml:space="preserve">
+        <value>El paso por punto de control no existe.</value>
+    </data>
+    <data name="CheckpointPassageFilterRequired" xml:space="preserve">
+        <value>Indique exactamente un filtro: sessionId o checkpointId.</value>
+    </data>
+    <data name="RequiredSessionId" xml:space="preserve">
+        <value>Se requiere una sesión de seguimiento válida.</value>
+    </data>
+    <data name="RequiredPassedAt" xml:space="preserve">
+        <value>Se requiere el momento en que se pasó el punto de control.</value>
+    </data>
+    <data name="RecordCheckpointPassageSummary" xml:space="preserve">
+        <value>Registra el paso por un punto de control</value>
+    </data>
+    <data name="RecordCheckpointPassageDescription" xml:space="preserve">
+        <value>Registra el paso del guía de campo autenticado por un punto de control de una sesión activa. Es idempotente: si el paso ya fue registrado, devuelve el registro existente con 200 y no crea un duplicado.</value>
+    </data>
+    <data name="GetPassageByIdSummary" xml:space="preserve">
+        <value>Obtiene un paso por punto de control por id</value>
+    </data>
+    <data name="GetPassageByIdDescription" xml:space="preserve">
+        <value>Devuelve un paso por punto de control de la agencia.</value>
+    </data>
+    <data name="GetPassagesSummary" xml:space="preserve">
+        <value>Obtiene los pasos por puntos de control</value>
+    </data>
+    <data name="GetPassagesDescription" xml:space="preserve">
+        <value>Devuelve los pasos de una sesión (sessionId) o de un punto de control (checkpointId) ordenados por hora de paso. Se requiere exactamente un filtro.</value>
+    </data>
+    <data name="CheckpointPassageSchema" xml:space="preserve">
+        <value>Información del paso por punto de control. El estado es synced o delayedsync.</value>
+    </data>
+    <data name="RecordCheckpointPassageSchema" xml:space="preserve">
+        <value>Datos requeridos para registrar el paso por un punto de control.</value>
+    </data>
 </root>
