@@ -600,6 +600,113 @@ namespace VitalTrek.API.Migrations
                     b.ToTable("wearable_devices");
                 });
 
+            modelBuilder.Entity("VitalTrek.API.FieldTracking.Domain.Model.Aggregates.TelemetryRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<double>("Altitude")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("double")
+                        .HasColumnName("altitude");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<double>("Latitude")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("double")
+                        .HasColumnName("latitude");
+
+                    b.Property<double>("Longitude")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("double")
+                        .HasColumnName("longitude");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("recorded_at");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int")
+                        .HasColumnName("session_id");
+
+                    b.Property<DateTimeOffset>("SyncedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("synced_at");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("WearableDeviceId")
+                        .HasColumnType("int")
+                        .HasColumnName("wearable_device_id");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_telemetry_records");
+
+                    b.HasIndex("SessionId")
+                        .HasDatabaseName("i_x_telemetry_records_session_id");
+
+                    b.HasIndex("SessionId", "WearableDeviceId", "RecordedAt")
+                        .HasDatabaseName("ix_telemetry_records_session_wearable_time");
+
+                    b.ToTable("telemetry_records");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.FieldTracking.Domain.Model.Aggregates.TrackingSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("EndedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("ended_at");
+
+                    b.Property<int>("ExpeditionGroupId")
+                        .HasColumnType("int")
+                        .HasColumnName("expedition_group_id");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_tracking_sessions");
+
+                    b.HasIndex("AgencyId")
+                        .HasDatabaseName("i_x_tracking_sessions_agency_id");
+
+                    b.HasIndex("ExpeditionGroupId", "Status")
+                        .HasDatabaseName("ix_tracking_sessions_group_status");
+
+                    b.ToTable("tracking_sessions");
+                });
+
             modelBuilder.Entity("VitalTrek.API.IAM.Domain.Model.Aggregates.Agency", b =>
                 {
                     b.Property<int>("Id")
@@ -833,6 +940,33 @@ namespace VitalTrek.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("f_k_wearable_devices__agency_agency_id");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.FieldTracking.Domain.Model.Aggregates.TelemetryRecord", b =>
+                {
+                    b.HasOne("VitalTrek.API.FieldTracking.Domain.Model.Aggregates.TrackingSession", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_telemetry_records__tracking_session_session_id");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.FieldTracking.Domain.Model.Aggregates.TrackingSession", b =>
+                {
+                    b.HasOne("VitalTrek.API.IAM.Domain.Model.Aggregates.Agency", null)
+                        .WithMany()
+                        .HasForeignKey("AgencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_tracking_sessions__agency_agency_id");
+
+                    b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ExpeditionGroup", null)
+                        .WithMany()
+                        .HasForeignKey("ExpeditionGroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("f_k_tracking_sessions_expedition_groups_expedition_group_id");
                 });
 
             modelBuilder.Entity("VitalTrek.API.IAM.Domain.Model.Aggregates.User", b =>
