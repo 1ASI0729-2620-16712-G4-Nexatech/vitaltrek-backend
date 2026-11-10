@@ -3,6 +3,7 @@ using VitalTrek.API.CheckpointSync.Infrastructure.Persistence.EntityFrameworkCor
 using VitalTrek.API.ExpeditionSetup.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.FieldTracking.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.IAM.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
+using VitalTrek.API.IncidentResponse.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Interceptors;
 
@@ -35,6 +36,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         builder.ApplyExpeditionSetupConfiguration();
         builder.ApplyFieldTrackingConfiguration();
         builder.ApplyCheckpointSyncConfiguration();
+        builder.ApplyIncidentResponseConfiguration();
 
         builder.UseSnakeCaseNamingConvention();
     }
