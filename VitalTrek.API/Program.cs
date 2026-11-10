@@ -12,6 +12,13 @@ using VitalTrek.API.ExpeditionSetup.Infrastructure.Persistence.EntityFrameworkCo
 using VitalTrek.API.ExpeditionSetup.Infrastructure.Persistence.EntityFrameworkCore.Seeding;
 using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 using VitalTrek.API.ExpeditionSetup.Interfaces.Rest.Transform;
+using VitalTrek.API.FieldTracking.Application.ACL;
+using VitalTrek.API.FieldTracking.Application.Internal.CommandServices;
+using VitalTrek.API.FieldTracking.Application.Internal.QueryServices;
+using VitalTrek.API.FieldTracking.Application.Services;
+using VitalTrek.API.FieldTracking.Domain.Repositories;
+using VitalTrek.API.FieldTracking.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.FieldTracking.Interfaces.ACL;
 using VitalTrek.API.IAM.Application.ACL;
 using VitalTrek.API.IAM.Application.Internal.CommandServices;
 using VitalTrek.API.IAM.Application.Internal.OutboundServices;
@@ -176,6 +183,15 @@ builder.Services.AddScoped<IWearableDeviceQueryService, WearableDeviceQueryServi
 builder.Services.AddScoped<IParticipantPreparationCommandService, ParticipantPreparationCommandService>();
 builder.Services.AddScoped<IParticipantPreparationQueryService, ParticipantPreparationQueryService>();
 builder.Services.AddScoped<IExpeditionSetupContextFacade, ExpeditionSetupContextFacade>();
+
+// Field Tracking Bounded Context Injection Configuration
+builder.Services.AddScoped<ITrackingSessionRepository, TrackingSessionRepository>();
+builder.Services.AddScoped<ITelemetryRecordRepository, TelemetryRecordRepository>();
+builder.Services.AddScoped<ITrackingSessionCommandService, TrackingSessionCommandService>();
+builder.Services.AddScoped<ITrackingSessionQueryService, TrackingSessionQueryService>();
+builder.Services.AddScoped<ITelemetryRecordCommandService, TelemetryRecordCommandService>();
+builder.Services.AddScoped<ITelemetryRecordQueryService, TelemetryRecordQueryService>();
+builder.Services.AddScoped<IFieldTrackingContextFacade, FieldTrackingContextFacade>();
 
 var app = builder.Build();
 
