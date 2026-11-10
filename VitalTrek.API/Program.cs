@@ -45,6 +45,13 @@ using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Configuration;
 using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Services;
 using VitalTrek.API.IAM.Interfaces.ACL;
 using VitalTrek.API.IAM.Interfaces.Rest.Transform;
+using VitalTrek.API.IncidentResponse.Application.Internal.CommandServices;
+using VitalTrek.API.IncidentResponse.Application.Internal.OutboundServices.ACL;
+using VitalTrek.API.IncidentResponse.Application.Internal.QueryServices;
+using VitalTrek.API.IncidentResponse.Application.Services;
+using VitalTrek.API.IncidentResponse.Domain.Repositories;
+using VitalTrek.API.IncidentResponse.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.IncidentResponse.Interfaces.Rest.Transform;
 using VitalTrek.API.Resources;
 using VitalTrek.API.Shared.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Interfaces.Asp.Configuration;
@@ -114,6 +121,8 @@ builder.Services.AddOpenApi(options =>
     options.AddSchemaTransformer(ExpeditionSetupLocalizedOpenApiAssembler.TransformSchemaAsync);
     options.AddOperationTransformer(CheckpointSyncLocalizedOpenApiAssembler.TransformOperationAsync);
     options.AddSchemaTransformer(CheckpointSyncLocalizedOpenApiAssembler.TransformSchemaAsync);
+    options.AddOperationTransformer(IncidentResponseLocalizedOpenApiAssembler.TransformOperationAsync);
+    options.AddSchemaTransformer(IncidentResponseLocalizedOpenApiAssembler.TransformSchemaAsync);
 });
 
 // CORS Configuration for the VitalTrek Web Applications.
@@ -210,6 +219,15 @@ builder.Services.AddScoped<ICheckpointPassageCommandService, CheckpointPassageCo
 builder.Services.AddScoped<ICheckpointPassageQueryService, CheckpointPassageQueryService>();
 builder.Services.AddScoped<ExternalFieldTrackingService>();
 builder.Services.AddScoped<ICheckpointSyncContextFacade, CheckpointSyncContextFacade>();
+
+// Incident Response Bounded Context Injection Configuration
+builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
+builder.Services.AddScoped<IIncidentNotificationRepository, IncidentNotificationRepository>();
+builder.Services.AddScoped<IIncidentCommandService, IncidentCommandService>();
+builder.Services.AddScoped<IIncidentQueryService, IncidentQueryService>();
+builder.Services.AddScoped<IIncidentNotificationCommandService, IncidentNotificationCommandService>();
+builder.Services.AddScoped<IIncidentNotificationQueryService, IncidentNotificationQueryService>();
+builder.Services.AddScoped<ExternalTrackingSessionService>();
 
 var app = builder.Build();
 
