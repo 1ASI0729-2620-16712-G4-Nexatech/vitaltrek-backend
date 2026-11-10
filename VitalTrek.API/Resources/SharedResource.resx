@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
     <resheader name="resmimetype">
         <value>text/microsoft-resx</value>
@@ -797,5 +797,104 @@
     </data>
     <data name="UpdateEarlyWarningAlertStatusSchema" xml:space="preserve">
         <value>Data required to change the status of an early warning alert.</value>
+    </data>
+    <data name="InvalidIncidentRequest" xml:space="preserve">
+        <value>The incident data is invalid. The report time cannot be in the future.</value>
+    </data>
+    <data name="InvalidIncidentStatus" xml:space="preserve">
+        <value>The incident status is not a known status.</value>
+    </data>
+    <data name="IncidentNotFound" xml:space="preserve">
+        <value>The incident does not exist in the agency.</value>
+    </data>
+    <data name="IncidentStatusTransitionNotAllowed" xml:space="preserve">
+        <value>The incident cannot move to that status from its current state.</value>
+    </data>
+    <data name="IncidentNotOpen" xml:space="preserve">
+        <value>The incident is no longer open.</value>
+    </data>
+    <data name="IncidentAlreadyClosed" xml:space="preserve">
+        <value>The incident is closed and admits no further notifications.</value>
+    </data>
+    <data name="InvalidIncidentNotificationRequest" xml:space="preserve">
+        <value>The incident notification data is invalid.</value>
+    </data>
+    <data name="RequiredIncidentType" xml:space="preserve">
+        <value>A valid incident type is required: medical, accident, missing or environmental.</value>
+    </data>
+    <data name="RequiredIncidentSeverity" xml:space="preserve">
+        <value>A valid incident severity is required: low, medium, high or critical.</value>
+    </data>
+    <data name="RequiredIncidentDescription" xml:space="preserve">
+        <value>A description of up to 500 characters is required.</value>
+    </data>
+    <data name="RequiredIncidentReportedAt" xml:space="preserve">
+        <value>The moment the incident was reported is required.</value>
+    </data>
+    <data name="RequiredIncidentStatus" xml:space="preserve">
+        <value>A valid incident status is required: in_response, resolved or closed.</value>
+    </data>
+    <data name="RequiredNotificationRecipientType" xml:space="preserve">
+        <value>A valid recipient type is required: emergency_contact or rescue_entity.</value>
+    </data>
+    <data name="RequiredNotificationChannel" xml:space="preserve">
+        <value>A channel of up to 30 characters is required.</value>
+    </data>
+    <data name="DeclareIncidentSummary" xml:space="preserve">
+        <value>Declare an incident</value>
+    </data>
+    <data name="DeclareIncidentDescription" xml:space="preserve">
+        <value>Declares an incident that occurred during an active tracking session.</value>
+    </data>
+    <data name="GetIncidentByIdSummary" xml:space="preserve">
+        <value>Get an incident</value>
+    </data>
+    <data name="GetIncidentByIdDescription" xml:space="preserve">
+        <value>Gets an incident of the agency by its identifier.</value>
+    </data>
+    <data name="GetIncidentsSummary" xml:space="preserve">
+        <value>List incidents</value>
+    </data>
+    <data name="GetIncidentsDescription" xml:space="preserve">
+        <value>Lists the incidents of a tracking session, or the open incidents of the agency when no session is given.</value>
+    </data>
+    <data name="UpdateIncidentStatusSummary" xml:space="preserve">
+        <value>Update the status of an incident</value>
+    </data>
+    <data name="UpdateIncidentStatusDescription" xml:space="preserve">
+        <value>Moves an incident to another state of its lifecycle.</value>
+    </data>
+    <data name="ResolveIncidentSummary" xml:space="preserve">
+        <value>Resolve an incident</value>
+    </data>
+    <data name="ResolveIncidentDescription" xml:space="preserve">
+        <value>Resolves an open incident and records the moment of its resolution.</value>
+    </data>
+    <data name="SendIncidentNotificationSummary" xml:space="preserve">
+        <value>Send an incident notification</value>
+    </data>
+    <data name="SendIncidentNotificationDescription" xml:space="preserve">
+        <value>Dispatches a notification about an incident to an emergency contact or to a rescue entity.</value>
+    </data>
+    <data name="GetIncidentNotificationsSummary" xml:space="preserve">
+        <value>List incident notifications</value>
+    </data>
+    <data name="GetIncidentNotificationsDescription" xml:space="preserve">
+        <value>Lists the notifications dispatched for an incident.</value>
+    </data>
+    <data name="IncidentSchema" xml:space="preserve">
+        <value>An incident declared during an expedition.</value>
+    </data>
+    <data name="DeclareIncidentSchema" xml:space="preserve">
+        <value>Data required to declare an incident.</value>
+    </data>
+    <data name="UpdateIncidentStatusSchema" xml:space="preserve">
+        <value>Data required to change the status of an incident.</value>
+    </data>
+    <data name="IncidentNotificationSchema" xml:space="preserve">
+        <value>A notification dispatched because of an incident.</value>
+    </data>
+    <data name="SendNotificationSchema" xml:space="preserve">
+        <value>Data required to dispatch an incident notification.</value>
     </data>
 </root>
