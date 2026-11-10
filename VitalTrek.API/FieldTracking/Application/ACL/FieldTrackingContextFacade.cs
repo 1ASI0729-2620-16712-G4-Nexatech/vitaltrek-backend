@@ -22,4 +22,16 @@ public class FieldTrackingContextFacade(ITrackingSessionRepository trackingSessi
         var session = await trackingSessionRepository.FindByIdAsync(sessionId, cancellationToken);
         return session is not null;
     }
+
+    /// <inheritdoc />
+    public async Task<bool> SessionExistsInAgencyAsync(int agencyId, int sessionId, CancellationToken cancellationToken = default) =>
+        await trackingSessionRepository.FindByIdAndAgencyIdAsync(sessionId, agencyId, cancellationToken) is not null;
+
+    /// <inheritdoc />
+    public async Task<bool> IsSessionActiveAsync(int sessionId, CancellationToken cancellationToken = default) =>
+        (await trackingSessionRepository.FindByIdAsync(sessionId, cancellationToken))?.IsActive ?? false;
+
+    /// <inheritdoc />
+    public async Task<int?> FindExpeditionGroupIdBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default) =>
+        (await trackingSessionRepository.FindByIdAsync(sessionId, cancellationToken))?.ExpeditionGroupId;
 }
