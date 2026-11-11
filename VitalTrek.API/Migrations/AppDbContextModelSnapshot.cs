@@ -1067,6 +1067,57 @@ namespace VitalTrek.API.Migrations
                     b.ToTable("early_warning_alerts");
                 });
 
+            modelBuilder.Entity("VitalTrek.API.TourClosure.Domain.Model.Aggregates.TourSummary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AlertsRaised")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CheckpointsReached")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("ExpeditionGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IncidentsReported")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<int>("TotalParticipants")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tour_summaries", (string)null);
+                });
+
             modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Checkpoint", b =>
                 {
                     b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Route", null)
