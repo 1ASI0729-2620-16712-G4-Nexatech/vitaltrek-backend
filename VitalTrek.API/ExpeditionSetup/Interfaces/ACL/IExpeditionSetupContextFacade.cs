@@ -34,4 +34,16 @@ public interface IExpeditionSetupContextFacade
     /// <returns><see langword="true"/> when the group exists and the checkpoint is part of its route.</returns>
     Task<bool> ExistsCheckpointInExpeditionGroupRoute(int agencyId, int expeditionGroupId, int checkpointId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Returns the expected time windows of the route assigned to an expedition group of an agency.
+    /// </summary>
+    /// <param name="agencyId">The agency identifier.</param>
+    /// <param name="expeditionGroupId">The expedition group identifier.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>
+    ///     The segments of the route with their maximum expected minutes, or an empty list when the group does not exist.
+    /// </returns>
+    Task<IReadOnlyList<(int FromCheckpointId, int ToCheckpointId, int MaximumMinutes)>> FindExpectedTimeWindowsByExpeditionGroup(
+        int agencyId, int expeditionGroupId, CancellationToken cancellationToken = default);
 }

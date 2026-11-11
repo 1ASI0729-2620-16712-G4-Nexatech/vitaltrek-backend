@@ -735,4 +735,67 @@
     <data name="RecordCheckpointPassageSchema" xml:space="preserve">
         <value>Datos requeridos para registrar el paso por un punto de control.</value>
     </data>
+    <data name="RequiredAlertType" xml:space="preserve">
+        <value>El tipo de alerta es obligatorio.</value>
+    </data>
+    <data name="RequiredSeverity" xml:space="preserve">
+        <value>La severidad de la alerta es obligatoria.</value>
+    </data>
+    <data name="RequiredDescription" xml:space="preserve">
+        <value>La descripción es obligatoria.</value>
+    </data>
+    <data name="InvalidEarlyWarningAlertRequest" xml:space="preserve">
+        <value>Los datos de la alerta temprana no son válidos. Tipos válidos: delay, vital_sign_anomaly, route_deviation, other. Severidades válidas: low, medium, high, critical.</value>
+    </data>
+    <data name="EarlyWarningAlertNotFound" xml:space="preserve">
+        <value>La alerta temprana no existe.</value>
+    </data>
+    <data name="EarlyWarningAlertTransitionInvalid" xml:space="preserve">
+        <value>El estado actual de la alerta no permite este cambio.</value>
+    </data>
+    <data name="EarlyWarningAlertStatusNotSupported" xml:space="preserve">
+        <value>Solo se aceptan los estados acknowledged, dismissed y resolved.</value>
+    </data>
+    <data name="RaiseEarlyWarningAlertSummary" xml:space="preserve">
+        <value>Levanta una alerta temprana</value>
+    </data>
+    <data name="RaiseEarlyWarningAlertDescription" xml:space="preserve">
+        <value>Levanta una alerta temprana activa para una sesión de seguimiento activa de la agencia. El punto de control es opcional y debe pertenecer a la ruta de la sesión.</value>
+    </data>
+    <data name="EvaluateSessionDelaysSummary" xml:space="preserve">
+        <value>Evalúa los retrasos de una sesión</value>
+    </data>
+    <data name="EvaluateSessionDelaysDescription" xml:space="preserve">
+        <value>Compara los pasos por punto de control de una sesión activa con las ventanas de tiempo esperadas de su ruta y levanta una alerta de retraso por cada tramo cuyo tiempo máximo fue superado (high, o critical cuando se duplica el máximo). Es idempotente: un tramo ya alertado no se vuelve a alertar.</value>
+    </data>
+    <data name="GetEarlyWarningAlertByIdSummary" xml:space="preserve">
+        <value>Obtiene una alerta temprana por id</value>
+    </data>
+    <data name="GetEarlyWarningAlertByIdDescription" xml:space="preserve">
+        <value>Devuelve una alerta temprana de la agencia.</value>
+    </data>
+    <data name="GetEarlyWarningAlertsSummary" xml:space="preserve">
+        <value>Obtiene alertas tempranas</value>
+    </data>
+    <data name="GetEarlyWarningAlertsDescription" xml:space="preserve">
+        <value>Devuelve las alertas de una sesión cuando se envía sessionId; en caso contrario, las alertas abiertas (active o acknowledged) de la agencia. Las más recientes primero.</value>
+    </data>
+    <data name="UpdateEarlyWarningAlertStatusSummary" xml:space="preserve">
+        <value>Cambia el estado de una alerta temprana</value>
+    </data>
+    <data name="UpdateEarlyWarningAlertStatusDescription" xml:space="preserve">
+        <value>Acepta acknowledged (desde active), dismissed (desde active o acknowledged) y resolved (desde acknowledged).</value>
+    </data>
+    <data name="EarlyWarningAlertSchema" xml:space="preserve">
+        <value>Información de la alerta temprana. El estado es active, acknowledged, dismissed o resolved.</value>
+    </data>
+    <data name="RaiseEarlyWarningAlertSchema" xml:space="preserve">
+        <value>Datos requeridos para levantar una alerta temprana.</value>
+    </data>
+    <data name="EvaluateSessionDelaysSchema" xml:space="preserve">
+        <value>Datos requeridos para evaluar los retrasos de una sesión.</value>
+    </data>
+    <data name="UpdateEarlyWarningAlertStatusSchema" xml:space="preserve">
+        <value>Datos requeridos para cambiar el estado de una alerta temprana.</value>
+    </data>
 </root>

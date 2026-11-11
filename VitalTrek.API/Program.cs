@@ -46,6 +46,15 @@ using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Services;
 using VitalTrek.API.IAM.Interfaces.ACL;
 using VitalTrek.API.IAM.Interfaces.Rest.Transform;
 using VitalTrek.API.Resources;
+using VitalTrek.API.SafetyMonitoring.Application.ACL;
+using VitalTrek.API.SafetyMonitoring.Application.Internal.CommandServices;
+using VitalTrek.API.SafetyMonitoring.Application.Internal.OutboundServices.ACL;
+using VitalTrek.API.SafetyMonitoring.Application.Internal.QueryServices;
+using VitalTrek.API.SafetyMonitoring.Application.Services;
+using VitalTrek.API.SafetyMonitoring.Domain.Repositories;
+using VitalTrek.API.SafetyMonitoring.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.SafetyMonitoring.Interfaces.ACL;
+using VitalTrek.API.SafetyMonitoring.Interfaces.Rest.Transform;
 using VitalTrek.API.Shared.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Interfaces.Asp.Configuration;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
@@ -114,6 +123,8 @@ builder.Services.AddOpenApi(options =>
     options.AddSchemaTransformer(ExpeditionSetupLocalizedOpenApiAssembler.TransformSchemaAsync);
     options.AddOperationTransformer(CheckpointSyncLocalizedOpenApiAssembler.TransformOperationAsync);
     options.AddSchemaTransformer(CheckpointSyncLocalizedOpenApiAssembler.TransformSchemaAsync);
+    options.AddOperationTransformer(SafetyMonitoringLocalizedOpenApiAssembler.TransformOperationAsync);
+    options.AddSchemaTransformer(SafetyMonitoringLocalizedOpenApiAssembler.TransformSchemaAsync);
 });
 
 // CORS Configuration for the VitalTrek Web Applications.
@@ -210,6 +221,15 @@ builder.Services.AddScoped<ICheckpointPassageCommandService, CheckpointPassageCo
 builder.Services.AddScoped<ICheckpointPassageQueryService, CheckpointPassageQueryService>();
 builder.Services.AddScoped<ExternalFieldTrackingService>();
 builder.Services.AddScoped<ICheckpointSyncContextFacade, CheckpointSyncContextFacade>();
+
+// Safety Monitoring Bounded Context Injection Configuration
+builder.Services.AddScoped<IEarlyWarningAlertRepository, EarlyWarningAlertRepository>();
+builder.Services.AddScoped<IEarlyWarningAlertCommandService, EarlyWarningAlertCommandService>();
+builder.Services.AddScoped<IEarlyWarningAlertQueryService, EarlyWarningAlertQueryService>();
+builder.Services.AddScoped<ExternalTrackingSessionService>();
+builder.Services.AddScoped<ExternalRouteSetupService>();
+builder.Services.AddScoped<ExternalCheckpointPassageService>();
+builder.Services.AddScoped<ISafetyMonitoringContextFacade, SafetyMonitoringContextFacade>();
 
 var app = builder.Build();
 
