@@ -159,13 +159,21 @@ builder.Services.AddCors(options =>
 // Configure Database Context and route EF logs through the app logger pipeline.
 builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 {
-    var connectionStringTemplate = builder.Configuration.GetConnectionString("DefaultConnection");
-    if (string.IsNullOrWhiteSpace(connectionStringTemplate))
-        throw new InvalidOperationException("Database connection string is not set in the configuration.");
-
-    var connectionString = Environment.ExpandEnvironmentVariables(connectionStringTemplate);
-    if (string.IsNullOrWhiteSpace(connectionString))
-        throw new InvalidOperationException("Database connection string is not set in the configuration.");
+    string connectionString;
+    var dbHost = Environment.GetEnvironmentVariable("DATABASE_URL");
+    if (!string.IsNullOrWhiteSpace(dbHost))
+    {
+        var dbPort = Environment.GetEnvironmentVariable("DATABASE_PORT") ?? "3306";
+        var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER") ?? "root";
+        var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? "";
+        var dbSchema = Environment.GetEnvironmentVariable("DATABASE_SCHEMA") ?? "vitaltrek-db";
+        connectionString = $"server={dbHost};port={dbPort};user={dbUser};password={dbPassword};database={dbSchema};SslMode=Required";
+    }
+    else
+    {
+        connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Database connection string is not set in the configuration.");
+    }
 
     options.UseMySQL(connectionString)
         .UseLoggerFactory(serviceProvider.GetRequiredService<ILoggerFactory>())
@@ -183,7 +191,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // IAM Bounded Context Injection Configuration
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
 builder.Services.PostConfigure<TokenSettings>(settings =>
-    settings.Secret = Environment.ExpandEnvironmentVariables(settings.Secret));
+    settings.Secret = Environment.GetEnvironmentVariable("TOKEN_SECRET") ?? settings.Secret);
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
 builder.Services.AddScoped<IUserCommandService, UserCommandService>();
