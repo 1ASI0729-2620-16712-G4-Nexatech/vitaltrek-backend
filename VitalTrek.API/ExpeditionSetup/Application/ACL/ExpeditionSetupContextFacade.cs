@@ -11,12 +11,26 @@ namespace VitalTrek.API.ExpeditionSetup.Application.ACL;
 /// <param name="manifestEntryRepository">The manifest entry repository.</param>
 /// <param name="expeditionGroupRepository">The expedition group repository.</param>
 /// <param name="checkpointRepository">The checkpoint repository.</param>
+/// <param name="expectedTimeWindowRepository">The expected time window repository.</param>
 public class ExpeditionSetupContextFacade(
     IFieldGuideRepository fieldGuideRepository,
     IManifestEntryRepository manifestEntryRepository,
     IExpeditionGroupRepository expeditionGroupRepository,
-    ICheckpointRepository checkpointRepository) : IExpeditionSetupContextFacade
+    ICheckpointRepository checkpointRepository,
+    IExpectedTimeWindowRepository expectedTimeWindowRepository) : IExpeditionSetupContextFacade
 {
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<(int FromCheckpointId, int ToCheckpointId, int MaximumMinutes)>>
+        FindExpectedTimeWindowsByExpeditionGroup(int agencyId, int expeditionGroupId,
+            CancellationToken cancellationToken = default)
+    {
+        var group = await expeditionGroupRepository.FindByIdAndScopeAsync(expeditionGroupId, new AccessScope(agencyId),
+            cancellationToken);
+        if (group is null) return [];
+        var windows = await expectedTimeWindowRepository.FindByAgencyIdAsync(agencyId, group.RouteId, cancellationToken);
+        return windows.Select(window => (window.FromCheckpointId, window.ToCheckpointId, window.MaximumMinutes)).ToList();
+    }
+
     /// <inheritdoc />
     public async Task<bool> ExistsCheckpointInExpeditionGroupRoute(int agencyId, int expeditionGroupId, int checkpointId,
         CancellationToken cancellationToken = default)
