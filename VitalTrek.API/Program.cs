@@ -45,6 +45,8 @@ using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Configuration;
 using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Services;
 using VitalTrek.API.IAM.Interfaces.ACL;
 using VitalTrek.API.IAM.Interfaces.Rest.Transform;
+using VitalTrek.API.IncidentResponse.Application.ACL;
+using VitalTrek.API.IncidentResponse.Interfaces.ACL;
 using VitalTrek.API.IncidentResponse.Application.Internal.CommandServices;
 using VitalTrek.API.IncidentResponse.Application.Internal.QueryServices;
 using VitalTrek.API.IncidentResponse.Application.Services;
@@ -247,6 +249,7 @@ builder.Services.AddScoped<IIncidentQueryService, IncidentQueryService>();
 builder.Services.AddScoped<IIncidentNotificationCommandService, IncidentNotificationCommandService>();
 builder.Services.AddScoped<IIncidentNotificationQueryService, IncidentNotificationQueryService>();
 builder.Services.AddScoped<VitalTrek.API.IncidentResponse.Application.Internal.OutboundServices.ACL.ExternalTrackingSessionService>();
+builder.Services.AddScoped<IIncidentResponseContextFacade, IncidentResponseContextFacade>();
 
 var app = builder.Build();
 

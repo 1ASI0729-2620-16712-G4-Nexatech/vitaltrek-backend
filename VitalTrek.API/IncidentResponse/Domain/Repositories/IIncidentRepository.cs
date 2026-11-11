@@ -15,6 +15,12 @@ public interface IIncidentRepository : IBaseRepository<Incident>
     Task<IEnumerable<Incident>> FindBySessionIdAndAgencyIdAsync(int sessionId, int agencyId,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Finds the open incidents of an agency ordered by severity and report time.</summary>
+    /// <summary>Finds the open incidents of an agency ordered by report time.</summary>
     Task<IEnumerable<Incident>> FindOpenByAgencyIdAsync(int agencyId, CancellationToken cancellationToken = default);
+
+    /// <summary>Counts the incidents declared during a tracking session.</summary>
+    Task<int> CountBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default);
+
+    /// <summary>Returns true when the session has an incident that is not resolved or closed.</summary>
+    Task<bool> ExistsOpenBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default);
 }

@@ -36,4 +36,15 @@ public class IncidentRepository(AppDbContext context)
                                 incident.Status == IncidentStatus.InResponse))
             .OrderByDescending(incident => incident.ReportedAt)
             .ToListAsync(cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<int> CountBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default) =>
+        await Context.Set<Incident>().CountAsync(incident => incident.SessionId == sessionId, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<bool> ExistsOpenBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default) =>
+        await Context.Set<Incident>().AnyAsync(
+            incident => incident.SessionId == sessionId &&
+                        (incident.Status == IncidentStatus.Reported ||
+                         incident.Status == IncidentStatus.InResponse), cancellationToken);
 }
