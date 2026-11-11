@@ -3,6 +3,15 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Scalar.AspNetCore;
+using VitalTrek.API.CheckpointSync.Application.ACL;
+using VitalTrek.API.CheckpointSync.Application.Internal.CommandServices;
+using VitalTrek.API.CheckpointSync.Application.Internal.OutboundServices.ACL;
+using VitalTrek.API.CheckpointSync.Application.Internal.QueryServices;
+using VitalTrek.API.CheckpointSync.Application.Services;
+using VitalTrek.API.CheckpointSync.Domain.Repositories;
+using VitalTrek.API.CheckpointSync.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.CheckpointSync.Interfaces.ACL;
+using VitalTrek.API.CheckpointSync.Interfaces.Rest.Transform;
 using VitalTrek.API.ExpeditionSetup.Application.ACL;
 using VitalTrek.API.ExpeditionSetup.Application.Internal.CommandServices;
 using VitalTrek.API.ExpeditionSetup.Application.Internal.QueryServices;
@@ -12,6 +21,13 @@ using VitalTrek.API.ExpeditionSetup.Infrastructure.Persistence.EntityFrameworkCo
 using VitalTrek.API.ExpeditionSetup.Infrastructure.Persistence.EntityFrameworkCore.Seeding;
 using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 using VitalTrek.API.ExpeditionSetup.Interfaces.Rest.Transform;
+using VitalTrek.API.FieldTracking.Application.ACL;
+using VitalTrek.API.FieldTracking.Application.Internal.CommandServices;
+using VitalTrek.API.FieldTracking.Application.Internal.QueryServices;
+using VitalTrek.API.FieldTracking.Application.Services;
+using VitalTrek.API.FieldTracking.Domain.Repositories;
+using VitalTrek.API.FieldTracking.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.FieldTracking.Interfaces.ACL;
 using VitalTrek.API.IAM.Application.ACL;
 using VitalTrek.API.IAM.Application.Internal.CommandServices;
 using VitalTrek.API.IAM.Application.Internal.OutboundServices;
@@ -29,11 +45,33 @@ using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Configuration;
 using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Services;
 using VitalTrek.API.IAM.Interfaces.ACL;
 using VitalTrek.API.IAM.Interfaces.Rest.Transform;
+using VitalTrek.API.IncidentResponse.Application.ACL;
+using VitalTrek.API.IncidentResponse.Interfaces.ACL;
+using VitalTrek.API.IncidentResponse.Application.Internal.CommandServices;
+using VitalTrek.API.IncidentResponse.Application.Internal.QueryServices;
+using VitalTrek.API.IncidentResponse.Application.Services;
+using VitalTrek.API.IncidentResponse.Domain.Repositories;
+using VitalTrek.API.IncidentResponse.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.IncidentResponse.Interfaces.Rest.Transform;
 using VitalTrek.API.Resources;
+using VitalTrek.API.SafetyMonitoring.Application.ACL;
+using VitalTrek.API.SafetyMonitoring.Application.Internal.CommandServices;
+using VitalTrek.API.SafetyMonitoring.Application.Internal.OutboundServices.ACL;
+using VitalTrek.API.SafetyMonitoring.Application.Internal.QueryServices;
+using VitalTrek.API.SafetyMonitoring.Application.Services;
+using VitalTrek.API.SafetyMonitoring.Domain.Repositories;
+using VitalTrek.API.SafetyMonitoring.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.SafetyMonitoring.Interfaces.ACL;
+using VitalTrek.API.SafetyMonitoring.Interfaces.Rest.Transform;
 using VitalTrek.API.Shared.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Interfaces.Asp.Configuration;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.TourClosure.Application.Internal.CommandServices;
+using VitalTrek.API.TourClosure.Application.Internal.QueryServices;
+using VitalTrek.API.TourClosure.Application.Services;
+using VitalTrek.API.TourClosure.Domain.Repositories;
+using VitalTrek.API.TourClosure.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +79,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddLocalization();
 
 // Add services to the container.
+// TourClosure Bounded Context
+builder.Services.AddScoped<ITourSummaryRepository, TourSummaryRepository>();
+builder.Services.AddScoped<ITourSummaryCommandService, TourSummaryCommandService>();
+builder.Services.AddScoped<ITourSummaryQueryService, TourSummaryQueryService>();
 builder.Services.AddRouting(options => options.LowercaseUrls = false);
 builder.Services.AddControllers(options => options.Conventions.Add(new KebabCaseRouteNamingConvention()))
     .AddDataAnnotationsLocalization(options =>
@@ -96,6 +138,12 @@ builder.Services.AddOpenApi(options =>
     options.AddSchemaTransformer(IamLocalizedOpenApiAssembler.TransformSchemaAsync);
     options.AddOperationTransformer(ExpeditionSetupLocalizedOpenApiAssembler.TransformOperationAsync);
     options.AddSchemaTransformer(ExpeditionSetupLocalizedOpenApiAssembler.TransformSchemaAsync);
+    options.AddOperationTransformer(CheckpointSyncLocalizedOpenApiAssembler.TransformOperationAsync);
+    options.AddSchemaTransformer(CheckpointSyncLocalizedOpenApiAssembler.TransformSchemaAsync);
+    options.AddOperationTransformer(SafetyMonitoringLocalizedOpenApiAssembler.TransformOperationAsync);
+    options.AddSchemaTransformer(SafetyMonitoringLocalizedOpenApiAssembler.TransformSchemaAsync);
+    options.AddOperationTransformer(IncidentResponseLocalizedOpenApiAssembler.TransformOperationAsync);
+    options.AddSchemaTransformer(IncidentResponseLocalizedOpenApiAssembler.TransformSchemaAsync);
 });
 
 // CORS Configuration for the VitalTrek Web Applications.
@@ -176,6 +224,41 @@ builder.Services.AddScoped<IWearableDeviceQueryService, WearableDeviceQueryServi
 builder.Services.AddScoped<IParticipantPreparationCommandService, ParticipantPreparationCommandService>();
 builder.Services.AddScoped<IParticipantPreparationQueryService, ParticipantPreparationQueryService>();
 builder.Services.AddScoped<IExpeditionSetupContextFacade, ExpeditionSetupContextFacade>();
+
+// Field Tracking Bounded Context Injection Configuration
+builder.Services.AddScoped<ITrackingSessionRepository, TrackingSessionRepository>();
+builder.Services.AddScoped<ITelemetryRecordRepository, TelemetryRecordRepository>();
+builder.Services.AddScoped<ITrackingSessionCommandService, TrackingSessionCommandService>();
+builder.Services.AddScoped<ITrackingSessionQueryService, TrackingSessionQueryService>();
+builder.Services.AddScoped<ITelemetryRecordCommandService, TelemetryRecordCommandService>();
+builder.Services.AddScoped<ITelemetryRecordQueryService, TelemetryRecordQueryService>();
+builder.Services.AddScoped<IFieldTrackingContextFacade, FieldTrackingContextFacade>();
+
+// Checkpoint Sync Bounded Context Injection Configuration
+builder.Services.AddScoped<ICheckpointPassageRepository, CheckpointPassageRepository>();
+builder.Services.AddScoped<ICheckpointPassageCommandService, CheckpointPassageCommandService>();
+builder.Services.AddScoped<ICheckpointPassageQueryService, CheckpointPassageQueryService>();
+builder.Services.AddScoped<ExternalFieldTrackingService>();
+builder.Services.AddScoped<ICheckpointSyncContextFacade, CheckpointSyncContextFacade>();
+
+// Safety Monitoring Bounded Context Injection Configuration
+builder.Services.AddScoped<IEarlyWarningAlertRepository, EarlyWarningAlertRepository>();
+builder.Services.AddScoped<IEarlyWarningAlertCommandService, EarlyWarningAlertCommandService>();
+builder.Services.AddScoped<IEarlyWarningAlertQueryService, EarlyWarningAlertQueryService>();
+builder.Services.AddScoped<ExternalTrackingSessionService>();
+builder.Services.AddScoped<ExternalRouteSetupService>();
+builder.Services.AddScoped<ExternalCheckpointPassageService>();
+builder.Services.AddScoped<ISafetyMonitoringContextFacade, SafetyMonitoringContextFacade>();
+
+// Incident Response Bounded Context Injection Configuration
+builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();
+builder.Services.AddScoped<IIncidentNotificationRepository, IncidentNotificationRepository>();
+builder.Services.AddScoped<IIncidentCommandService, IncidentCommandService>();
+builder.Services.AddScoped<IIncidentQueryService, IncidentQueryService>();
+builder.Services.AddScoped<IIncidentNotificationCommandService, IncidentNotificationCommandService>();
+builder.Services.AddScoped<IIncidentNotificationQueryService, IncidentNotificationQueryService>();
+builder.Services.AddScoped<VitalTrek.API.IncidentResponse.Application.Internal.OutboundServices.ACL.ExternalTrackingSessionService>();
+builder.Services.AddScoped<IIncidentResponseContextFacade, IncidentResponseContextFacade>();
 
 var app = builder.Build();
 

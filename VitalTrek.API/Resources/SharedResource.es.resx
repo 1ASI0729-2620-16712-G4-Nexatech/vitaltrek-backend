@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
     <resheader name="resmimetype">
         <value>text/microsoft-resx</value>
@@ -686,5 +686,215 @@
     </data>
     <data name="UpdateConsentSchema" xml:space="preserve">
         <value>Decisión de consentimiento de monitoreo.</value>
+    </data>
+    <data name="InvalidCheckpointPassageRequest" xml:space="preserve">
+        <value>Los datos del paso por punto de control no son válidos. La hora de paso no puede estar en el futuro.</value>
+    </data>
+    <data name="TrackingSessionNotFound" xml:space="preserve">
+        <value>La sesión de seguimiento no existe en la agencia.</value>
+    </data>
+    <data name="TrackingSessionNotActive" xml:space="preserve">
+        <value>La sesión de seguimiento no está activa.</value>
+    </data>
+    <data name="CheckpointNotInSessionRoute" xml:space="preserve">
+        <value>El punto de control no pertenece a la ruta de la sesión de seguimiento.</value>
+    </data>
+    <data name="CheckpointPassageNotFound" xml:space="preserve">
+        <value>El paso por punto de control no existe.</value>
+    </data>
+    <data name="CheckpointPassageFilterRequired" xml:space="preserve">
+        <value>Indique exactamente un filtro: sessionId o checkpointId.</value>
+    </data>
+    <data name="RequiredSessionId" xml:space="preserve">
+        <value>Se requiere una sesión de seguimiento válida.</value>
+    </data>
+    <data name="RequiredPassedAt" xml:space="preserve">
+        <value>Se requiere el momento en que se pasó el punto de control.</value>
+    </data>
+    <data name="RecordCheckpointPassageSummary" xml:space="preserve">
+        <value>Registra el paso por un punto de control</value>
+    </data>
+    <data name="RecordCheckpointPassageDescription" xml:space="preserve">
+        <value>Registra el paso del guía de campo autenticado por un punto de control de una sesión activa. Es idempotente: si el paso ya fue registrado, devuelve el registro existente con 200 y no crea un duplicado.</value>
+    </data>
+    <data name="GetPassageByIdSummary" xml:space="preserve">
+        <value>Obtiene un paso por punto de control por id</value>
+    </data>
+    <data name="GetPassageByIdDescription" xml:space="preserve">
+        <value>Devuelve un paso por punto de control de la agencia.</value>
+    </data>
+    <data name="GetPassagesSummary" xml:space="preserve">
+        <value>Obtiene los pasos por puntos de control</value>
+    </data>
+    <data name="GetPassagesDescription" xml:space="preserve">
+        <value>Devuelve los pasos de una sesión (sessionId) o de un punto de control (checkpointId) ordenados por hora de paso. Se requiere exactamente un filtro.</value>
+    </data>
+    <data name="CheckpointPassageSchema" xml:space="preserve">
+        <value>Información del paso por punto de control. El estado es synced o delayedsync.</value>
+    </data>
+    <data name="RecordCheckpointPassageSchema" xml:space="preserve">
+        <value>Datos requeridos para registrar el paso por un punto de control.</value>
+    </data>
+    <data name="RequiredAlertType" xml:space="preserve">
+        <value>El tipo de alerta es obligatorio.</value>
+    </data>
+    <data name="RequiredSeverity" xml:space="preserve">
+        <value>La severidad de la alerta es obligatoria.</value>
+    </data>
+    <data name="RequiredDescription" xml:space="preserve">
+        <value>La descripción es obligatoria.</value>
+    </data>
+    <data name="InvalidEarlyWarningAlertRequest" xml:space="preserve">
+        <value>Los datos de la alerta temprana no son válidos. Tipos válidos: delay, vital_sign_anomaly, route_deviation, other. Severidades válidas: low, medium, high, critical.</value>
+    </data>
+    <data name="EarlyWarningAlertNotFound" xml:space="preserve">
+        <value>La alerta temprana no existe.</value>
+    </data>
+    <data name="EarlyWarningAlertTransitionInvalid" xml:space="preserve">
+        <value>El estado actual de la alerta no permite este cambio.</value>
+    </data>
+    <data name="EarlyWarningAlertStatusNotSupported" xml:space="preserve">
+        <value>Solo se aceptan los estados acknowledged, dismissed y resolved.</value>
+    </data>
+    <data name="RaiseEarlyWarningAlertSummary" xml:space="preserve">
+        <value>Levanta una alerta temprana</value>
+    </data>
+    <data name="RaiseEarlyWarningAlertDescription" xml:space="preserve">
+        <value>Levanta una alerta temprana activa para una sesión de seguimiento activa de la agencia. El punto de control es opcional y debe pertenecer a la ruta de la sesión.</value>
+    </data>
+    <data name="EvaluateSessionDelaysSummary" xml:space="preserve">
+        <value>Evalúa los retrasos de una sesión</value>
+    </data>
+    <data name="EvaluateSessionDelaysDescription" xml:space="preserve">
+        <value>Compara los pasos por punto de control de una sesión activa con las ventanas de tiempo esperadas de su ruta y levanta una alerta de retraso por cada tramo cuyo tiempo máximo fue superado (high, o critical cuando se duplica el máximo). Es idempotente: un tramo ya alertado no se vuelve a alertar.</value>
+    </data>
+    <data name="GetEarlyWarningAlertByIdSummary" xml:space="preserve">
+        <value>Obtiene una alerta temprana por id</value>
+    </data>
+    <data name="GetEarlyWarningAlertByIdDescription" xml:space="preserve">
+        <value>Devuelve una alerta temprana de la agencia.</value>
+    </data>
+    <data name="GetEarlyWarningAlertsSummary" xml:space="preserve">
+        <value>Obtiene alertas tempranas</value>
+    </data>
+    <data name="GetEarlyWarningAlertsDescription" xml:space="preserve">
+        <value>Devuelve las alertas de una sesión cuando se envía sessionId; en caso contrario, las alertas abiertas (active o acknowledged) de la agencia. Las más recientes primero.</value>
+    </data>
+    <data name="UpdateEarlyWarningAlertStatusSummary" xml:space="preserve">
+        <value>Cambia el estado de una alerta temprana</value>
+    </data>
+    <data name="UpdateEarlyWarningAlertStatusDescription" xml:space="preserve">
+        <value>Acepta acknowledged (desde active), dismissed (desde active o acknowledged) y resolved (desde acknowledged).</value>
+    </data>
+    <data name="EarlyWarningAlertSchema" xml:space="preserve">
+        <value>Información de la alerta temprana. El estado es active, acknowledged, dismissed o resolved.</value>
+    </data>
+    <data name="RaiseEarlyWarningAlertSchema" xml:space="preserve">
+        <value>Datos requeridos para levantar una alerta temprana.</value>
+    </data>
+    <data name="EvaluateSessionDelaysSchema" xml:space="preserve">
+        <value>Datos requeridos para evaluar los retrasos de una sesión.</value>
+    </data>
+    <data name="UpdateEarlyWarningAlertStatusSchema" xml:space="preserve">
+        <value>Datos requeridos para cambiar el estado de una alerta temprana.</value>
+    </data>
+    <data name="InvalidIncidentRequest" xml:space="preserve">
+        <value>Los datos del incidente no son validos. La hora de reporte no puede estar en el futuro.</value>
+    </data>
+    <data name="InvalidIncidentStatus" xml:space="preserve">
+        <value>El estado del incidente no es un estado conocido.</value>
+    </data>
+    <data name="IncidentNotFound" xml:space="preserve">
+        <value>El incidente no existe en la agencia.</value>
+    </data>
+    <data name="IncidentStatusTransitionNotAllowed" xml:space="preserve">
+        <value>El incidente no puede pasar a ese estado desde su estado actual.</value>
+    </data>
+    <data name="IncidentNotOpen" xml:space="preserve">
+        <value>El incidente ya no esta abierto.</value>
+    </data>
+    <data name="IncidentAlreadyClosed" xml:space="preserve">
+        <value>El incidente esta cerrado y no admite mas notificaciones.</value>
+    </data>
+    <data name="InvalidIncidentNotificationRequest" xml:space="preserve">
+        <value>Los datos de la notificacion del incidente no son validos.</value>
+    </data>
+    <data name="RequiredIncidentType" xml:space="preserve">
+        <value>Se requiere un tipo de incidente valido: medical, accident, missing o environmental.</value>
+    </data>
+    <data name="RequiredIncidentSeverity" xml:space="preserve">
+        <value>Se requiere una severidad valida: low, medium, high o critical.</value>
+    </data>
+    <data name="RequiredIncidentDescription" xml:space="preserve">
+        <value>Se requiere una descripcion de hasta 500 caracteres.</value>
+    </data>
+    <data name="RequiredIncidentReportedAt" xml:space="preserve">
+        <value>Se requiere el momento en que se reporto el incidente.</value>
+    </data>
+    <data name="RequiredIncidentStatus" xml:space="preserve">
+        <value>Se requiere un estado valido: in_response, resolved o closed.</value>
+    </data>
+    <data name="RequiredNotificationRecipientType" xml:space="preserve">
+        <value>Se requiere un tipo de destinatario valido: emergency_contact o rescue_entity.</value>
+    </data>
+    <data name="RequiredNotificationChannel" xml:space="preserve">
+        <value>Se requiere un canal de hasta 30 caracteres.</value>
+    </data>
+    <data name="DeclareIncidentSummary" xml:space="preserve">
+        <value>Declarar un incidente</value>
+    </data>
+    <data name="DeclareIncidentDescription" xml:space="preserve">
+        <value>Declara un incidente ocurrido durante una sesion de seguimiento activa.</value>
+    </data>
+    <data name="GetIncidentByIdSummary" xml:space="preserve">
+        <value>Obtener un incidente</value>
+    </data>
+    <data name="GetIncidentByIdDescription" xml:space="preserve">
+        <value>Obtiene un incidente de la agencia por su identificador.</value>
+    </data>
+    <data name="GetIncidentsSummary" xml:space="preserve">
+        <value>Listar incidentes</value>
+    </data>
+    <data name="GetIncidentsDescription" xml:space="preserve">
+        <value>Lista los incidentes de una sesion de seguimiento, o los incidentes abiertos de la agencia si no se indica sesion.</value>
+    </data>
+    <data name="UpdateIncidentStatusSummary" xml:space="preserve">
+        <value>Actualizar el estado de un incidente</value>
+    </data>
+    <data name="UpdateIncidentStatusDescription" xml:space="preserve">
+        <value>Mueve un incidente a otro estado de su ciclo de vida.</value>
+    </data>
+    <data name="ResolveIncidentSummary" xml:space="preserve">
+        <value>Resolver un incidente</value>
+    </data>
+    <data name="ResolveIncidentDescription" xml:space="preserve">
+        <value>Resuelve un incidente abierto y registra el momento de su resolucion.</value>
+    </data>
+    <data name="SendIncidentNotificationSummary" xml:space="preserve">
+        <value>Enviar una notificacion de incidente</value>
+    </data>
+    <data name="SendIncidentNotificationDescription" xml:space="preserve">
+        <value>Envia una notificacion sobre un incidente a un contacto de emergencia o a una entidad de rescate.</value>
+    </data>
+    <data name="GetIncidentNotificationsSummary" xml:space="preserve">
+        <value>Listar notificaciones de un incidente</value>
+    </data>
+    <data name="GetIncidentNotificationsDescription" xml:space="preserve">
+        <value>Lista las notificaciones enviadas por un incidente.</value>
+    </data>
+    <data name="IncidentSchema" xml:space="preserve">
+        <value>Un incidente declarado durante una expedicion.</value>
+    </data>
+    <data name="DeclareIncidentSchema" xml:space="preserve">
+        <value>Datos requeridos para declarar un incidente.</value>
+    </data>
+    <data name="UpdateIncidentStatusSchema" xml:space="preserve">
+        <value>Datos requeridos para cambiar el estado de un incidente.</value>
+    </data>
+    <data name="IncidentNotificationSchema" xml:space="preserve">
+        <value>Una notificacion enviada por un incidente.</value>
+    </data>
+    <data name="SendNotificationSchema" xml:space="preserve">
+        <value>Datos requeridos para enviar una notificacion de incidente.</value>
     </data>
 </root>

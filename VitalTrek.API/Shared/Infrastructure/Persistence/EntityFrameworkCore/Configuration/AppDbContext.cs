@@ -1,8 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using VitalTrek.API.CheckpointSync.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.ExpeditionSetup.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
+using VitalTrek.API.FieldTracking.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.IAM.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
+using VitalTrek.API.IncidentResponse.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
+using VitalTrek.API.SafetyMonitoring.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Interceptors;
+using VitalTrek.API.TourClosure.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 
 namespace VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 
@@ -31,7 +36,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         // Bounded context configurations
         builder.ApplyIamConfiguration();
         builder.ApplyExpeditionSetupConfiguration();
+        builder.ApplyFieldTrackingConfiguration();
+        builder.ApplyCheckpointSyncConfiguration();
+        builder.ApplySafetyMonitoringConfiguration();
+
+        builder.ApplyIncidentResponseConfiguration();
 
         builder.UseSnakeCaseNamingConvention();
+
+        builder.ApplyTourClosureConfiguration();
+
     }
 }
