@@ -866,6 +866,133 @@ namespace VitalTrek.API.Migrations
                     b.ToTable("users");
                 });
 
+            modelBuilder.Entity("VitalTrek.API.IncidentResponse.Domain.Model.Aggregates.Incident", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("IncidentType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("incident_type");
+
+                    b.Property<DateTimeOffset>("ReportedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("reported_at");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("resolved_at");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int")
+                        .HasColumnName("session_id");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("severity");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_incidents");
+
+                    b.HasIndex("AgencyId")
+                        .HasDatabaseName("i_x_incidents_agency_id");
+
+                    b.HasIndex("SessionId")
+                        .HasDatabaseName("i_x_incidents_session_id");
+
+                    b.HasIndex("AgencyId", "Status")
+                        .HasDatabaseName("i_x_incidents_agency_id_status");
+
+                    b.ToTable("incidents");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.IncidentResponse.Domain.Model.Aggregates.IncidentNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasColumnName("channel");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("IncidentId")
+                        .HasColumnType("int")
+                        .HasColumnName("incident_id");
+
+                    b.Property<string>("RecipientType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasColumnName("recipient_type");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_incident_notifications");
+
+                    b.HasIndex("AgencyId")
+                        .HasDatabaseName("i_x_incident_notifications_agency_id");
+
+                    b.HasIndex("IncidentId")
+                        .HasDatabaseName("i_x_incident_notifications_incident_id");
+
+                    b.ToTable("incident_notifications");
+                });
+
             modelBuilder.Entity("VitalTrek.API.SafetyMonitoring.Domain.Model.Aggregates.EarlyWarningAlert", b =>
                 {
                     b.Property<int>("Id")
