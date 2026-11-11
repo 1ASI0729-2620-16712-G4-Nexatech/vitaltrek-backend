@@ -735,4 +735,67 @@
     <data name="RecordCheckpointPassageSchema" xml:space="preserve">
         <value>Data required to record a checkpoint passage.</value>
     </data>
+    <data name="RequiredAlertType" xml:space="preserve">
+        <value>The alert type is required.</value>
+    </data>
+    <data name="RequiredSeverity" xml:space="preserve">
+        <value>The alert severity is required.</value>
+    </data>
+    <data name="RequiredDescription" xml:space="preserve">
+        <value>The description is required.</value>
+    </data>
+    <data name="InvalidEarlyWarningAlertRequest" xml:space="preserve">
+        <value>The early warning alert data is invalid. Valid types: delay, vital_sign_anomaly, route_deviation, other. Valid severities: low, medium, high, critical.</value>
+    </data>
+    <data name="EarlyWarningAlertNotFound" xml:space="preserve">
+        <value>The early warning alert does not exist.</value>
+    </data>
+    <data name="EarlyWarningAlertTransitionInvalid" xml:space="preserve">
+        <value>The current status of the alert does not allow this change.</value>
+    </data>
+    <data name="EarlyWarningAlertStatusNotSupported" xml:space="preserve">
+        <value>Only the statuses acknowledged, dismissed and resolved are accepted.</value>
+    </data>
+    <data name="RaiseEarlyWarningAlertSummary" xml:space="preserve">
+        <value>Raises an early warning alert</value>
+    </data>
+    <data name="RaiseEarlyWarningAlertDescription" xml:space="preserve">
+        <value>Raises an active early warning alert for an active tracking session of the agency. The checkpoint is optional and must belong to the route of the session.</value>
+    </data>
+    <data name="EvaluateSessionDelaysSummary" xml:space="preserve">
+        <value>Evaluates the delays of a session</value>
+    </data>
+    <data name="EvaluateSessionDelaysDescription" xml:space="preserve">
+        <value>Compares the checkpoint passages of an active session with the expected time windows of its route and raises a delay alert for every segment whose maximum time was exceeded (high, or critical once the maximum is doubled). It is idempotent: a segment already alerted is not alerted again.</value>
+    </data>
+    <data name="GetEarlyWarningAlertByIdSummary" xml:space="preserve">
+        <value>Gets an early warning alert by id</value>
+    </data>
+    <data name="GetEarlyWarningAlertByIdDescription" xml:space="preserve">
+        <value>Returns an early warning alert of the agency.</value>
+    </data>
+    <data name="GetEarlyWarningAlertsSummary" xml:space="preserve">
+        <value>Gets early warning alerts</value>
+    </data>
+    <data name="GetEarlyWarningAlertsDescription" xml:space="preserve">
+        <value>Returns the alerts of a session when sessionId is provided; otherwise the open (active or acknowledged) alerts of the agency. Most recent first.</value>
+    </data>
+    <data name="UpdateEarlyWarningAlertStatusSummary" xml:space="preserve">
+        <value>Changes the status of an early warning alert</value>
+    </data>
+    <data name="UpdateEarlyWarningAlertStatusDescription" xml:space="preserve">
+        <value>Accepts acknowledged (from active), dismissed (from active or acknowledged) and resolved (from acknowledged).</value>
+    </data>
+    <data name="EarlyWarningAlertSchema" xml:space="preserve">
+        <value>Early warning alert information. The status is active, acknowledged, dismissed or resolved.</value>
+    </data>
+    <data name="RaiseEarlyWarningAlertSchema" xml:space="preserve">
+        <value>Data required to raise an early warning alert.</value>
+    </data>
+    <data name="EvaluateSessionDelaysSchema" xml:space="preserve">
+        <value>Data required to evaluate the delays of a session.</value>
+    </data>
+    <data name="UpdateEarlyWarningAlertStatusSchema" xml:space="preserve">
+        <value>Data required to change the status of an early warning alert.</value>
+    </data>
 </root>
