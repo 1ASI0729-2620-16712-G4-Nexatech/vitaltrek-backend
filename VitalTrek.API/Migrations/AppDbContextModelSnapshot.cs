@@ -866,6 +866,80 @@ namespace VitalTrek.API.Migrations
                     b.ToTable("users");
                 });
 
+            modelBuilder.Entity("VitalTrek.API.SafetyMonitoring.Domain.Model.Aggregates.EarlyWarningAlert", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<string>("AlertType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasColumnName("alert_type");
+
+                    b.Property<int?>("CheckpointId")
+                        .HasColumnType("int")
+                        .HasColumnName("checkpoint_id");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("description");
+
+                    b.Property<int>("ExpeditionGroupId")
+                        .HasColumnType("int")
+                        .HasColumnName("expedition_group_id");
+
+                    b.Property<DateTimeOffset>("RaisedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("raised_at");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int")
+                        .HasColumnName("session_id");
+
+                    b.Property<string>("Severity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("severity");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_early_warning_alerts");
+
+                    b.HasIndex("ExpeditionGroupId")
+                        .HasDatabaseName("i_x_early_warning_alerts_expedition_group_id");
+
+                    b.HasIndex("AgencyId", "Status")
+                        .HasDatabaseName("i_x_early_warning_alerts_agency_id_status");
+
+                    b.HasIndex("SessionId", "CheckpointId", "AlertType")
+                        .HasDatabaseName("ix_early_warning_alerts_session_checkpoint_type");
+
+                    b.ToTable("early_warning_alerts");
+                });
+
             modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Checkpoint", b =>
                 {
                     b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Route", null)
