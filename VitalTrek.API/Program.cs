@@ -67,6 +67,11 @@ using VitalTrek.API.Shared.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Interfaces.Asp.Configuration;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.TourClosure.Application.Internal.CommandServices;
+using VitalTrek.API.TourClosure.Application.Internal.QueryServices;
+using VitalTrek.API.TourClosure.Application.Services;
+using VitalTrek.API.TourClosure.Domain.Repositories;
+using VitalTrek.API.TourClosure.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,6 +79,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddLocalization();
 
 // Add services to the container.
+// TourClosure Bounded Context
+builder.Services.AddScoped<ITourSummaryRepository, TourSummaryRepository>();
+builder.Services.AddScoped<ITourSummaryCommandService, TourSummaryCommandService>();
+builder.Services.AddScoped<ITourSummaryQueryService, TourSummaryQueryService>();
 builder.Services.AddRouting(options => options.LowercaseUrls = false);
 builder.Services.AddControllers(options => options.Conventions.Add(new KebabCaseRouteNamingConvention()))
     .AddDataAnnotationsLocalization(options =>
