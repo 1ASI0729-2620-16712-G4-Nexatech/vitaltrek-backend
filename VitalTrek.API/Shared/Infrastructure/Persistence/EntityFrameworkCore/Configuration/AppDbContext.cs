@@ -7,6 +7,7 @@ using VitalTrek.API.IncidentResponse.Infrastructure.Persistence.EntityFrameworkC
 using VitalTrek.API.SafetyMonitoring.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Interceptors;
+using VitalTrek.API.TourClosure.Infrastructure.Persistence.EntityFrameworkCore.Configuration.Extensions;
 
 namespace VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 
@@ -42,5 +43,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         builder.ApplyIncidentResponseConfiguration();
 
         builder.UseSnakeCaseNamingConvention();
+
+        builder.ApplyTourClosureConfiguration();
+
     }
 }
