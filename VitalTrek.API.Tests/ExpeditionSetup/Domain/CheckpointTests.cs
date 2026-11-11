@@ -1,4 +1,5 @@
-﻿using VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates;
+﻿using System;
+using VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates;
 using VitalTrek.API.ExpeditionSetup.Domain.Model.Commands;
 using Xunit;
 
