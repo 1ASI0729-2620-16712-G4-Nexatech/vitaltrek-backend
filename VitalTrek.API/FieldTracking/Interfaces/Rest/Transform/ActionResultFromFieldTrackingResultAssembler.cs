@@ -33,6 +33,10 @@ public static class ActionResultFromFieldTrackingResultAssembler
     private static ActionResult ToErrorResult(Enum error, ControllerBase controller, IStringLocalizer<SharedResource> localizer) =>
         error switch
         {
+            EStartTrackingSessionError.AccessForbidden or EEndTrackingSessionError.AccessForbidden or
+                ESubmitTelemetryBatchError.AccessForbidden => controller.Problem(
+                    title: localizer["AccessForbidden"].Value, statusCode: StatusCodes.Status403Forbidden),
+            EStartTrackingSessionError.GroupNotFound => controller.NotFound(localizer["ExpeditionGroupNotFound"].Value),
             EStartTrackingSessionError.InvalidData => controller.BadRequest(localizer["InvalidTrackingSessionRequest"].Value),
             EStartTrackingSessionError.SessionAlreadyActive => controller.Conflict(localizer["TrackingSessionAlreadyActive"].Value),
             EStartTrackingSessionError.UnexpectedError => Unexpected(controller, localizer),

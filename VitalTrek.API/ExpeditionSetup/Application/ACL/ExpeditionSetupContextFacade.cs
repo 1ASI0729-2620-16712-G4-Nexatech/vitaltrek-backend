@@ -1,6 +1,7 @@
 using VitalTrek.API.ExpeditionSetup.Domain.Model.ValueObjects;
 using VitalTrek.API.ExpeditionSetup.Domain.Repositories;
 using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.ExpeditionSetup.Application.ACL;
 
@@ -19,6 +20,39 @@ public class ExpeditionSetupContextFacade(
     ICheckpointRepository checkpointRepository,
     IExpectedTimeWindowRepository expectedTimeWindowRepository) : IExpeditionSetupContextFacade
 {
+    /// <inheritdoc />
+    public async Task<bool> CanAccessExpeditionGroup(AuthenticatedActor actor, int expeditionGroupId,
+        CancellationToken cancellationToken = default)
+    {
+        var scope = ToScope(actor);
+        return scope is not null && expeditionGroupId > 0 &&
+               await expeditionGroupRepository.FindByIdAndScopeAsync(expeditionGroupId, scope, cancellationToken)
+               is not null;
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyCollection<int>> FindAccessibleExpeditionGroupIds(AuthenticatedActor actor,
+        CancellationToken cancellationToken = default)
+    {
+        var scope = ToScope(actor);
+        if (scope is null) return [];
+        var groups = await expeditionGroupRepository.FindByScopeAsync(scope, null, cancellationToken);
+        return groups.Select(group => group.Id).ToArray();
+    }
+
+    private static AccessScope? ToScope(AuthenticatedActor actor)
+    {
+        if (actor.UserId <= 0 || actor.AgencyId <= 0) return null;
+        return actor.RoleCode switch
+        {
+            "operations_administrator" => new AccessScope(actor.AgencyId),
+            "field_guide" when actor.FieldGuideId is > 0 => new AccessScope(actor.AgencyId, actor.FieldGuideId),
+            "adventure_tourist" when !string.IsNullOrWhiteSpace(actor.IdentityDocument) =>
+                new AccessScope(actor.AgencyId, IdentityDocument: actor.IdentityDocument),
+            _ => null
+        };
+    }
+
     /// <inheritdoc />
     public async Task<IReadOnlyList<(int FromCheckpointId, int ToCheckpointId, int MaximumMinutes)>>
         FindExpectedTimeWindowsByExpeditionGroup(int agencyId, int expeditionGroupId,

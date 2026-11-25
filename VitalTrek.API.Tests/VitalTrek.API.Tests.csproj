@@ -6,6 +6,7 @@
     <RootNamespace>VitalTrek.API.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.OpenApi.Generated</InterceptorsNamespaces>
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>

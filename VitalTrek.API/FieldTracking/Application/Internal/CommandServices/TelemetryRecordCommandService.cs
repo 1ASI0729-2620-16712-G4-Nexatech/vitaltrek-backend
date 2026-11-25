@@ -6,6 +6,8 @@ using VitalTrek.API.FieldTracking.Domain.Model.Commands;
 using VitalTrek.API.FieldTracking.Domain.Repositories;
 using VitalTrek.API.Shared.Application.Patterns;
 using VitalTrek.API.Shared.Domain.Repositories;
+using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.FieldTracking.Application.Internal.CommandServices;
 
@@ -15,17 +17,22 @@ namespace VitalTrek.API.FieldTracking.Application.Internal.CommandServices;
 public class TelemetryRecordCommandService(
     ITrackingSessionRepository trackingSessionRepository,
     ITelemetryRecordRepository telemetryRecordRepository,
+    IExpeditionSetupContextFacade expeditionSetupContextFacade,
     IUnitOfWork unitOfWork,
     ILogger<TelemetryRecordCommandService> logger) : ITelemetryRecordCommandService
 {
     /// <inheritdoc />
     public async Task<Result<IReadOnlyList<TelemetryRecord>, ESubmitTelemetryBatchError>> Handle(
-        SubmitTelemetryBatchCommand command, CancellationToken cancellationToken)
+        SubmitTelemetryBatchCommand command, AuthenticatedActor actor, CancellationToken cancellationToken)
     {
+        if (!FieldTrackingAuthorization.CanWrite(actor, command.AgencyId))
+            return new Result<IReadOnlyList<TelemetryRecord>, ESubmitTelemetryBatchError>.Failure(
+                ESubmitTelemetryBatchError.AccessForbidden);
         var session = await trackingSessionRepository.FindByIdAndAgencyIdAsync(
             command.SessionId, command.AgencyId, cancellationToken);
 
-        if (session is null)
+        if (session is null || !await expeditionSetupContextFacade.CanAccessExpeditionGroup(actor,
+                session.ExpeditionGroupId, cancellationToken))
             return new Result<IReadOnlyList<TelemetryRecord>, ESubmitTelemetryBatchError>.Failure(
                 ESubmitTelemetryBatchError.SessionNotFound);
 

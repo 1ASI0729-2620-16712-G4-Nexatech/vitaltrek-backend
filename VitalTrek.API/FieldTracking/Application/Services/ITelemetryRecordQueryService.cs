@@ -1,5 +1,6 @@
 using VitalTrek.API.FieldTracking.Domain.Model.Aggregates;
 using VitalTrek.API.FieldTracking.Domain.Model.Queries;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.FieldTracking.Application.Services;
 
@@ -8,9 +9,9 @@ namespace VitalTrek.API.FieldTracking.Application.Services;
 /// </summary>
 public interface ITelemetryRecordQueryService
 {
-    /// <summary>Retrieves all telemetry records for a session.</summary>
-    Task<IEnumerable<TelemetryRecord>> Handle(GetTelemetryRecordsBySessionIdQuery query, CancellationToken cancellationToken);
+    /// <summary>Retrieves session telemetry, or null when the session is outside the actor's scope.</summary>
+    Task<IEnumerable<TelemetryRecord>?> Handle(GetTelemetryRecordsBySessionIdQuery query, AuthenticatedActor actor, CancellationToken cancellationToken);
 
     /// <summary>Retrieves the most recent telemetry record for a wearable device within a session.</summary>
-    Task<TelemetryRecord?> Handle(GetLatestTelemetryRecordByWearableIdQuery query, CancellationToken cancellationToken);
+    Task<TelemetryRecord?> Handle(GetLatestTelemetryRecordByWearableIdQuery query, AuthenticatedActor actor, CancellationToken cancellationToken);
 }
