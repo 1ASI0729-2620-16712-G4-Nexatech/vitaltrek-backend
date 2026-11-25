@@ -5,6 +5,12 @@ namespace VitalTrek.API.FieldTracking.Application.Errors;
 /// </summary>
 public enum EStartTrackingSessionError
 {
+    /// <summary>The actor is not an authenticated field guide in the command's agency.</summary>
+    AccessForbidden,
+
+    /// <summary>The group was not found within the field guide's scope.</summary>
+    GroupNotFound,
+
     /// <summary>The command data violates the session invariants.</summary>
     InvalidData,
 

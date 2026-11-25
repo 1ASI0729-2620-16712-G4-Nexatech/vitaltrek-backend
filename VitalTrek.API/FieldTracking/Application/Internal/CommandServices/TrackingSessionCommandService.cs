@@ -8,6 +8,8 @@ using VitalTrek.API.FieldTracking.Domain.Repositories;
 using VitalTrek.API.Shared.Application.Patterns;
 using VitalTrek.API.Shared.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Extensions;
+using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.FieldTracking.Application.Internal.CommandServices;
 
@@ -16,13 +18,20 @@ namespace VitalTrek.API.FieldTracking.Application.Internal.CommandServices;
 /// </summary>
 public class TrackingSessionCommandService(
     ITrackingSessionRepository trackingSessionRepository,
+    IExpeditionSetupContextFacade expeditionSetupContextFacade,
     IUnitOfWork unitOfWork,
     ILogger<TrackingSessionCommandService> logger) : ITrackingSessionCommandService
 {
     /// <inheritdoc />
     public async Task<Result<TrackingSession, EStartTrackingSessionError>> Handle(
-        StartTrackingSessionCommand command, CancellationToken cancellationToken)
+        StartTrackingSessionCommand command, AuthenticatedActor actor, CancellationToken cancellationToken)
     {
+        if (!FieldTrackingAuthorization.CanWrite(actor, command.AgencyId))
+            return new Result<TrackingSession, EStartTrackingSessionError>.Failure(EStartTrackingSessionError.AccessForbidden);
+        if (!await expeditionSetupContextFacade.CanAccessExpeditionGroup(actor, command.ExpeditionGroupId,
+                cancellationToken))
+            return new Result<TrackingSession, EStartTrackingSessionError>.Failure(EStartTrackingSessionError.GroupNotFound);
+
         if (await trackingSessionRepository.ExistsActiveByGroupIdAsync(command.ExpeditionGroupId, cancellationToken))
             return new Result<TrackingSession, EStartTrackingSessionError>.Failure(
                 EStartTrackingSessionError.SessionAlreadyActive);
@@ -52,12 +61,15 @@ public class TrackingSessionCommandService(
 
     /// <inheritdoc />
     public async Task<Result<TrackingSession, EEndTrackingSessionError>> Handle(
-        EndTrackingSessionCommand command, CancellationToken cancellationToken)
+        EndTrackingSessionCommand command, AuthenticatedActor actor, CancellationToken cancellationToken)
     {
+        if (!FieldTrackingAuthorization.CanWrite(actor, command.AgencyId))
+            return new Result<TrackingSession, EEndTrackingSessionError>.Failure(EEndTrackingSessionError.AccessForbidden);
         var session = await trackingSessionRepository.FindByIdAndAgencyIdAsync(
             command.SessionId, command.AgencyId, cancellationToken);
 
-        if (session is null)
+        if (session is null || !await expeditionSetupContextFacade.CanAccessExpeditionGroup(actor,
+                session.ExpeditionGroupId, cancellationToken))
             return new Result<TrackingSession, EEndTrackingSessionError>.Failure(EEndTrackingSessionError.SessionNotFound);
 
         try

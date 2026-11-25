@@ -5,6 +5,9 @@ namespace VitalTrek.API.FieldTracking.Application.Errors;
 /// </summary>
 public enum ESubmitTelemetryBatchError
 {
+    /// <summary>The actor is not an authenticated field guide in the command's agency.</summary>
+    AccessForbidden,
+
     /// <summary>One or more records contain invalid coordinate values.</summary>
     InvalidData,
 

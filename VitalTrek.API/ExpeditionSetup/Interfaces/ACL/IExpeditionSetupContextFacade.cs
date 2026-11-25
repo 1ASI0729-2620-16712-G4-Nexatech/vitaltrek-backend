@@ -1,3 +1,5 @@
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
+
 namespace VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 
 /// <summary>
@@ -6,6 +8,17 @@ namespace VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 /// </summary>
 public interface IExpeditionSetupContextFacade
 {
+    /// <summary>
+    ///     Checks group visibility for an authenticated actor: agency administrators, assigned guides or manifest members.
+    ///     Invalid or unlinked actors have no access. Callers must also enforce the role required by the operation.
+    /// </summary>
+    Task<bool> CanAccessExpeditionGroup(AuthenticatedActor actor, int expeditionGroupId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Returns only the group identifiers visible to the authenticated actor.</summary>
+    Task<IReadOnlyCollection<int>> FindAccessibleExpeditionGroupIds(AuthenticatedActor actor,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     ///     Checks whether a field guide profile exists in an agency.
     /// </summary>

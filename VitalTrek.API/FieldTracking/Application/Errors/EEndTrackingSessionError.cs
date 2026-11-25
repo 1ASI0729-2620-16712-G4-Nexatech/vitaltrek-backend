@@ -5,6 +5,9 @@ namespace VitalTrek.API.FieldTracking.Application.Errors;
 /// </summary>
 public enum EEndTrackingSessionError
 {
+    /// <summary>The actor is not an authenticated field guide in the command's agency.</summary>
+    AccessForbidden,
+
     /// <summary>The session was not found or does not belong to the agency.</summary>
     SessionNotFound,
 

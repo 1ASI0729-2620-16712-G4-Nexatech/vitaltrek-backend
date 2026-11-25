@@ -1,4 +1,6 @@
 using VitalTrek.API.IAM.Domain.Model.Aggregates;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
+using VitalTrek.API.IAM.Interfaces.Rest.Transform;
 
 namespace VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Extensions;
 
@@ -19,4 +21,10 @@ public static class HttpContextExtensions
     /// <returns>The authenticated user, or <see langword="null"/> for anonymous requests.</returns>
     public static User? GetAuthenticatedUser(this HttpContext context) =>
         context.Items.TryGetValue(AuthenticatedUserKey, out var user) ? user as User : null;
+
+    /// <summary>Gets the actor contract derived exclusively from the user resolved by IAM middleware.</summary>
+    public static AuthenticatedActor? GetAuthenticatedActor(this HttpContext context) =>
+        context.GetAuthenticatedUser() is { } user
+            ? AuthenticatedActorFromEntityAssembler.ToActorFromEntity(user)
+            : null;
 }

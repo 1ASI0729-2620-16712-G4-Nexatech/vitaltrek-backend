@@ -2,6 +2,7 @@ using VitalTrek.API.FieldTracking.Application.Errors;
 using VitalTrek.API.FieldTracking.Domain.Model.Aggregates;
 using VitalTrek.API.FieldTracking.Domain.Model.Commands;
 using VitalTrek.API.Shared.Application.Patterns;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.FieldTracking.Application.Services;
 
@@ -11,5 +12,5 @@ namespace VitalTrek.API.FieldTracking.Application.Services;
 public interface ITelemetryRecordCommandService
 {
     /// <summary>Persists a batch of telemetry records for a wearable device.</summary>
-    Task<Result<IReadOnlyList<TelemetryRecord>, ESubmitTelemetryBatchError>> Handle(SubmitTelemetryBatchCommand command, CancellationToken cancellationToken);
+    Task<Result<IReadOnlyList<TelemetryRecord>, ESubmitTelemetryBatchError>> Handle(SubmitTelemetryBatchCommand command, AuthenticatedActor actor, CancellationToken cancellationToken);
 }
