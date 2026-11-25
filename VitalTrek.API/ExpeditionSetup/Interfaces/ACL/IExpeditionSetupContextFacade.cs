@@ -1,4 +1,5 @@
 using VitalTrek.API.IAM.Interfaces.ACL.Resources;
+using VitalTrek.API.ExpeditionSetup.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 
@@ -8,6 +9,10 @@ namespace VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 /// </summary>
 public interface IExpeditionSetupContextFacade
 {
+    /// <summary>Validates readiness and stages the group start. Does not save; the caller must use the shared unit of work.</summary>
+    Task<ExpeditionStartStatus> StageExpeditionStart(AuthenticatedActor actor, int expeditionGroupId,
+        DateTimeOffset startedAt, CancellationToken cancellationToken = default);
+
     /// <summary>
     ///     Checks group visibility for an authenticated actor: agency administrators, assigned guides or manifest members.
     ///     Invalid or unlinked actors have no access. Callers must also enforce the role required by the operation.

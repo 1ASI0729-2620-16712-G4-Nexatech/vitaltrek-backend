@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using VitalTrek.API.FieldTracking.Application.Errors;
+using VitalTrek.API.FieldTracking.Application.Model;
+using VitalTrek.API.FieldTracking.Application.ACL;
 using VitalTrek.API.FieldTracking.Application.Internal.CommandServices;
 using VitalTrek.API.FieldTracking.Application.Internal.QueryServices;
 using VitalTrek.API.FieldTracking.Domain.Model.Aggregates;
@@ -85,7 +87,7 @@ public class TrackingAuthorizationTests
         var service = new TrackingSessionCommandService(data.SessionRepository, data.Expeditions, data.UnitOfWork,
             NullLogger<TrackingSessionCommandService>.Instance);
         var result = await service.Handle(new StartTrackingSessionCommand(1, groupId), data.Actor(userId), default);
-        Assert.Equal(expected, Assert.IsType<Result<TrackingSession, EStartTrackingSessionError>.Failure>(result).Error);
+        Assert.Equal(expected, Assert.IsType<Result<TrackingSessionStartResult, EStartTrackingSessionError>.Failure>(result).Error);
         Assert.Equal(0, data.Writes);
         Assert.Equal(0, data.Commits);
     }
@@ -94,11 +96,8 @@ public class TrackingAuthorizationTests
     public async Task UnassignedGuideCannotEndSessionOrSubmitTelemetry()
     {
         var data = new TrackingAccessData();
-        var sessions = new TrackingSessionCommandService(data.SessionRepository, data.Expeditions, data.UnitOfWork,
-            NullLogger<TrackingSessionCommandService>.Instance);
-        var end = await sessions.Handle(new EndTrackingSessionCommand(1, 12), data.Actor(2), default);
-        Assert.Equal(EEndTrackingSessionError.SessionNotFound,
-            Assert.IsType<Result<TrackingSession, EEndTrackingSessionError>.Failure>(end).Error);
+        var sessions = new FieldTrackingContextFacade(data.SessionRepository, data.Expeditions);
+        Assert.False(await sessions.StageSessionEndAsync(data.Actor(2), 12, DateTimeOffset.UtcNow));
         var records = new TelemetryRecordCommandService(data.SessionRepository, data.TelemetryRepository,
             data.Expeditions, data.UnitOfWork, NullLogger<TelemetryRecordCommandService>.Instance);
         var submit = await records.Handle(new SubmitTelemetryBatchCommand(1, 12, 101, []), data.Actor(2), default);

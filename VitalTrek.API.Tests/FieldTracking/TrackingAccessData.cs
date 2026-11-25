@@ -1,4 +1,5 @@
 using VitalTrek.API.ExpeditionSetup.Application.ACL;
+using VitalTrek.API.ExpeditionSetup.Application.Services;
 using VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates;
 using VitalTrek.API.ExpeditionSetup.Domain.Model.Commands;
 using VitalTrek.API.ExpeditionSetup.Domain.Model.ValueObjects;
@@ -80,7 +81,7 @@ internal sealed class TrackingAccessData
         });
         Expeditions = new ExpeditionSetupContextFacade(InterfaceStub<IFieldGuideRepository>.Create(),
             InterfaceStub<IManifestEntryRepository>.Create(), groups, InterfaceStub<ICheckpointRepository>.Create(),
-            InterfaceStub<IExpectedTimeWindowRepository>.Create());
+            InterfaceStub<IExpectedTimeWindowRepository>.Create(), InterfaceStub<IExpeditionStartService>.Create());
         SessionRepository = InterfaceStub<ITrackingSessionRepository>.Create((method, args) => method.Name switch
         {
             nameof(ITrackingSessionRepository.FindAllByAgencyIdAsync) => Task.FromResult<IEnumerable<TrackingSession>>(

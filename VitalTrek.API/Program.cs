@@ -232,6 +232,7 @@ builder.Services.AddScoped<IWearableDeviceQueryService, WearableDeviceQueryServi
 builder.Services.AddScoped<IParticipantPreparationCommandService, ParticipantPreparationCommandService>();
 builder.Services.AddScoped<IParticipantPreparationQueryService, ParticipantPreparationQueryService>();
 builder.Services.AddScoped<IExpeditionSetupContextFacade, ExpeditionSetupContextFacade>();
+builder.Services.AddScoped<IExpeditionStartService, ExpeditionStartService>();
 
 // Field Tracking Bounded Context Injection Configuration
 builder.Services.AddScoped<ITrackingSessionRepository, TrackingSessionRepository>();

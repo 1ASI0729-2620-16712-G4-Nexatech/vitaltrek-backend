@@ -96,7 +96,8 @@ public static class ModelBuilderExtensions
             .HasColumnType("date").IsRequired();
         builder.Entity<ExpeditionGroup>().Property(group => group.Status)
             .HasConversion(status => status.ToCode(), code => ExpeditionGroupStatusExtensions.FromCode(code))
-            .IsRequired().HasMaxLength(20);
+            .IsRequired().HasMaxLength(20).IsConcurrencyToken();
+        builder.Entity<ExpeditionGroup>().Property(group => group.FieldGuideId).IsConcurrencyToken();
         builder.Entity<ExpeditionGroup>().Ignore(group => group.IsScheduled);
         builder.Entity<ExpeditionGroup>().HasOne<Agency>().WithMany().HasForeignKey(group => group.AgencyId)
             .IsRequired().OnDelete(DeleteBehavior.Restrict);

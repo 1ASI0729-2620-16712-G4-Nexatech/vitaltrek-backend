@@ -29,6 +29,11 @@ public static class ModelBuilderExtensions
         builder.Entity<TrackingSession>().HasOne<ExpeditionGroup>().WithMany()
             .HasForeignKey(s => s.ExpeditionGroupId).IsRequired().OnDelete(DeleteBehavior.Restrict);
         builder.Entity<TrackingSession>().HasIndex(s => s.AgencyId);
+        // MySQL permits multiple NULLs in a unique index, so completed sessions retain their history.
+        builder.Entity<TrackingSession>().Property<int?>("ActiveExpeditionGroupId")
+            .HasComputedColumnSql("CASE WHEN `status` = 'active' THEN `expedition_group_id` ELSE NULL END", stored: true);
+        builder.Entity<TrackingSession>().HasIndex("ActiveExpeditionGroupId").IsUnique()
+            .HasDatabaseName("ux_tracking_sessions_active_group");
         builder.Entity<TrackingSession>().HasIndex(s => new { s.ExpeditionGroupId, s.Status })
             .HasDatabaseName("ix_tracking_sessions_group_status");
 

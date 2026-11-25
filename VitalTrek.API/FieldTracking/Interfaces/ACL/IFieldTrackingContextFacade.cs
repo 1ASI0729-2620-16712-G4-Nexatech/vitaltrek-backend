@@ -1,3 +1,5 @@
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
+
 namespace VitalTrek.API.FieldTracking.Interfaces.ACL;
 
 /// <summary>
@@ -6,6 +8,13 @@ namespace VitalTrek.API.FieldTracking.Interfaces.ACL;
 /// </summary>
 public interface IFieldTrackingContextFacade
 {
+    /// <summary>
+    /// Stages session completion for Tour Closure. Does not save. The caller must validate returns and stage the
+    /// group closure in the same shared unit of work, then save once. Repeated completion preserves the end time.
+    /// </summary>
+    Task<bool> StageSessionEndAsync(AuthenticatedActor actor, int sessionId, DateTimeOffset endedAt,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     ///     Returns the identifier of the active tracking session for an expedition group, or null if none exists.
     /// </summary>

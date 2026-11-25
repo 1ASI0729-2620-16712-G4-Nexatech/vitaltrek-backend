@@ -897,4 +897,9 @@
     <data name="SendNotificationSchema" xml:space="preserve">
         <value>Data required to dispatch an incident notification.</value>
     </data>
+    <data name="TrackingGroupNotScheduled" xml:space="preserve"><value>The group must be scheduled and have no completed tour.</value></data>
+    <data name="TrackingRouteNotReady" xml:space="preserve"><value>Enable the route and configure at least two checkpoints with time windows for every consecutive segment.</value></data>
+    <data name="TrackingProtocolNotReady" xml:space="preserve"><value>Configure an active safety protocol for the route.</value></data>
+    <data name="TrackingParticipantsNotReady" xml:space="preserve"><value>Complete the manifest within capacity. Every participant requires an assigned wearable, emergency contact and active monitoring consent.</value></data>
+    <data name="TrackingConcurrentChange" xml:space="preserve"><value>The expedition changed during the request. Refresh and retry.</value></data>
 </root>
