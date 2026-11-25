@@ -9,6 +9,16 @@ public static class DbUpdateExceptionExtensions
 {
     private const int MySqlDuplicateEntryErrorCode = 1062;
 
+    /// <summary>Identifies a deadlock or lock timeout, whose entire start operation can be retried.</summary>
+    public static bool IsMySqlTransactionConflict(this Exception exception)
+    {
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+            if (current.GetType().Name == "MySqlException" &&
+                current.GetType().GetProperty("Number")?.GetValue(current) is int number)
+                return number is 1205 or 1213;
+        return false;
+    }
+
     /// <summary>
     ///     Determines whether the exception was caused by a unique key violation in MySQL.
     /// </summary>

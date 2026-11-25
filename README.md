@@ -37,6 +37,34 @@ Al iniciar, la API aplica las migraciones pendientes y carga datos de demostraci
 dotnet test
 ```
 
+Las pruebas de persistencia de Field Tracking requieren MySQL 8 local y permiso para crear bases temporales.
+Actívalas en PowerShell con una conexión al servidor de pruebas:
+
+```powershell
+$env:VITALTREK_TEST_MYSQL = 'server=127.0.0.1;port=3306;user=<usuario>;password=<password>'
+dotnet test
+Remove-Item Env:VITALTREK_TEST_MYSQL
+```
+
+Cada prueba crea y elimina únicamente su propia base `vitaltrek_m02_test_<guid>`; ignora la base indicada
+en la conexión y rechaza servidores remotos. Sin esa variable, las pruebas MySQL se omiten.
+
+## Inicio y finalización de expediciones
+
+`POST /api/v1/tracking-sessions` requiere el guía asignado y la agencia autenticada. Valida ruta habilitada,
+ventanas de todos los tramos, protocolo activo, manifiesto dentro de capacidad y preparación de cada participante
+(wearable asignado sin devolución, contacto de emergencia y consentimiento activo). El grupo y la sesión
+se guardan juntos. Devuelve `201` con `Location` al crear, `200` con la sesión original al repetir y `409`
+si falta preparación o el grupo ya finalizó. La base impide dos sesiones activas para un mismo grupo.
+
+La migración `EnforceSingleActiveTrackingSession` conserva el historial. Si ya existen sesiones activas
+duplicadas, MySQL rechaza el cambio completo; deben revisarse antes de reintentar la migración.
+
+El endpoint público `/tracking-sessions/{id}/end` fue retirado. Tour Closure debe usar
+`IFieldTrackingContextFacade.StageSessionEndAsync`: esta operación valida acceso y prepara el fin de sesión
+sin guardar. El cierre completo debe validar las devoluciones, finalizar el grupo y guardar todos los cambios
+en una sola unidad de trabajo.
+
 ## Variables de entorno de producción
 
 | Variable | Descripción |

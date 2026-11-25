@@ -225,6 +225,7 @@ namespace VitalTrek.API.Migrations
                         .HasColumnName("departure_date");
 
                     b.Property<int?>("FieldGuideId")
+                        .IsConcurrencyToken()
                         .HasColumnType("int")
                         .HasColumnName("field_guide_id");
 
@@ -251,6 +252,7 @@ namespace VitalTrek.API.Migrations
                         .HasColumnName("started_at");
 
                     b.Property<string>("Status")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)")
@@ -729,6 +731,12 @@ namespace VitalTrek.API.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    b.Property<int?>("ActiveExpeditionGroupId")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasColumnName("active_expedition_group_id")
+                        .HasComputedColumnSql("CASE WHEN `status` = 'active' THEN `expedition_group_id` ELSE NULL END", true);
+
                     b.Property<int>("AgencyId")
                         .HasColumnType("int")
                         .HasColumnName("agency_id");
@@ -761,6 +769,10 @@ namespace VitalTrek.API.Migrations
 
                     b.HasKey("Id")
                         .HasName("p_k_tracking_sessions");
+
+                    b.HasIndex("ActiveExpeditionGroupId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_tracking_sessions_active_group");
 
                     b.HasIndex("AgencyId")
                         .HasDatabaseName("i_x_tracking_sessions_agency_id");

@@ -14,8 +14,20 @@ public enum EStartTrackingSessionError
     /// <summary>The command data violates the session invariants.</summary>
     InvalidData,
 
-    /// <summary>An active session already exists for this expedition group.</summary>
-    SessionAlreadyActive,
+    /// <summary>The group has already started or finished without an active session to return.</summary>
+    GroupNotScheduled,
+
+    /// <summary>The route is disabled or a consecutive segment has no valid time window.</summary>
+    RouteNotReady,
+
+    /// <summary>The route has no active safety protocol.</summary>
+    ProtocolNotReady,
+
+    /// <summary>The manifest or a participant's device, consent or emergency contact is incomplete.</summary>
+    ParticipantsNotReady,
+
+    /// <summary>The group changed concurrently; the caller can retry after refreshing.</summary>
+    ConcurrentChange,
 
     /// <summary>An unexpected persistence or system error occurred.</summary>
     UnexpectedError

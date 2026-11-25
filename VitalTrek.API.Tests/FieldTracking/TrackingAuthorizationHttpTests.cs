@@ -37,7 +37,6 @@ public sealed class TrackingAuthorizationHttpTests(TrackingApiFixture fixture) :
     [InlineData("GET", "/api/v1/tracking-sessions")]
     [InlineData("GET", "/api/v1/tracking-sessions/11")]
     [InlineData("POST", "/api/v1/tracking-sessions")]
-    [InlineData("PATCH", "/api/v1/tracking-sessions/11/end")]
     [InlineData("GET", "/api/v1/tracking-sessions/11/telemetry-records")]
     [InlineData("POST", "/api/v1/tracking-sessions/11/telemetry-records")]
     public async Task MissingTokenReturns401InsteadOf500(string method, string path)
@@ -59,12 +58,11 @@ public sealed class TrackingAuthorizationHttpTests(TrackingApiFixture fixture) :
     [Theory]
     [InlineData(1)]
     [InlineData(4)]
-    public async Task AdministratorAndTouristCannotStartEndOrUpload(int userId)
+    public async Task AdministratorAndTouristCannotStartOrUpload(int userId)
     {
         foreach (var (method, path) in new[]
         {
             ("POST", "/api/v1/tracking-sessions"),
-            ("PATCH", "/api/v1/tracking-sessions/11/end"),
             ("POST", "/api/v1/tracking-sessions/11/telemetry-records")
         })
         {
@@ -135,7 +133,6 @@ public sealed class TrackingAuthorizationHttpTests(TrackingApiFixture fixture) :
     }
 
     [Theory]
-    [InlineData("PATCH", "/api/v1/tracking-sessions/12/end")]
     [InlineData("POST", "/api/v1/tracking-sessions/12/telemetry-records")]
     public async Task UnassignedGuideCannotMutateAnotherSession(string method, string path)
     {
@@ -155,7 +152,7 @@ public sealed class TrackingAuthorizationHttpTests(TrackingApiFixture fixture) :
         foreach (var (path, verb) in new[]
         {
             ("/api/v1/tracking-sessions", "get"), ("/api/v1/tracking-sessions", "post"),
-            ("/api/v1/tracking-sessions/{id}", "get"), ("/api/v1/tracking-sessions/{id}/end", "patch"),
+            ("/api/v1/tracking-sessions/{id}", "get"),
             ("/api/v1/tracking-sessions/{sessionId}/telemetry-records", "get"),
             ("/api/v1/tracking-sessions/{sessionId}/telemetry-records", "post")
         })
@@ -169,6 +166,10 @@ public sealed class TrackingApiFixture : IAsyncLifetime
     private WebApplication _app = null!;
     private HttpClient _client = null!;
     internal TrackingAccessData Data { get; } = new();
+    private readonly TrackingStartData? _startData;
+
+    public TrackingApiFixture() { }
+    internal TrackingApiFixture(TrackingStartData startData) => _startData = startData;
 
     public async Task InitializeAsync()
     {
@@ -190,10 +191,10 @@ public sealed class TrackingApiFixture : IAsyncLifetime
             args[0] is GetUserByIdQuery query
                 ? Task.FromResult(Data.Users.FirstOrDefault(user => user.Id == query.Id))
                 : throw new InvalidOperationException(method.Name)));
-        builder.Services.AddSingleton<IExpeditionSetupContextFacade>(Data.Expeditions);
-        builder.Services.AddSingleton<ITrackingSessionRepository>(Data.SessionRepository);
+        builder.Services.AddSingleton<IExpeditionSetupContextFacade>(_startData?.Expeditions ?? Data.Expeditions);
+        builder.Services.AddSingleton<ITrackingSessionRepository>(_startData?.Sessions ?? Data.SessionRepository);
         builder.Services.AddSingleton<ITelemetryRecordRepository>(Data.TelemetryRepository);
-        builder.Services.AddSingleton<IUnitOfWork>(Data.UnitOfWork);
+        builder.Services.AddSingleton<IUnitOfWork>(_startData?.UnitOfWork ?? Data.UnitOfWork);
         builder.Services.AddScoped<ITrackingSessionQueryService, TrackingSessionQueryService>();
         builder.Services.AddScoped<ITelemetryRecordQueryService, TelemetryRecordQueryService>();
         builder.Services.AddScoped<ITrackingSessionCommandService, TrackingSessionCommandService>();

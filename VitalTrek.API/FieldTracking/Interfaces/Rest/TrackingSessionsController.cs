@@ -44,31 +44,18 @@ public class TrackingSessionsController(
         return Ok(FieldTrackingResourceAssembler.ToResourceFromEntity(session));
     }
 
-    /// <summary>Starts a new tracking session for an expedition group.</summary>
+    /// <summary>Starts a prepared expedition (201), or returns its existing active session (200).</summary>
     [HttpPost]
     [Authorize(Role.FieldGuide)]
+    [ProducesResponseType<TrackingSessionResource>(StatusCodes.Status201Created)]
+    [ProducesResponseType<TrackingSessionResource>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> StartSession(
         [FromBody] StartTrackingSessionResource resource, CancellationToken cancellationToken)
     {
         var command = FieldTrackingCommandFromResourceAssembler.ToCommandFromResource(resource, Actor.AgencyId);
         var result = await trackingSessionCommandService.Handle(command, Actor, cancellationToken);
-        return ActionResultFromFieldTrackingResultAssembler.ToActionResult(
-            result, this, localizer,
-            FieldTrackingResourceAssembler.ToResourceFromEntity,
-            s => s.Id,
+        return ActionResultFromFieldTrackingResultAssembler.ToStartActionResult(result, this, localizer,
             nameof(GetSessionById));
-    }
-
-    /// <summary>Ends an active tracking session.</summary>
-    [HttpPatch("{id:int}/end")]
-    [Authorize(Role.FieldGuide)]
-    public async Task<IActionResult> EndSession(int id, CancellationToken cancellationToken)
-    {
-        var command = new VitalTrek.API.FieldTracking.Domain.Model.Commands.EndTrackingSessionCommand(Actor.AgencyId, id);
-        var result = await trackingSessionCommandService.Handle(command, Actor, cancellationToken);
-        return ActionResultFromFieldTrackingResultAssembler.ToActionResult(
-            result, this, localizer,
-            FieldTrackingResourceAssembler.ToResourceFromEntity,
-            s => s.Id);
     }
 }

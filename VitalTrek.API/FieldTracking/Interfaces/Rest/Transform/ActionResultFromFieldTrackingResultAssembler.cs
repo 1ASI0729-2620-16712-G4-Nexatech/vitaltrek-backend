@@ -3,6 +3,7 @@ using Microsoft.Extensions.Localization;
 using VitalTrek.API.FieldTracking.Application.Errors;
 using VitalTrek.API.Resources;
 using VitalTrek.API.Shared.Application.Patterns;
+using VitalTrek.API.FieldTracking.Application.Model;
 
 namespace VitalTrek.API.FieldTracking.Interfaces.Rest.Transform;
 
@@ -11,6 +12,19 @@ namespace VitalTrek.API.FieldTracking.Interfaces.Rest.Transform;
 /// </summary>
 public static class ActionResultFromFieldTrackingResultAssembler
 {
+    public static ActionResult ToStartActionResult(Result<TrackingSessionStartResult, EStartTrackingSessionError> result,
+        ControllerBase controller, IStringLocalizer<SharedResource> localizer, string actionName) => result switch
+    {
+        Result<TrackingSessionStartResult, EStartTrackingSessionError>.Success { Value.WasCreated: true } success =>
+            controller.CreatedAtAction(actionName, new { id = success.Value.Session.Id },
+                FieldTrackingResourceAssembler.ToResourceFromEntity(success.Value.Session)),
+        Result<TrackingSessionStartResult, EStartTrackingSessionError>.Success success =>
+            controller.Ok(FieldTrackingResourceAssembler.ToResourceFromEntity(success.Value.Session)),
+        Result<TrackingSessionStartResult, EStartTrackingSessionError>.Failure failure =>
+            ToErrorResult(failure.Error, controller, localizer),
+        _ => Unexpected(controller, localizer)
+    };
+
     /// <summary>
     ///     Assembles the action result of a command, returning 201 for creations and 200 for updates.
     /// </summary>
@@ -33,16 +47,17 @@ public static class ActionResultFromFieldTrackingResultAssembler
     private static ActionResult ToErrorResult(Enum error, ControllerBase controller, IStringLocalizer<SharedResource> localizer) =>
         error switch
         {
-            EStartTrackingSessionError.AccessForbidden or EEndTrackingSessionError.AccessForbidden or
+            EStartTrackingSessionError.AccessForbidden or
                 ESubmitTelemetryBatchError.AccessForbidden => controller.Problem(
                     title: localizer["AccessForbidden"].Value, statusCode: StatusCodes.Status403Forbidden),
             EStartTrackingSessionError.GroupNotFound => controller.NotFound(localizer["ExpeditionGroupNotFound"].Value),
             EStartTrackingSessionError.InvalidData => controller.BadRequest(localizer["InvalidTrackingSessionRequest"].Value),
-            EStartTrackingSessionError.SessionAlreadyActive => controller.Conflict(localizer["TrackingSessionAlreadyActive"].Value),
+            EStartTrackingSessionError.GroupNotScheduled => controller.Conflict(localizer["TrackingGroupNotScheduled"].Value),
+            EStartTrackingSessionError.RouteNotReady => controller.Conflict(localizer["TrackingRouteNotReady"].Value),
+            EStartTrackingSessionError.ProtocolNotReady => controller.Conflict(localizer["TrackingProtocolNotReady"].Value),
+            EStartTrackingSessionError.ParticipantsNotReady => controller.Conflict(localizer["TrackingParticipantsNotReady"].Value),
+            EStartTrackingSessionError.ConcurrentChange => controller.Conflict(localizer["TrackingConcurrentChange"].Value),
             EStartTrackingSessionError.UnexpectedError => Unexpected(controller, localizer),
-            EEndTrackingSessionError.SessionNotFound => controller.NotFound(localizer["TrackingSessionNotFound"].Value),
-            EEndTrackingSessionError.SessionNotActive => controller.Conflict(localizer["TrackingSessionNotActive"].Value),
-            EEndTrackingSessionError.UnexpectedError => Unexpected(controller, localizer),
             ESubmitTelemetryBatchError.InvalidData => controller.BadRequest(localizer["InvalidTelemetryBatchRequest"].Value),
             ESubmitTelemetryBatchError.SessionNotFound => controller.NotFound(localizer["TrackingSessionNotFound"].Value),
             ESubmitTelemetryBatchError.SessionNotActive => controller.Conflict(localizer["TrackingSessionNotActive"].Value),

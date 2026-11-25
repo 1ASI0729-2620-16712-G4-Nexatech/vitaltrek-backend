@@ -897,4 +897,9 @@
     <data name="SendNotificationSchema" xml:space="preserve">
         <value>Datos requeridos para enviar una notificacion de incidente.</value>
     </data>
+    <data name="TrackingGroupNotScheduled" xml:space="preserve"><value>El grupo debe estar programado y no tener un recorrido finalizado.</value></data>
+    <data name="TrackingRouteNotReady" xml:space="preserve"><value>Habilita la ruta y configura al menos dos checkpoints con tiempos para cada tramo consecutivo.</value></data>
+    <data name="TrackingProtocolNotReady" xml:space="preserve"><value>Configura un protocolo de seguridad activo para la ruta.</value></data>
+    <data name="TrackingParticipantsNotReady" xml:space="preserve"><value>Completa el manifiesto sin exceder la capacidad. Cada participante requiere wearable asignado, contacto de emergencia y consentimiento de monitoreo activo.</value></data>
+    <data name="TrackingConcurrentChange" xml:space="preserve"><value>La expedición cambió durante la solicitud. Actualiza y vuelve a intentar.</value></data>
 </root>

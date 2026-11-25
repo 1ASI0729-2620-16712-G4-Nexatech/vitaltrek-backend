@@ -2,6 +2,8 @@ using VitalTrek.API.ExpeditionSetup.Domain.Model.ValueObjects;
 using VitalTrek.API.ExpeditionSetup.Domain.Repositories;
 using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 using VitalTrek.API.IAM.Interfaces.ACL.Resources;
+using VitalTrek.API.ExpeditionSetup.Application.Services;
+using VitalTrek.API.ExpeditionSetup.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.ExpeditionSetup.Application.ACL;
 
@@ -18,8 +20,14 @@ public class ExpeditionSetupContextFacade(
     IManifestEntryRepository manifestEntryRepository,
     IExpeditionGroupRepository expeditionGroupRepository,
     ICheckpointRepository checkpointRepository,
-    IExpectedTimeWindowRepository expectedTimeWindowRepository) : IExpeditionSetupContextFacade
+    IExpectedTimeWindowRepository expectedTimeWindowRepository,
+    IExpeditionStartService expeditionStartService) : IExpeditionSetupContextFacade
 {
+    /// <inheritdoc />
+    public Task<ExpeditionStartStatus> StageExpeditionStart(AuthenticatedActor actor, int expeditionGroupId,
+        DateTimeOffset startedAt, CancellationToken cancellationToken = default) =>
+        expeditionStartService.StageStart(actor, expeditionGroupId, startedAt, cancellationToken);
+
     /// <inheritdoc />
     public async Task<bool> CanAccessExpeditionGroup(AuthenticatedActor actor, int expeditionGroupId,
         CancellationToken cancellationToken = default)

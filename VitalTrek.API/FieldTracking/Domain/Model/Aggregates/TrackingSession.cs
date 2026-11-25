@@ -39,11 +39,16 @@ public partial class TrackingSession
     /// </summary>
     /// <param name="command">The start tracking session command.</param>
     /// <exception cref="ArgumentException">Thrown when the command data is invalid.</exception>
-    public TrackingSession(StartTrackingSessionCommand command)
+    public TrackingSession(StartTrackingSessionCommand command) : this(command, DateTimeOffset.UtcNow)
+    {
+    }
+
+    /// <summary>Starts a session using the same timestamp as the expedition group.</summary>
+    public TrackingSession(StartTrackingSessionCommand command, DateTimeOffset startedAt)
     {
         AgencyId = DomainGuard.RequirePositive(command.AgencyId, nameof(command.AgencyId));
         ExpeditionGroupId = DomainGuard.RequirePositive(command.ExpeditionGroupId, nameof(command.ExpeditionGroupId));
-        StartedAt = DateTimeOffset.UtcNow;
+        StartedAt = startedAt;
         Status = SessionStatus.Active;
     }
 
@@ -52,11 +57,16 @@ public partial class TrackingSession
 
     /// <summary>Closes this session, recording the end time.</summary>
     /// <exception cref="InvalidOperationException">Thrown when the session is not active.</exception>
-    public void End()
+    public void End() => End(DateTimeOffset.UtcNow);
+
+    /// <summary>Stages completion at the timestamp supplied by Tour Closure.</summary>
+    public void End(DateTimeOffset endedAt)
     {
         if (Status != SessionStatus.Active)
             throw new InvalidOperationException("Only an active session can be ended.");
+        if (endedAt < StartedAt)
+            throw new ArgumentException("The session cannot end before it starts.", nameof(endedAt));
         Status = SessionStatus.Completed;
-        EndedAt = DateTimeOffset.UtcNow;
+        EndedAt = endedAt;
     }
 }
