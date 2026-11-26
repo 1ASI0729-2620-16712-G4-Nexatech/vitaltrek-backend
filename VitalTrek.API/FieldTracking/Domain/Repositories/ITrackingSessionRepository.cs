@@ -8,6 +8,8 @@ namespace VitalTrek.API.FieldTracking.Domain.Repositories;
 /// </summary>
 public interface ITrackingSessionRepository : IBaseRepository<TrackingSession>
 {
+    Task<TrackingSession?> FindLatestByGroupAndAgencyAsync(int expeditionGroupId, int agencyId, CancellationToken ct = default);
+
     /// <summary>Retrieves all sessions for an agency.</summary>
     Task<IEnumerable<TrackingSession>> FindAllByAgencyIdAsync(int agencyId, CancellationToken ct = default);
 

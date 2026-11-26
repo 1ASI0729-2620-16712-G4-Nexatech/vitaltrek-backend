@@ -26,6 +26,11 @@ using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Services;
 using VitalTrek.API.Shared.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Interfaces.Asp.Configuration;
 using VitalTrek.API.Tests.Support;
+using VitalTrek.API.FieldTracking.Application.ACL;
+using VitalTrek.API.FieldTracking.Interfaces.ACL;
+using VitalTrek.API.CheckpointSync.Interfaces.ACL;
+using VitalTrek.API.CheckpointSync.Application.ACL;
+using VitalTrek.API.CheckpointSync.Domain.Repositories;
 using Xunit;
 
 namespace VitalTrek.API.Tests.FieldTracking;
@@ -205,6 +210,11 @@ public sealed class TrackingApiFixture : IAsyncLifetime
         builder.Services.AddScoped<ITelemetryRecordQueryService, TelemetryRecordQueryService>();
         builder.Services.AddScoped<ITrackingSessionCommandService, TrackingSessionCommandService>();
         builder.Services.AddScoped<ITelemetryRecordCommandService, TelemetryRecordCommandService>();
+        builder.Services.AddScoped<IFieldTrackingContextFacade, FieldTrackingContextFacade>();
+        builder.Services.AddScoped<ICheckpointSyncContextFacade>(provider => new CheckpointSyncContextFacade(
+            _telemetryData?.PassageRepository ?? InterfaceStub<ICheckpointPassageRepository>.Create(),
+            provider.GetRequiredService<IFieldTrackingContextFacade>()));
+        builder.Services.AddScoped<ITrackingProgressQueryService, TrackingProgressQueryService>();
         _app = builder.Build();
         _app.UseExceptionHandler();
         _app.UseRequestAuthorization();

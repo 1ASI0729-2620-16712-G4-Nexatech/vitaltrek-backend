@@ -215,6 +215,7 @@ builder.Services.AddScoped<ITrackingSessionCommandService, TrackingSessionComman
 builder.Services.AddScoped<ITrackingSessionQueryService, TrackingSessionQueryService>();
 builder.Services.AddScoped<ITelemetryRecordCommandService, TelemetryRecordCommandService>();
 builder.Services.AddScoped<ITelemetryRecordQueryService, TelemetryRecordQueryService>();
+builder.Services.AddScoped<ITrackingProgressQueryService, TrackingProgressQueryService>();
 builder.Services.AddScoped<IFieldTrackingContextFacade, FieldTrackingContextFacade>();
 
 // Checkpoint Sync Bounded Context Injection Configuration

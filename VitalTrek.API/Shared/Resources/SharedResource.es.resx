@@ -907,4 +907,5 @@
     <data name="TelemetryConsentRequired" xml:space="preserve"><value>Se requiere consentimiento de monitoreo activo y activación del wearable.</value></data>
     <data name="TelemetryIdentityConflict" xml:space="preserve"><value>El identificador de lectura ya se utilizó para una captura diferente.</value></data>
     <data name="TelemetryConcurrentChange" xml:space="preserve"><value>Las lecturas cambiaron simultáneamente. Reintenta con los mismos identificadores de lectura.</value></data>
+    <data name="TrackingProgressNotFound" xml:space="preserve"><value>No hay una sesión de seguimiento disponible para esta expedición.</value></data>
 </root>

@@ -9,6 +9,10 @@ namespace VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 /// </summary>
 public interface IExpeditionSetupContextFacade
 {
+    /// <summary>Returns only the route and participant identifiers visible in the actor's group scope.</summary>
+    Task<TrackingProgressContext?> FindTrackingProgressContext(AuthenticatedActor actor, int expeditionGroupId,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Finds an unreturned, unambiguous wearable assignment in the authenticated actor's group scope.</summary>
     Task<TrackingParticipantPreparation?> FindTrackingPreparation(AuthenticatedActor actor, int expeditionGroupId,
         int wearableDeviceId, CancellationToken cancellationToken = default);

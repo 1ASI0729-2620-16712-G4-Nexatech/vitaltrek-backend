@@ -8,6 +8,10 @@ namespace VitalTrek.API.FieldTracking.Application.Internal;
 /// </summary>
 internal static class FieldTrackingAuthorization
 {
+    public static bool CanReadProgress(AuthenticatedActor actor, int agencyId) => CanRead(actor, agencyId) ||
+        actor.UserId > 0 && actor.AgencyId > 0 && actor.AgencyId == agencyId &&
+        actor.RoleCode == "adventure_tourist" && !string.IsNullOrWhiteSpace(actor.IdentityDocument);
+
     public static bool CanRead(AuthenticatedActor actor, int agencyId) =>
         actor.UserId > 0 && actor.AgencyId > 0 && actor.AgencyId == agencyId &&
         (actor.RoleCode == "operations_administrator" || CanWrite(actor, agencyId));

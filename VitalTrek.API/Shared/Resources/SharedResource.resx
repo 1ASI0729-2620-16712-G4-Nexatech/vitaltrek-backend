@@ -907,4 +907,5 @@
     <data name="TelemetryConsentRequired" xml:space="preserve"><value>Active monitoring consent and wearable activation are required.</value></data>
     <data name="TelemetryIdentityConflict" xml:space="preserve"><value>The client record identifier was already used for a different capture.</value></data>
     <data name="TelemetryConcurrentChange" xml:space="preserve"><value>The readings changed concurrently. Retry with the same client record identifiers.</value></data>
+    <data name="TrackingProgressNotFound" xml:space="preserve"><value>No tracking session is available for this expedition.</value></data>
 </root>

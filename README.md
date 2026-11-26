@@ -65,6 +65,25 @@ El endpoint público `/tracking-sessions/{id}/end` fue retirado. Tour Closure de
 sin guardar. El cierre completo debe validar las devoluciones, finalizar el grupo y guardar todos los cambios
 en una sola unidad de trabajo.
 
+## Progreso persistido para M04
+
+`GET /api/v1/tracking-sessions/{sessionId}/progress` consulta una sesión. Para recargar una expedición sin
+conocer su sesión, `GET /api/v1/expedition-groups/{groupId}/tracking-progress` resuelve la sesión más reciente.
+Ambos endpoints requieren Bearer: el administrador consulta su agencia, el guía sus grupos asignados y el
+turista los grupos donde figura en el manifiesto. Un recurso fuera del alcance devuelve `404` con código
+`Tracking.ProgressNotFound`; un token ausente o inválido devuelve `401`.
+
+La respuesta contiene sesión y estado, total y cantidad de checkpoints confirmados, porcentaje por checkpoints,
+último checkpoint confirmado, siguiente checkpoint, pasos confirmados y últimas lecturas por participante.
+Se cuentan únicamente los pasos persistidos del guía asignado y de la ruta del grupo; un paso posterior no
+completa un hueco anterior. `participants` se filtra en SQL: para el turista solo contiene sus mediciones,
+sin documentos ni contactos de otros participantes. La captura más reciente se selecciona por `recordedAt`,
+independientemente del orden en que se recibieron los lotes.
+
+`synchronizedAt` procede de recepciones persistidas y es `null` cuando todavía no existen datos. Consultar o
+recargar no cambia esa fecha. El frontend debe distinguirla de `participants[].recordedAt` y de sus pendientes
+locales. Esta consulta no calcula riesgo ni escribe progreso ficticio. No requiere una migración nueva.
+
 ## Contrato de telemetría para M03 y Sync Batch
 
 `POST /api/v1/tracking-sessions/{sessionId}/telemetry-records` conserva su respuesta `200` con un arreglo

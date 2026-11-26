@@ -9,6 +9,10 @@ namespace VitalTrek.API.FieldTracking.Interfaces.ACL;
 /// </summary>
 public interface IFieldTrackingContextFacade
 {
+    /// <summary>Checks access to a safe session projection; tourist membership is resolved by Expedition Setup.</summary>
+    Task<bool> CanReadSessionProgressAsync(AuthenticatedActor actor, int sessionId,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Stages one authorized reading without saving. Sync Batch owns the transaction and handles conflicts.</summary>
     Task<TelemetryReadingStageResult> StageTelemetryReadingAsync(AuthenticatedActor actor, int sessionId,
         TelemetryReadingInput reading, CancellationToken cancellationToken = default);
