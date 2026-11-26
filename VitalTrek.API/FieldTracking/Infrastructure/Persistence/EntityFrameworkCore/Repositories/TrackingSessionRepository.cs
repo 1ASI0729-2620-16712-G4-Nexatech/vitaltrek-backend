@@ -14,6 +14,12 @@ public class TrackingSessionRepository(AppDbContext context)
     : BaseRepository<TrackingSession>(context), ITrackingSessionRepository
 {
     /// <inheritdoc />
+    public Task<TrackingSession?> FindLatestByGroupAndAgencyAsync(int expeditionGroupId, int agencyId,
+        CancellationToken ct = default) => Context.Set<TrackingSession>().AsNoTracking()
+        .Where(session => session.ExpeditionGroupId == expeditionGroupId && session.AgencyId == agencyId)
+        .OrderByDescending(session => session.StartedAt).ThenByDescending(session => session.Id).FirstOrDefaultAsync(ct);
+
+    /// <inheritdoc />
     public async Task<IEnumerable<TrackingSession>> FindAllByAgencyIdAsync(int agencyId, CancellationToken ct = default) =>
         await Context.Set<TrackingSession>()
             .Where(s => s.AgencyId == agencyId)

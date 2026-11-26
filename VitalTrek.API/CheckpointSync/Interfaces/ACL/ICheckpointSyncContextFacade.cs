@@ -1,3 +1,6 @@
+using VitalTrek.API.CheckpointSync.Interfaces.ACL.Resources;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
+
 namespace VitalTrek.API.CheckpointSync.Interfaces.ACL;
 
 /// <summary>
@@ -6,6 +9,10 @@ namespace VitalTrek.API.CheckpointSync.Interfaces.ACL;
 /// </summary>
 public interface ICheckpointSyncContextFacade
 {
+    /// <summary>Returns persisted, synchronized passages only after checking the actor's access to the session.</summary>
+    Task<IReadOnlyList<ConfirmedCheckpointPassage>> FindConfirmedPassagesAsync(AuthenticatedActor actor, int sessionId,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     ///     Returns the latest time a checkpoint was passed within a tracking session, or null if there is no passage.
     /// </summary>

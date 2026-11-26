@@ -13,6 +13,24 @@ public class TelemetryRecordRepository(AppDbContext context)
     : BaseRepository<TelemetryRecord>(context), ITelemetryRecordRepository
 {
     /// <inheritdoc />
+    public async Task<IReadOnlyList<TelemetryRecord>> FindLatestForMembersAsync(int sessionId,
+        IReadOnlyCollection<int> memberIds, CancellationToken ct = default)
+    {
+        if (memberIds.Count == 0) return [];
+        var records = Context.Set<TelemetryRecord>().AsNoTracking();
+        return await records.Where(record => record.SessionId == sessionId && record.MemberId.HasValue &&
+            memberIds.Contains(record.MemberId.Value) && !records.Any(newer => newer.SessionId == sessionId &&
+                newer.MemberId == record.MemberId && (newer.RecordedAt > record.RecordedAt ||
+                    newer.RecordedAt == record.RecordedAt && newer.Id > record.Id)))
+            .OrderBy(record => record.MemberId).ToListAsync(ct);
+    }
+
+    /// <inheritdoc />
+    public Task<DateTimeOffset?> FindLastSynchronizationAsync(int sessionId, CancellationToken ct = default) =>
+        Context.Set<TelemetryRecord>().Where(record => record.SessionId == sessionId)
+            .Select(record => (DateTimeOffset?)record.SynchronizedAt).MaxAsync(ct);
+
+    /// <inheritdoc />
     public async Task<TelemetryRecord?> FindByClientRecordIdAsync(int sessionId, Guid clientRecordId,
         CancellationToken ct = default) =>
         Context.Set<TelemetryRecord>().Local.FirstOrDefault(record => record.SessionId == sessionId &&

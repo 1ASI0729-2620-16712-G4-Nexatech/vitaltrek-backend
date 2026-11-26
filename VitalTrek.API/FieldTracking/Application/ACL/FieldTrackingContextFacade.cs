@@ -22,6 +22,16 @@ public class FieldTrackingContextFacade(ITrackingSessionRepository trackingSessi
     : IFieldTrackingContextFacade
 {
     /// <inheritdoc />
+    public async Task<bool> CanReadSessionProgressAsync(AuthenticatedActor actor, int sessionId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!FieldTrackingAuthorization.CanReadProgress(actor, actor.AgencyId)) return false;
+        var session = await trackingSessionRepository.FindByIdAndAgencyIdAsync(sessionId, actor.AgencyId, cancellationToken);
+        return session is not null && await expeditionSetupContextFacade.CanAccessExpeditionGroup(actor,
+            session.ExpeditionGroupId, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<TelemetryReadingStageResult> StageTelemetryReadingAsync(AuthenticatedActor actor, int sessionId,
         TelemetryReadingInput reading, CancellationToken cancellationToken = default)
     {

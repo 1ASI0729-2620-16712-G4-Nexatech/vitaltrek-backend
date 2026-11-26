@@ -79,7 +79,9 @@ internal sealed class TrackingStartData
         var protocols = Stub<ISafetyProtocolRepository>((_, _) => Task.FromResult<IEnumerable<SafetyProtocol>>(Protocols));
         var manifest = Stub<IManifestEntryRepository>((method, args) => method.Name == nameof(IManifestEntryRepository.FindByIdAndScopeAsync)
             ? Task.FromResult(Members.FirstOrDefault(member => member.Id == (int)args[0]!))
-            : Task.FromResult<IEnumerable<ManifestEntry>>(Members));
+            : Task.FromResult<IEnumerable<ManifestEntry>>(Members.Where(member =>
+                ((AccessScope)args[0]!).IdentityDocument is null ||
+                member.IdentityDocument == ((AccessScope)args[0]!).IdentityDocument).ToArray()));
         var preparations = Stub<IParticipantPreparationRepository>((method, _) => method.Name switch
         {
             nameof(IParticipantPreparationRepository.FindByScopeAsync) => Task.FromResult<IEnumerable<ParticipantPreparation>>(Preparations),
@@ -94,6 +96,8 @@ internal sealed class TrackingStartData
 
         Sessions = Stub<ITrackingSessionRepository>((method, args) => method.Name switch
         {
+            nameof(ITrackingSessionRepository.FindLatestByGroupAndAgencyAsync) => Task.FromResult(
+                Session?.ExpeditionGroupId == (int)args[0]! && Session.AgencyId == (int)args[1]! ? Session : null),
             nameof(ITrackingSessionRepository.FindActiveByGroupIdAsync) => Task.FromResult(
                 Session is { IsActive: true } && Session.ExpeditionGroupId == (int)args[0]! ? Session : null),
             nameof(ITrackingSessionRepository.FindByIdAndAgencyIdAsync) => Task.FromResult(
@@ -111,7 +115,8 @@ internal sealed class TrackingStartData
     }
 
     private bool Visible(AccessScope scope) => scope.AgencyId == Group.AgencyId &&
-        (scope.FieldGuideId is null || scope.FieldGuideId == Group.FieldGuideId);
+        (scope.FieldGuideId is null || scope.FieldGuideId == Group.FieldGuideId) &&
+        (scope.IdentityDocument is null || Members.Any(member => member.IdentityDocument == scope.IdentityDocument));
 
     private Task AddSession(TrackingSession session)
     {

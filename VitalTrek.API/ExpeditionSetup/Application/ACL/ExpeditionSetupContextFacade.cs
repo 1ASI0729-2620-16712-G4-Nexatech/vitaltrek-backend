@@ -26,6 +26,22 @@ public class ExpeditionSetupContextFacade(
     IWearableDeviceRepository wearableDeviceRepository) : IExpeditionSetupContextFacade
 {
     /// <inheritdoc />
+    public async Task<TrackingProgressContext?> FindTrackingProgressContext(AuthenticatedActor actor,
+        int expeditionGroupId, CancellationToken cancellationToken = default)
+    {
+        var scope = ToScope(actor);
+        if (scope is null || expeditionGroupId <= 0) return null;
+        var group = await expeditionGroupRepository.FindByIdAndScopeAsync(expeditionGroupId, scope, cancellationToken);
+        if (group is null) return null;
+        var checkpoints = await checkpointRepository.FindByAgencyIdAsync(actor.AgencyId, group.RouteId, cancellationToken);
+        var members = await manifestEntryRepository.FindByScopeAsync(scope, group.Id, cancellationToken);
+        return new TrackingProgressContext(group.RouteId, group.FieldGuideId,
+            checkpoints.OrderBy(checkpoint => checkpoint.SequenceOrder)
+                .Select(checkpoint => new TrackingRouteCheckpoint(checkpoint.Id, checkpoint.SequenceOrder, checkpoint.Location)).ToArray(),
+            members.Select(member => member.Id).ToArray());
+    }
+
+    /// <inheritdoc />
     public async Task<TrackingParticipantPreparation?> FindTrackingPreparation(AuthenticatedActor actor,
         int expeditionGroupId, int wearableDeviceId, CancellationToken cancellationToken = default)
     {
