@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using VitalTrek.API.FieldTracking.Application.Errors;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 using VitalTrek.API.Shared.Application.Patterns;
 using VitalTrek.API.FieldTracking.Application.Model;
 

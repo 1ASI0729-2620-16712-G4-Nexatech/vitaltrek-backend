@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi;
 using VitalTrek.API.ExpeditionSetup.Interfaces.Rest.Resources;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 
 namespace VitalTrek.API.ExpeditionSetup.Interfaces.Rest.Transform;
 

@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
 using Scalar.AspNetCore;
 using VitalTrek.API.CheckpointSync.Application.ACL;
 using VitalTrek.API.CheckpointSync.Application.Internal.CommandServices;
@@ -53,7 +50,7 @@ using VitalTrek.API.IncidentResponse.Application.Services;
 using VitalTrek.API.IncidentResponse.Domain.Repositories;
 using VitalTrek.API.IncidentResponse.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 using VitalTrek.API.IncidentResponse.Interfaces.Rest.Transform;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 using VitalTrek.API.SafetyMonitoring.Application.ACL;
 using VitalTrek.API.SafetyMonitoring.Application.Internal.CommandServices;
 using VitalTrek.API.SafetyMonitoring.Application.Internal.OutboundServices.ACL;
@@ -67,11 +64,13 @@ using VitalTrek.API.Shared.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Interfaces.Asp.Configuration;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.Shared.Infrastructure.Pipeline.Middleware.Components;
 using VitalTrek.API.TourClosure.Application.Internal.CommandServices;
 using VitalTrek.API.TourClosure.Application.Internal.QueryServices;
 using VitalTrek.API.TourClosure.Application.Services;
 using VitalTrek.API.TourClosure.Domain.Repositories;
 using VitalTrek.API.TourClosure.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using SharedProblemDetailsFactory = VitalTrek.API.Shared.Interfaces.Rest.ProblemDetails.ProblemDetailsFactory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,39 +86,13 @@ builder.Services.AddRouting(options => options.LowercaseUrls = false);
 builder.Services.AddControllers(options => options.Conventions.Add(new KebabCaseRouteNamingConvention()))
     .AddDataAnnotationsLocalization(options =>
         options.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource)))
-    .ConfigureApiBehaviorOptions(options =>
-    {
-        options.InvalidModelStateResponseFactory = context =>
-        {
-            var localizer = context.HttpContext.RequestServices
-                .GetRequiredService<IStringLocalizer<SharedResource>>();
-            var problemDetailsFactory = context.HttpContext.RequestServices
-                .GetRequiredService<ProblemDetailsFactory>();
-            var problemDetails = problemDetailsFactory.CreateValidationProblemDetails(
-                context.HttpContext,
-                context.ModelState,
-                statusCode: StatusCodes.Status400BadRequest,
-                title: localizer["InvalidModelStateTitle"].Value);
+    .ConfigureApiBehaviorOptions(options => options.InvalidModelStateResponseFactory = context =>
+        context.HttpContext.RequestServices.GetRequiredService<SharedProblemDetailsFactory>()
+            .CreateValidationProblemDetails(context));
 
-            var result = new BadRequestObjectResult(problemDetails);
-            result.ContentTypes.Add("application/problem+json");
-            return result;
-        };
-    });
-
-// Register RFC 7807 ProblemDetails payloads for centralized exception handling.
-builder.Services.AddProblemDetails(options =>
-{
-    options.CustomizeProblemDetails = context =>
-    {
-        if (context.ProblemDetails.Status is null or >= 500)
-        {
-            var localizer = context.HttpContext.RequestServices.GetRequiredService<IStringLocalizer<SharedResource>>();
-            context.ProblemDetails.Title ??= localizer["UnexpectedServerError"].Value;
-            context.ProblemDetails.Detail ??= localizer["UnexpectedErrorProcessingRequest"].Value;
-        }
-    };
-});
+// Shared HTTP error handling.
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // Generate the OpenAPI document with ASP.NET Core's built-in support.
 builder.Services.AddOpenApi(options =>
@@ -187,6 +160,7 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 
 // Shared Bounded Context Injection Configuration
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddSingleton<SharedProblemDetailsFactory>();
 
 // IAM Bounded Context Injection Configuration
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
@@ -288,10 +262,7 @@ using (var scope = app.Services.CreateScope())
     ExpeditionSetupDemoDataSeeder.SeedExpeditionGroups(context, demoAgencyId);
 }
 
-// Configure the HTTP request pipeline.
-app.UseExceptionHandler();
-
-// Localization must run before OpenAPI so generated documentation follows the request culture.
+// Localization wraps error handling so error responses use the requested culture too.
 string[] supportedCultures = ["en-US", "en", "es-419", "es"];
 var localizationOptions = new RequestLocalizationOptions()
     .SetDefaultCulture(supportedCultures[0])
@@ -299,6 +270,7 @@ var localizationOptions = new RequestLocalizationOptions()
     .AddSupportedUICultures(supportedCultures);
 localizationOptions.ApplyCurrentCultureToResponseHeaders = true;
 app.UseRequestLocalization(localizationOptions);
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 

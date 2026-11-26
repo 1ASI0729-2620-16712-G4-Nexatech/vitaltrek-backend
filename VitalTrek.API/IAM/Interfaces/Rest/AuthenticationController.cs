@@ -5,7 +5,7 @@ using VitalTrek.API.IAM.Application.Services;
 using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Attributes;
 using VitalTrek.API.IAM.Interfaces.Rest.Resources;
 using VitalTrek.API.IAM.Interfaces.Rest.Transform;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 
 namespace VitalTrek.API.IAM.Interfaces.Rest;
 

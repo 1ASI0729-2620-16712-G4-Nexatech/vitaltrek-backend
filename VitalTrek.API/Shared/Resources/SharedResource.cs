@@ -1,4 +1,4 @@
-namespace VitalTrek.API.Resources;
+namespace VitalTrek.API.Shared.Resources;
 
 /// <summary>
 ///     Marker class used by ASP.NET Core's <c>IStringLocalizer</c> to locate the shared
