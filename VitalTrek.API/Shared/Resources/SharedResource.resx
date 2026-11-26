@@ -902,4 +902,9 @@
     <data name="TrackingProtocolNotReady" xml:space="preserve"><value>Configure an active safety protocol for the route.</value></data>
     <data name="TrackingParticipantsNotReady" xml:space="preserve"><value>Complete the manifest within capacity. Every participant requires an assigned wearable, emergency contact and active monitoring consent.</value></data>
     <data name="TrackingConcurrentChange" xml:space="preserve"><value>The expedition changed during the request. Refresh and retry.</value></data>
+    <data name="TelemetryBatchTooLarge" xml:space="preserve"><value>A telemetry request supports at most 500 readings.</value></data>
+    <data name="TelemetryWearableNotAssigned" xml:space="preserve"><value>The wearable has no valid assignment in this expedition group.</value></data>
+    <data name="TelemetryConsentRequired" xml:space="preserve"><value>Active monitoring consent and wearable activation are required.</value></data>
+    <data name="TelemetryIdentityConflict" xml:space="preserve"><value>The client record identifier was already used for a different capture.</value></data>
+    <data name="TelemetryConcurrentChange" xml:space="preserve"><value>The readings changed concurrently. Retry with the same client record identifiers.</value></data>
 </root>

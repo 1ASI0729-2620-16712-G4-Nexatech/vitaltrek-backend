@@ -678,9 +678,25 @@ namespace VitalTrek.API.Migrations
                         .HasColumnType("double")
                         .HasColumnName("altitude");
 
+                    b.Property<int?>("Battery")
+                        .HasColumnType("int")
+                        .HasColumnName("battery");
+
+                    b.Property<Guid>("ClientRecordId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("client_record_id");
+
                     b.Property<DateTimeOffset?>("CreatedAt")
                         .HasColumnType("datetime")
                         .HasColumnName("created_at");
+
+                    b.Property<double?>("DeviationMeters")
+                        .HasColumnType("double")
+                        .HasColumnName("deviation_meters");
+
+                    b.Property<int?>("HeartRate")
+                        .HasColumnType("int")
+                        .HasColumnName("heart_rate");
 
                     b.Property<double>("Latitude")
                         .HasPrecision(10, 7)
@@ -692,17 +708,23 @@ namespace VitalTrek.API.Migrations
                         .HasColumnType("double")
                         .HasColumnName("longitude");
 
-                    b.Property<DateTimeOffset>("RecordedAt")
-                        .HasColumnType("datetime")
+                    b.Property<int?>("MemberId")
+                        .HasColumnType("int")
+                        .HasColumnName("member_id");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasPrecision(6)
+                        .HasColumnType("datetime(6)")
                         .HasColumnName("recorded_at");
 
                     b.Property<int>("SessionId")
                         .HasColumnType("int")
                         .HasColumnName("session_id");
 
-                    b.Property<DateTimeOffset>("SyncedAt")
-                        .HasColumnType("datetime")
-                        .HasColumnName("synced_at");
+                    b.Property<DateTime>("SynchronizedAt")
+                        .HasPrecision(6)
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("synchronized_at");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetime")
@@ -715,8 +737,15 @@ namespace VitalTrek.API.Migrations
                     b.HasKey("Id")
                         .HasName("p_k_telemetry_records");
 
+                    b.HasIndex("MemberId")
+                        .HasDatabaseName("i_x_telemetry_records_member_id");
+
                     b.HasIndex("SessionId")
                         .HasDatabaseName("i_x_telemetry_records_session_id");
+
+                    b.HasIndex("SessionId", "ClientRecordId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_telemetry_records_session_client_record");
 
                     b.HasIndex("SessionId", "WearableDeviceId", "RecordedAt")
                         .HasDatabaseName("ix_telemetry_records_session_wearable_time");
@@ -1272,6 +1301,12 @@ namespace VitalTrek.API.Migrations
 
             modelBuilder.Entity("VitalTrek.API.FieldTracking.Domain.Model.Aggregates.TelemetryRecord", b =>
                 {
+                    b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.ManifestEntry", null)
+                        .WithMany()
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("f_k_telemetry_records_manifest_entries_member_id");
+
                     b.HasOne("VitalTrek.API.FieldTracking.Domain.Model.Aggregates.TrackingSession", null)
                         .WithMany()
                         .HasForeignKey("SessionId")

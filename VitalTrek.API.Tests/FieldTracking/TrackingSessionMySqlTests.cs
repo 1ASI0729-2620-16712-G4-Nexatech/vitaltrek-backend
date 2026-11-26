@@ -143,7 +143,8 @@ public sealed class TrackingSessionMySqlTests
         var preparation = new ExpeditionStartService(groups, guides, new RouteRepository(context), checkpoints,
             windows, new SafetyProtocolRepository(context), manifest, new ParticipantPreparationRepository(context),
             new WearableDeviceRepository(context));
-        var facade = new ExpeditionSetupContextFacade(guides, manifest, groups, checkpoints, windows, preparation);
+        var facade = new ExpeditionSetupContextFacade(guides, manifest, groups, checkpoints, windows, preparation,
+            new ParticipantPreparationRepository(context), new WearableDeviceRepository(context));
         return new TrackingSessionCommandService(new TrackingSessionRepository(context), facade,
             unitOfWork ?? new UnitOfWork(context), NullLogger<TrackingSessionCommandService>.Instance);
     }
@@ -201,7 +202,7 @@ internal sealed class LocalTrackingDatabase : IAsyncDisposable
     public AppDbContext Open(params IInterceptor[] interceptors) => new(new DbContextOptionsBuilder<AppDbContext>()
         .UseMySQL(ConnectionString).AddInterceptors(interceptors).Options);
 
-    public static async Task<LocalTrackingDatabase> CreateAsync(bool previousVersion = false)
+    public static async Task<LocalTrackingDatabase> CreateAsync(bool previousVersion = false, string? migration = null)
     {
         var database = new LocalTrackingDatabase();
         try
@@ -212,7 +213,8 @@ internal sealed class LocalTrackingDatabase : IAsyncDisposable
             await create.ExecuteNonQueryAsync();
             database._created = true;
             await using var context = database.Open();
-            await context.GetService<IMigrator>().MigrateAsync(previousVersion ? "20261111043327_AddTourClosure" : null);
+            await context.GetService<IMigrator>().MigrateAsync(migration ??
+                (previousVersion ? "20261111043327_AddTourClosure" : null));
             var data = new TrackingStartData();
             context.Add(TrackingStartData.WithId(new Agency(new SignUpCommand("Test agency", "Admin",
                 new Username("admin@example.test"), "test-only-password")), 1));

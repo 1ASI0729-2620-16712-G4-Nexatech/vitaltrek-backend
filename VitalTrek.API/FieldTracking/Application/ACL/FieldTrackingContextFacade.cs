@@ -4,6 +4,12 @@ using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 using VitalTrek.API.FieldTracking.Application.Internal;
 using VitalTrek.API.IAM.Interfaces.ACL.Resources;
 using VitalTrek.API.FieldTracking.Domain.Model.ValueObjects;
+using VitalTrek.API.FieldTracking.Application.Services;
+using VitalTrek.API.FieldTracking.Application.Model;
+using VitalTrek.API.FieldTracking.Application.Errors;
+using VitalTrek.API.FieldTracking.Domain.Model.Commands;
+using VitalTrek.API.FieldTracking.Interfaces.ACL.Resources;
+using VitalTrek.API.Shared.Application.Patterns;
 
 namespace VitalTrek.API.FieldTracking.Application.ACL;
 
@@ -11,9 +17,39 @@ namespace VitalTrek.API.FieldTracking.Application.ACL;
 ///     Implementation of <see cref="IFieldTrackingContextFacade"/> backed by the Field Tracking repositories.
 /// </summary>
 public class FieldTrackingContextFacade(ITrackingSessionRepository trackingSessionRepository,
-    IExpeditionSetupContextFacade expeditionSetupContextFacade)
+    IExpeditionSetupContextFacade expeditionSetupContextFacade,
+    ITelemetryRecordCommandService telemetryRecordCommandService)
     : IFieldTrackingContextFacade
 {
+    /// <inheritdoc />
+    public async Task<TelemetryReadingStageResult> StageTelemetryReadingAsync(AuthenticatedActor actor, int sessionId,
+        TelemetryReadingInput reading, CancellationToken cancellationToken = default)
+    {
+        var entry = new TelemetryRecordEntry(reading.Latitude, reading.Longitude, reading.Altitude, reading.RecordedAt,
+            reading.ClientRecordId, reading.HeartRate, reading.Battery, reading.DeviationMeters);
+        var result = await telemetryRecordCommandService.StageReading(new StageTelemetryReadingCommand(actor.AgencyId,
+            sessionId, reading.WearableDeviceId, entry), actor, cancellationToken);
+        return result switch
+        {
+            Result<StagedTelemetryReading, ESubmitTelemetryBatchError>.Success success => new(reading.ClientRecordId,
+                success.Value.IsDuplicate ? TelemetryReadingStageStatus.Duplicate : TelemetryReadingStageStatus.Accepted),
+            Result<StagedTelemetryReading, ESubmitTelemetryBatchError>.Failure failure => new(reading.ClientRecordId,
+                failure.Error switch
+                {
+                    ESubmitTelemetryBatchError.AccessForbidden => TelemetryReadingStageStatus.AccessForbidden,
+                    ESubmitTelemetryBatchError.InvalidData => TelemetryReadingStageStatus.InvalidData,
+                    ESubmitTelemetryBatchError.SessionNotFound => TelemetryReadingStageStatus.SessionNotFound,
+                    ESubmitTelemetryBatchError.SessionNotActive => TelemetryReadingStageStatus.SessionNotActive,
+                    ESubmitTelemetryBatchError.WearableNotAssigned => TelemetryReadingStageStatus.WearableNotAssigned,
+                    ESubmitTelemetryBatchError.ConsentRequired => TelemetryReadingStageStatus.ConsentRequired,
+                    ESubmitTelemetryBatchError.RecordIdentityConflict => TelemetryReadingStageStatus.RecordIdentityConflict,
+                    ESubmitTelemetryBatchError.ConcurrentChange => TelemetryReadingStageStatus.ConcurrentChange,
+                    _ => TelemetryReadingStageStatus.UnexpectedError
+                }),
+            _ => new(reading.ClientRecordId, TelemetryReadingStageStatus.UnexpectedError)
+        };
+    }
+
     /// <inheritdoc />
     public async Task<bool> StageSessionEndAsync(AuthenticatedActor actor, int sessionId, DateTimeOffset endedAt,
         CancellationToken cancellationToken = default)

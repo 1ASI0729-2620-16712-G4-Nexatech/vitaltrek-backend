@@ -9,6 +9,10 @@ namespace VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
 /// </summary>
 public interface IExpeditionSetupContextFacade
 {
+    /// <summary>Finds an unreturned, unambiguous wearable assignment in the authenticated actor's group scope.</summary>
+    Task<TrackingParticipantPreparation?> FindTrackingPreparation(AuthenticatedActor actor, int expeditionGroupId,
+        int wearableDeviceId, CancellationToken cancellationToken = default);
+
     /// <summary>Validates readiness and stages the group start. Does not save; the caller must use the shared unit of work.</summary>
     Task<ExpeditionStartStatus> StageExpeditionStart(AuthenticatedActor actor, int expeditionGroupId,
         DateTimeOffset startedAt, CancellationToken cancellationToken = default);

@@ -11,4 +11,10 @@ public record TelemetryRecordResource(
     double Longitude,
     double Altitude,
     DateTimeOffset RecordedAt,
-    DateTimeOffset SyncedAt);
+    DateTimeOffset SynchronizedAt,
+    Guid ClientRecordId,
+    int? MemberId,
+    int? HeartRate,
+    int? Battery,
+    double? DeviationMeters,
+    bool IsDeviationSimulated);

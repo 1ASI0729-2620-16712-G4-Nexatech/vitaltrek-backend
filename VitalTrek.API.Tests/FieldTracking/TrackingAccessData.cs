@@ -48,11 +48,11 @@ internal sealed class TrackingAccessData
     private readonly TelemetryRecord[] _records =
     [
         WithId(new TelemetryRecord(11, 100, new TelemetryRecordEntry(-9.5, -77.5, 3000,
-            DateTimeOffset.UtcNow.AddMinutes(-10))), 1001),
+            DateTimeOffset.UtcNow.AddMinutes(-10), Guid.NewGuid(), 80, 90, 0)), 1001),
         WithId(new TelemetryRecord(12, 101, new TelemetryRecordEntry(-9.4, -77.4, 3100,
-            DateTimeOffset.UtcNow.AddMinutes(-10))), 1002),
+            DateTimeOffset.UtcNow.AddMinutes(-10), Guid.NewGuid(), 80, 90, 0)), 1002),
         WithId(new TelemetryRecord(21, 200, new TelemetryRecordEntry(-9.3, -77.3, 3200,
-            DateTimeOffset.UtcNow.AddMinutes(-10))), 2001)
+            DateTimeOffset.UtcNow.AddMinutes(-10), Guid.NewGuid(), 80, 90, 0)), 2001)
     ];
 
     public int TelemetryReads { get; private set; }
@@ -81,7 +81,8 @@ internal sealed class TrackingAccessData
         });
         Expeditions = new ExpeditionSetupContextFacade(InterfaceStub<IFieldGuideRepository>.Create(),
             InterfaceStub<IManifestEntryRepository>.Create(), groups, InterfaceStub<ICheckpointRepository>.Create(),
-            InterfaceStub<IExpectedTimeWindowRepository>.Create(), InterfaceStub<IExpeditionStartService>.Create());
+            InterfaceStub<IExpectedTimeWindowRepository>.Create(), InterfaceStub<IExpeditionStartService>.Create(),
+            InterfaceStub<IParticipantPreparationRepository>.Create(), InterfaceStub<IWearableDeviceRepository>.Create());
         SessionRepository = InterfaceStub<ITrackingSessionRepository>.Create((method, args) => method.Name switch
         {
             nameof(ITrackingSessionRepository.FindAllByAgencyIdAsync) => Task.FromResult<IEnumerable<TrackingSession>>(

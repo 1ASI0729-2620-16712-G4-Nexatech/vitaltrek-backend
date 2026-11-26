@@ -94,7 +94,8 @@ public sealed class TrackingSessionStartTests
     {
         var data = new TrackingStartData();
         await Start(data);
-        var closure = new FieldTrackingContextFacade(data.Sessions, data.Expeditions);
+        var closure = new FieldTrackingContextFacade(data.Sessions, data.Expeditions,
+            VitalTrek.API.Tests.Support.InterfaceStub<VitalTrek.API.FieldTracking.Application.Services.ITelemetryRecordCommandService>.Create());
         var endedAt = data.Session!.StartedAt.AddHours(1);
         Assert.True(await closure.StageSessionEndAsync(data.Actor, data.Session.Id, endedAt));
         Assert.False(data.Session.IsActive);

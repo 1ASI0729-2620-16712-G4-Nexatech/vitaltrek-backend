@@ -1,4 +1,5 @@
 using VitalTrek.API.IAM.Interfaces.ACL.Resources;
+using VitalTrek.API.FieldTracking.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.FieldTracking.Interfaces.ACL;
 
@@ -8,6 +9,10 @@ namespace VitalTrek.API.FieldTracking.Interfaces.ACL;
 /// </summary>
 public interface IFieldTrackingContextFacade
 {
+    /// <summary>Stages one authorized reading without saving. Sync Batch owns the transaction and handles conflicts.</summary>
+    Task<TelemetryReadingStageResult> StageTelemetryReadingAsync(AuthenticatedActor actor, int sessionId,
+        TelemetryReadingInput reading, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Stages session completion for Tour Closure. Does not save. The caller must validate returns and stage the
     /// group closure in the same shared unit of work, then save once. Repeated completion preserves the end time.

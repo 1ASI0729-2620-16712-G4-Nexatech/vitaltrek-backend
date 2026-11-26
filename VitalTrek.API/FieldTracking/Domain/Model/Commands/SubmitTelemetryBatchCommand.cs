@@ -16,4 +16,11 @@ public record TelemetryRecordEntry(
     double Latitude,
     double Longitude,
     double Altitude,
-    DateTimeOffset RecordedAt);
+    DateTimeOffset RecordedAt,
+    Guid ClientRecordId,
+    int HeartRate,
+    int Battery,
+    double DeviationMeters);
+
+/// <summary>Prepares one reading in the caller's unit of work without saving.</summary>
+public record StageTelemetryReadingCommand(int AgencyId, int SessionId, int WearableDeviceId, TelemetryRecordEntry Reading);

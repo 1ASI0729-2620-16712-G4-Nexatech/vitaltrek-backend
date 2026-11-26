@@ -96,7 +96,8 @@ public class TrackingAuthorizationTests
     public async Task UnassignedGuideCannotEndSessionOrSubmitTelemetry()
     {
         var data = new TrackingAccessData();
-        var sessions = new FieldTrackingContextFacade(data.SessionRepository, data.Expeditions);
+        var sessions = new FieldTrackingContextFacade(data.SessionRepository, data.Expeditions,
+            VitalTrek.API.Tests.Support.InterfaceStub<VitalTrek.API.FieldTracking.Application.Services.ITelemetryRecordCommandService>.Create());
         Assert.False(await sessions.StageSessionEndAsync(data.Actor(2), 12, DateTimeOffset.UtcNow));
         var records = new TelemetryRecordCommandService(data.SessionRepository, data.TelemetryRepository,
             data.Expeditions, data.UnitOfWork, NullLogger<TelemetryRecordCommandService>.Instance);

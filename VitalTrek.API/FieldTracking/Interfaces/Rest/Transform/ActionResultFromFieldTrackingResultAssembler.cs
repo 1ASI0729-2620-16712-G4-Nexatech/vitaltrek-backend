@@ -58,12 +58,25 @@ public static class ActionResultFromFieldTrackingResultAssembler
             EStartTrackingSessionError.ParticipantsNotReady => controller.Conflict(localizer["TrackingParticipantsNotReady"].Value),
             EStartTrackingSessionError.ConcurrentChange => controller.Conflict(localizer["TrackingConcurrentChange"].Value),
             EStartTrackingSessionError.UnexpectedError => Unexpected(controller, localizer),
-            ESubmitTelemetryBatchError.InvalidData => controller.BadRequest(localizer["InvalidTelemetryBatchRequest"].Value),
+            ESubmitTelemetryBatchError.InvalidData => TelemetryError(controller, localizer,
+                "InvalidTelemetryBatchRequest", "Telemetry.InvalidData", StatusCodes.Status400BadRequest),
+            ESubmitTelemetryBatchError.WearableNotAssigned => TelemetryError(controller, localizer,
+                "TelemetryWearableNotAssigned", "Telemetry.WearableNotAssigned", StatusCodes.Status404NotFound),
+            ESubmitTelemetryBatchError.ConsentRequired => TelemetryError(controller, localizer,
+                "TelemetryConsentRequired", "Telemetry.ConsentRequired", StatusCodes.Status409Conflict),
+            ESubmitTelemetryBatchError.RecordIdentityConflict => TelemetryError(controller, localizer,
+                "TelemetryIdentityConflict", "Telemetry.RecordIdentityConflict", StatusCodes.Status409Conflict),
+            ESubmitTelemetryBatchError.ConcurrentChange => TelemetryError(controller, localizer,
+                "TelemetryConcurrentChange", "Telemetry.ConcurrentChange", StatusCodes.Status409Conflict),
             ESubmitTelemetryBatchError.SessionNotFound => controller.NotFound(localizer["TrackingSessionNotFound"].Value),
             ESubmitTelemetryBatchError.SessionNotActive => controller.Conflict(localizer["TrackingSessionNotActive"].Value),
             ESubmitTelemetryBatchError.UnexpectedError => Unexpected(controller, localizer),
             _ => Unexpected(controller, localizer)
         };
+
+    private static ActionResult TelemetryError(ControllerBase controller, IStringLocalizer<SharedResource> localizer,
+        string key, string code, int statusCode) => controller.Problem(title: localizer[key].Value,
+            statusCode: statusCode, extensions: new Dictionary<string, object?> { ["code"] = code });
 
     private static ActionResult Unexpected(ControllerBase controller, IStringLocalizer<SharedResource> localizer) =>
         controller.Problem(

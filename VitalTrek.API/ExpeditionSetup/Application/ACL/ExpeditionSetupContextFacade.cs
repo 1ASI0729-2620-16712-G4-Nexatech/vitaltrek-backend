@@ -21,8 +21,30 @@ public class ExpeditionSetupContextFacade(
     IExpeditionGroupRepository expeditionGroupRepository,
     ICheckpointRepository checkpointRepository,
     IExpectedTimeWindowRepository expectedTimeWindowRepository,
-    IExpeditionStartService expeditionStartService) : IExpeditionSetupContextFacade
+    IExpeditionStartService expeditionStartService,
+    IParticipantPreparationRepository participantPreparationRepository,
+    IWearableDeviceRepository wearableDeviceRepository) : IExpeditionSetupContextFacade
 {
+    /// <inheritdoc />
+    public async Task<TrackingParticipantPreparation?> FindTrackingPreparation(AuthenticatedActor actor,
+        int expeditionGroupId, int wearableDeviceId, CancellationToken cancellationToken = default)
+    {
+        var scope = ToScope(actor);
+        if (scope is null || wearableDeviceId <= 0 ||
+            !await CanAccessExpeditionGroup(actor, expeditionGroupId, cancellationToken)) return null;
+        var preparations = await participantPreparationRepository.FindByScopeAsync(scope, expeditionGroupId, cancellationToken);
+        var matches = preparations.Where(preparation => preparation.WearableId == wearableDeviceId &&
+            preparation.ReturnedAt is null).Take(2).ToArray();
+        if (matches.Length != 1 || await participantPreparationRepository.IsWearableInUseAsync(
+                wearableDeviceId, matches[0].Id, cancellationToken)) return null;
+        var member = await manifestEntryRepository.FindByIdAndScopeAsync(matches[0].MemberId, scope, cancellationToken);
+        if (member is null || member.ExpeditionGroupId != expeditionGroupId) return null;
+        var wearable = await wearableDeviceRepository.FindByIdAndAgencyIdAsync(wearableDeviceId, actor.AgencyId,
+            cancellationToken);
+        return new TrackingParticipantPreparation(member.Id, matches[0].Consent, matches[0].Activated,
+            wearable?.Status == WearableDeviceStatus.Assigned);
+    }
+
     /// <inheritdoc />
     public Task<ExpeditionStartStatus> StageExpeditionStart(AuthenticatedActor actor, int expeditionGroupId,
         DateTimeOffset startedAt, CancellationToken cancellationToken = default) =>

@@ -48,7 +48,8 @@ public partial class TrackingSession
     {
         AgencyId = DomainGuard.RequirePositive(command.AgencyId, nameof(command.AgencyId));
         ExpeditionGroupId = DomainGuard.RequirePositive(command.ExpeditionGroupId, nameof(command.ExpeditionGroupId));
-        StartedAt = startedAt;
+        // Session columns predate telemetry precision and store whole seconds.
+        StartedAt = DateTimeOffset.FromUnixTimeSeconds(startedAt.ToUnixTimeSeconds());
         Status = SessionStatus.Active;
     }
 
@@ -67,6 +68,6 @@ public partial class TrackingSession
         if (endedAt < StartedAt)
             throw new ArgumentException("The session cannot end before it starts.", nameof(endedAt));
         Status = SessionStatus.Completed;
-        EndedAt = endedAt;
+        EndedAt = DateTimeOffset.FromUnixTimeSeconds(endedAt.ToUnixTimeSeconds());
     }
 }

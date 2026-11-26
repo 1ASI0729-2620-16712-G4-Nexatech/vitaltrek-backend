@@ -902,4 +902,9 @@
     <data name="TrackingProtocolNotReady" xml:space="preserve"><value>Configura un protocolo de seguridad activo para la ruta.</value></data>
     <data name="TrackingParticipantsNotReady" xml:space="preserve"><value>Completa el manifiesto sin exceder la capacidad. Cada participante requiere wearable asignado, contacto de emergencia y consentimiento de monitoreo activo.</value></data>
     <data name="TrackingConcurrentChange" xml:space="preserve"><value>La expedición cambió durante la solicitud. Actualiza y vuelve a intentar.</value></data>
+    <data name="TelemetryBatchTooLarge" xml:space="preserve"><value>Una solicitud de telemetría admite como máximo 500 lecturas.</value></data>
+    <data name="TelemetryWearableNotAssigned" xml:space="preserve"><value>El wearable no tiene una asignación válida en este grupo de expedición.</value></data>
+    <data name="TelemetryConsentRequired" xml:space="preserve"><value>Se requiere consentimiento de monitoreo activo y activación del wearable.</value></data>
+    <data name="TelemetryIdentityConflict" xml:space="preserve"><value>El identificador de lectura ya se utilizó para una captura diferente.</value></data>
+    <data name="TelemetryConcurrentChange" xml:space="preserve"><value>Las lecturas cambiaron simultáneamente. Reintenta con los mismos identificadores de lectura.</value></data>
 </root>

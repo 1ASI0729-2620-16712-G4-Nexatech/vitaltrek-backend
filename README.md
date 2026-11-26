@@ -65,6 +65,54 @@ El endpoint público `/tracking-sessions/{id}/end` fue retirado. Tour Closure de
 sin guardar. El cierre completo debe validar las devoluciones, finalizar el grupo y guardar todos los cambios
 en una sola unidad de trabajo.
 
+## Contrato de telemetría para M03 y Sync Batch
+
+`POST /api/v1/tracking-sessions/{sessionId}/telemetry-records` conserva su respuesta `200` con un arreglo
+de lecturas. Requiere el guía asignado, sesión activa, wearable asignado al grupo, consentimiento y activación.
+La agencia y el participante se resuelven en servidor; los identificadores enviados en el cuerpo no conceden acceso.
+
+```json
+{
+  "wearableDeviceId": 70,
+  "records": [{
+    "clientRecordId": "83b522e1-46a7-46e7-b144-c21c7bf15a33",
+    "recordedAt": "2026-11-25T15:10:00-05:00",
+    "latitude": -9.5,
+    "longitude": -77.5,
+    "altitude": 3000,
+    "heartRate": 88,
+    "battery": 85,
+    "deviationMeters": 12.5
+  }]
+}
+```
+
+El cliente crea el UUID al capturar y lo conserva en cada reenvío. La identidad es única por sesión.
+El mismo contenido devuelve la lectura original sin cambiar `synchronizedAt`; reutilizar la identidad con otro
+contenido devuelve `409` y código `Telemetry.RecordIdentityConflict`. Un error en una lectura del POST directo
+rechaza toda esa solicitud. Se admiten como máximo 500 lecturas por solicitud.
+
+`recordedAt` conserva la captura, normalizada a UTC y microsegundos; `synchronizedAt` representa la recepción
+en servidor y reemplaza al nombre anterior `syncedAt` en las respuestas. La captura admite un minuto de tolerancia
+de reloj y debe corresponder a la sesión. `heartRate` es un entero positivo, `battery` un porcentaje entero
+entre 0 y 100 y `deviationMeters` un número finito no negativo. La desviación es una entrada simulada,
+identificada por `isDeviationSimulated` en la respuesta; no es una distancia calculada por GPS en servidor.
+
+Para Sync Batch, usar `IFieldTrackingContextFacade.StageTelemetryReadingAsync(actor, sessionId, reading)`.
+`TelemetryReadingInput` incluye también `wearableDeviceId` por lectura. El resultado contiene `clientRecordId`
+y un estado tipado: `Accepted`, `Duplicate` o una causa de rechazo. **Accepted significa preparado, aún sin guardar.**
+El puerto no ejecuta `CompleteAsync` ni comparte entidades de dominio. Repetir una identidad ya preparada dentro
+del mismo DbContext también devuelve `Duplicate`.
+
+Miler debe reunir los resultados por lectura y guardar el lote y las lecturas aceptadas una sola vez mediante
+la unidad de trabajo compartida. Ante `RecordIdentityConflict`, un fallo de persistencia o una violación concurrente
+del índice único, debe descartar la transacción y reconsultar las identidades antes de reintentar el lote.
+El puerto no registra pasos, evalúa riesgo ni crea lotes: esas operaciones corresponden a sus contextos.
+
+La migración conserva las fechas existentes y asigna UUIDs deterministas a las lecturas históricas.
+Sus métricas y participante quedan en `null` cuando no se conocían: no se inventan valores ni se infiere una
+asignación pasada a partir de la asignación actual del wearable. La integración del cliente se realiza en M04.
+
 ## Variables de entorno de producción
 
 | Variable | Descripción |
