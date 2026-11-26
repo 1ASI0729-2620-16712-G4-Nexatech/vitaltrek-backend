@@ -15,10 +15,12 @@ namespace VitalTrek.API.FieldTracking.Application.ACL;
 
 /// <summary>
 ///     Implementation of <see cref="IFieldTrackingContextFacade"/> backed by the Field Tracking repositories.
+///     The telemetry repository is optional so existing constructions keep compiling; DI always provides it.
 /// </summary>
 public class FieldTrackingContextFacade(ITrackingSessionRepository trackingSessionRepository,
     IExpeditionSetupContextFacade expeditionSetupContextFacade,
-    ITelemetryRecordCommandService telemetryRecordCommandService)
+    ITelemetryRecordCommandService telemetryRecordCommandService,
+    ITelemetryRecordRepository? telemetryRecordRepository = null)
     : IFieldTrackingContextFacade
 {
     /// <inheritdoc />
@@ -99,4 +101,25 @@ public class FieldTrackingContextFacade(ITrackingSessionRepository trackingSessi
     /// <inheritdoc />
     public async Task<int?> FindExpeditionGroupIdBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default) =>
         (await trackingSessionRepository.FindByIdAsync(sessionId, cancellationToken))?.ExpeditionGroupId;
+
+    /// <inheritdoc />
+    public async Task<DateTimeOffset?> FindSessionStartedAtAsync(int agencyId, int sessionId,
+        CancellationToken cancellationToken = default) =>
+        (await trackingSessionRepository.FindByIdAndAgencyIdAsync(sessionId, agencyId, cancellationToken))?.StartedAt;
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<TelemetryReadingSnapshot>> FindReadingsAsync(int agencyId, int sessionId,
+        IReadOnlyCollection<Guid> clientRecordIds, CancellationToken cancellationToken = default)
+    {
+        if (telemetryRecordRepository is null)
+            throw new InvalidOperationException("The telemetry record repository is required to read readings.");
+        if (clientRecordIds.Count == 0 ||
+            await trackingSessionRepository.FindByIdAndAgencyIdAsync(sessionId, agencyId, cancellationToken) is null)
+            return [];
+        var records = await telemetryRecordRepository.FindByClientRecordIdsAsync(sessionId, clientRecordIds,
+            cancellationToken);
+        return records.Select(record => new TelemetryReadingSnapshot(record.ClientRecordId, record.MemberId,
+            record.WearableDeviceId, record.RecordedAt, record.SynchronizedAt, record.Latitude, record.Longitude,
+            record.Altitude, record.HeartRate, record.Battery, record.DeviationMeters)).ToArray();
+    }
 }

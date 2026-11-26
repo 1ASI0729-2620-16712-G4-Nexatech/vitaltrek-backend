@@ -908,4 +908,20 @@
     <data name="TelemetryIdentityConflict" xml:space="preserve"><value>The client record identifier was already used for a different capture.</value></data>
     <data name="TelemetryConcurrentChange" xml:space="preserve"><value>The readings changed concurrently. Retry with the same client record identifiers.</value></data>
     <data name="TrackingProgressNotFound" xml:space="preserve"><value>No tracking session is available for this expedition.</value></data>
+    <data name="SyncBatchTooLarge" xml:space="preserve"><value>A sync batch cannot contain more than 500 records.</value></data>
+    <data name="InvalidSyncBatchRequest" xml:space="preserve"><value>The sync batch is invalid. It needs a client batch identifier and between 1 and 500 readings and passages with unique client record identifiers.</value></data>
+    <data name="SyncBatchNotFound" xml:space="preserve"><value>The sync batch was not found.</value></data>
+    <data name="SyncBatchIdentityConflict" xml:space="preserve"><value>The client batch identifier was already used with different content. Send the corrections in a new batch.</value></data>
+    <data name="SyncBatchRecordIdentityConflict" xml:space="preserve"><value>A client record identifier in the batch was already used for different data.</value></data>
+    <data name="SyncBatchConcurrentChange" xml:space="preserve"><value>The batch changed concurrently. Retry with the same client batch identifier.</value></data>
+    <data name="OperationAccepted" xml:space="preserve"><value>The request was accepted.</value></data>
+    <data name="SubmitSyncBatchSummary" xml:space="preserve"><value>Submit an offline sync batch</value></data>
+    <data name="SubmitSyncBatchDescription" xml:space="preserve"><value>Receives the readings and checkpoint passages captured offline by the assigned field guide. The batch and its accepted records are stored in one transaction; invalid records are returned in rejectedRecords with a code. Repeating the same batch returns the same result.</value></data>
+    <data name="GetSyncBatchByIdSummary" xml:space="preserve"><value>Get a sync batch result</value></data>
+    <data name="GetSyncBatchByIdDescription" xml:space="preserve"><value>Returns the persisted result of a sync batch of the current agency: accepted, duplicate and rejected record identifiers and the evaluation status.</value></data>
+    <data name="SubmitSyncBatchSchema" xml:space="preserve"><value>Readings and checkpoint passages captured offline and sent together.</value></data>
+    <data name="SyncBatchSchema" xml:space="preserve"><value>Persisted result of a sync batch.</value></data>
+    <data name="InvalidCheckpointPassedAt" xml:space="preserve"><value>The passage time must be within the tracking session and not after its synchronization.</value></data>
+    <data name="CheckpointPassageOutOfSequence" xml:space="preserve"><value>The previous checkpoint of the route has not been passed before this passage.</value></data>
+    <data name="SyncBatchCheckpointArrivalRequired" xml:space="preserve"><value>Record a valid arrival at this checkpoint before synchronizing a batch there.</value></data>
 </root>

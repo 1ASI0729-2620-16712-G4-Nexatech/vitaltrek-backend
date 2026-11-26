@@ -908,4 +908,20 @@
     <data name="TelemetryIdentityConflict" xml:space="preserve"><value>El identificador de lectura ya se utilizó para una captura diferente.</value></data>
     <data name="TelemetryConcurrentChange" xml:space="preserve"><value>Las lecturas cambiaron simultáneamente. Reintenta con los mismos identificadores de lectura.</value></data>
     <data name="TrackingProgressNotFound" xml:space="preserve"><value>No hay una sesión de seguimiento disponible para esta expedición.</value></data>
+    <data name="SyncBatchTooLarge" xml:space="preserve"><value>Un lote de sincronización no puede contener más de 500 registros.</value></data>
+    <data name="InvalidSyncBatchRequest" xml:space="preserve"><value>El lote de sincronización no es válido. Necesita un identificador de lote del cliente y entre 1 y 500 lecturas y pasos con identificadores de registro únicos.</value></data>
+    <data name="SyncBatchNotFound" xml:space="preserve"><value>No se encontró el lote de sincronización.</value></data>
+    <data name="SyncBatchIdentityConflict" xml:space="preserve"><value>El identificador de lote del cliente ya se usó con otro contenido. Envía las correcciones en un lote nuevo.</value></data>
+    <data name="SyncBatchRecordIdentityConflict" xml:space="preserve"><value>Un identificador de registro del lote ya se usó con datos distintos.</value></data>
+    <data name="SyncBatchConcurrentChange" xml:space="preserve"><value>El lote cambió de forma concurrente. Reintenta con el mismo identificador de lote.</value></data>
+    <data name="OperationAccepted" xml:space="preserve"><value>La solicitud fue aceptada.</value></data>
+    <data name="SubmitSyncBatchSummary" xml:space="preserve"><value>Enviar un lote de sincronización offline</value></data>
+    <data name="SubmitSyncBatchDescription" xml:space="preserve"><value>Recibe las lecturas y los pasos por checkpoints capturados sin conexión por el guía asignado. El lote y sus registros aceptados se guardan en una sola transacción; los registros inválidos se devuelven en rejectedRecords con un código. Repetir el mismo lote devuelve el mismo resultado.</value></data>
+    <data name="GetSyncBatchByIdSummary" xml:space="preserve"><value>Obtener el resultado de un lote de sincronización</value></data>
+    <data name="GetSyncBatchByIdDescription" xml:space="preserve"><value>Devuelve el resultado persistido de un lote de sincronización de la agencia actual: identificadores aceptados, duplicados y rechazados, y el estado de evaluación.</value></data>
+    <data name="SubmitSyncBatchSchema" xml:space="preserve"><value>Lecturas y pasos por checkpoints capturados sin conexión y enviados juntos.</value></data>
+    <data name="SyncBatchSchema" xml:space="preserve"><value>Resultado persistido de un lote de sincronización.</value></data>
+    <data name="InvalidCheckpointPassedAt" xml:space="preserve"><value>La hora del paso debe estar dentro de la sesión de seguimiento y no ser posterior a su sincronización.</value></data>
+    <data name="CheckpointPassageOutOfSequence" xml:space="preserve"><value>El checkpoint anterior de la ruta no se ha pasado antes de este paso.</value></data>
+    <data name="SyncBatchCheckpointArrivalRequired" xml:space="preserve"><value>Registra una llegada válida a este checkpoint antes de sincronizar un lote en él.</value></data>
 </root>

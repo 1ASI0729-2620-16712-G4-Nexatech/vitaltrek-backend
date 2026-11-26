@@ -61,7 +61,7 @@ public class CheckpointPassagesController(
         {
             var command = CheckpointSyncCommandFromResourceAssembler.ToCommandFromResource(resource, user.AgencyId,
                 user.FieldGuideId.Value);
-            var result = await commandService.Handle(command, cancellationToken);
+            var result = await commandService.Handle(command, HttpContext.GetAuthenticatedActor()!, cancellationToken);
             return ActionResultFromCheckpointSyncResultAssembler.ToActionResult(result, this, localizer,
                 CheckpointSyncResourceAssembler.ToResourceFromEntity, item => item.Id, nameof(GetPassageById));
         }

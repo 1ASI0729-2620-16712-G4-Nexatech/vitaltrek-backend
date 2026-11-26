@@ -18,6 +18,10 @@ public interface ITelemetryRecordRepository : IBaseRepository<TelemetryRecord>
     /// <summary>Finds the stable reading identity, including records already staged in this unit of work.</summary>
     Task<TelemetryRecord?> FindByClientRecordIdAsync(int sessionId, Guid clientRecordId, CancellationToken ct = default);
 
+    /// <summary>Retrieves the persisted records of a session with the given stable identities, without tracking.</summary>
+    Task<IReadOnlyList<TelemetryRecord>> FindByClientRecordIdsAsync(int sessionId, IReadOnlyCollection<Guid> clientRecordIds,
+        CancellationToken ct = default);
+
     /// <summary>Retrieves all telemetry records for a session.</summary>
     Task<IEnumerable<TelemetryRecord>> FindAllBySessionIdAsync(int sessionId, CancellationToken ct = default);
 
