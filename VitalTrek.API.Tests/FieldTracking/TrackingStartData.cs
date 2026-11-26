@@ -77,7 +77,9 @@ internal sealed class TrackingStartData
         var checkpoints = Stub<ICheckpointRepository>((_, _) => Task.FromResult<IEnumerable<Checkpoint>>(Checkpoints));
         var windows = Stub<IExpectedTimeWindowRepository>((_, _) => Task.FromResult<IEnumerable<ExpectedTimeWindow>>(Windows));
         var protocols = Stub<ISafetyProtocolRepository>((_, _) => Task.FromResult<IEnumerable<SafetyProtocol>>(Protocols));
-        var manifest = Stub<IManifestEntryRepository>((_, _) => Task.FromResult<IEnumerable<ManifestEntry>>(Members));
+        var manifest = Stub<IManifestEntryRepository>((method, args) => method.Name == nameof(IManifestEntryRepository.FindByIdAndScopeAsync)
+            ? Task.FromResult(Members.FirstOrDefault(member => member.Id == (int)args[0]!))
+            : Task.FromResult<IEnumerable<ManifestEntry>>(Members));
         var preparations = Stub<IParticipantPreparationRepository>((method, _) => method.Name switch
         {
             nameof(IParticipantPreparationRepository.FindByScopeAsync) => Task.FromResult<IEnumerable<ParticipantPreparation>>(Preparations),
@@ -88,7 +90,7 @@ internal sealed class TrackingStartData
             device.Id == (int)args[0]! && device.AgencyId == (int)args[1]!)));
         var start = new ExpeditionStartService(groups, guides, routes, checkpoints, windows, protocols, manifest,
             preparations, devices);
-        Expeditions = new ExpeditionSetupContextFacade(guides, manifest, groups, checkpoints, windows, start);
+        Expeditions = new ExpeditionSetupContextFacade(guides, manifest, groups, checkpoints, windows, start, preparations, devices);
 
         Sessions = Stub<ITrackingSessionRepository>((method, args) => method.Name switch
         {

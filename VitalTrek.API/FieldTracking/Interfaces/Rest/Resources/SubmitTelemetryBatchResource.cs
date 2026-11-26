@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace VitalTrek.API.FieldTracking.Interfaces.Rest.Resources;
 
@@ -7,14 +8,27 @@ namespace VitalTrek.API.FieldTracking.Interfaces.Rest.Resources;
 /// </summary>
 public record SubmitTelemetryBatchResource(
     [Required(ErrorMessage = "RequiredWearableDeviceId")] int WearableDeviceId,
-    [Required(ErrorMessage = "RequiredRecords"), MinLength(1, ErrorMessage = "BatchMustHaveRecords")]
+    [Required(ErrorMessage = "RequiredRecords"), MinLength(1, ErrorMessage = "BatchMustHaveRecords"),
+     MaxLength(500, ErrorMessage = "TelemetryBatchTooLarge")]
     IReadOnlyList<TelemetryRecordEntryResource> Records);
 
 /// <summary>
 ///     A single GPS measurement within the batch payload.
 /// </summary>
 public record TelemetryRecordEntryResource(
+    [property: JsonRequired]
     [Range(-90, 90, ErrorMessage = "InvalidLatitude")] double Latitude,
+    [property: JsonRequired]
     [Range(-180, 180, ErrorMessage = "InvalidLongitude")] double Longitude,
+    [property: JsonRequired]
     double Altitude,
-    DateTimeOffset RecordedAt);
+    [property: JsonRequired]
+    DateTimeOffset RecordedAt,
+    [property: JsonRequired]
+    Guid ClientRecordId,
+    [property: JsonRequired]
+    int HeartRate,
+    [property: JsonRequired]
+    int Battery,
+    [property: JsonRequired]
+    double DeviationMeters);

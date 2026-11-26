@@ -16,5 +16,6 @@ public static class FieldTrackingCommandFromResourceAssembler
     /// <summary>Transforms a <see cref="SubmitTelemetryBatchResource"/> into a <see cref="SubmitTelemetryBatchCommand"/>.</summary>
     public static SubmitTelemetryBatchCommand ToCommandFromResource(SubmitTelemetryBatchResource resource, int agencyId, int sessionId) =>
         new(agencyId, sessionId, resource.WearableDeviceId,
-            resource.Records.Select(e => new TelemetryRecordEntry(e.Latitude, e.Longitude, e.Altitude, e.RecordedAt)).ToList());
+            resource.Records.Select(e => new TelemetryRecordEntry(e.Latitude, e.Longitude, e.Altitude, e.RecordedAt,
+                e.ClientRecordId, e.HeartRate, e.Battery, e.DeviationMeters)).ToList());
 }

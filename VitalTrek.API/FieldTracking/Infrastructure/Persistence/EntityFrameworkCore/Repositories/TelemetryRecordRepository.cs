@@ -13,6 +13,14 @@ public class TelemetryRecordRepository(AppDbContext context)
     : BaseRepository<TelemetryRecord>(context), ITelemetryRecordRepository
 {
     /// <inheritdoc />
+    public async Task<TelemetryRecord?> FindByClientRecordIdAsync(int sessionId, Guid clientRecordId,
+        CancellationToken ct = default) =>
+        Context.Set<TelemetryRecord>().Local.FirstOrDefault(record => record.SessionId == sessionId &&
+            record.ClientRecordId == clientRecordId) ??
+        await Context.Set<TelemetryRecord>().FirstOrDefaultAsync(record => record.SessionId == sessionId &&
+            record.ClientRecordId == clientRecordId, ct);
+
+    /// <inheritdoc />
     public async Task<IEnumerable<TelemetryRecord>> FindAllBySessionIdAsync(int sessionId, CancellationToken ct = default) =>
         await Context.Set<TelemetryRecord>()
             .Where(r => r.SessionId == sessionId)

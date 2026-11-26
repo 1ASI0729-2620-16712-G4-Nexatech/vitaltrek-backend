@@ -35,7 +35,7 @@ public class TelemetryRecordsController(
         return Ok(records.Select(FieldTrackingResourceAssembler.ToResourceFromEntity));
     }
 
-    /// <summary>Submits a batch of GPS measurements for a wearable device.</summary>
+    /// <summary>Submits captures with stable client identities. Identical retries return the original readings.</summary>
     [HttpPost]
     [Authorize(Role.FieldGuide)]
     public async Task<IActionResult> SubmitBatch(
@@ -43,6 +43,8 @@ public class TelemetryRecordsController(
         [FromBody] SubmitTelemetryBatchResource resource,
         CancellationToken cancellationToken)
     {
+        if (resource.Records.Any(entry => entry is null))
+            return BadRequest(localizer["InvalidTelemetryBatchRequest"].Value);
         var command = FieldTrackingCommandFromResourceAssembler.ToCommandFromResource(resource, Actor.AgencyId, sessionId);
         var result = await telemetryRecordCommandService.Handle(command, Actor, cancellationToken);
         return ActionResultFromFieldTrackingResultAssembler.ToActionResult(

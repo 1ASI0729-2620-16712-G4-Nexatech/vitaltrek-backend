@@ -8,6 +8,9 @@ namespace VitalTrek.API.FieldTracking.Domain.Repositories;
 /// </summary>
 public interface ITelemetryRecordRepository : IBaseRepository<TelemetryRecord>
 {
+    /// <summary>Finds the stable reading identity, including records already staged in this unit of work.</summary>
+    Task<TelemetryRecord?> FindByClientRecordIdAsync(int sessionId, Guid clientRecordId, CancellationToken ct = default);
+
     /// <summary>Retrieves all telemetry records for a session.</summary>
     Task<IEnumerable<TelemetryRecord>> FindAllBySessionIdAsync(int sessionId, CancellationToken ct = default);
 

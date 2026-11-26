@@ -43,8 +43,19 @@ public static class ModelBuilderExtensions
         builder.Entity<TelemetryRecord>().Property(r => r.Latitude).IsRequired().HasPrecision(10, 7);
         builder.Entity<TelemetryRecord>().Property(r => r.Longitude).IsRequired().HasPrecision(10, 7);
         builder.Entity<TelemetryRecord>().Property(r => r.Altitude).IsRequired().HasPrecision(10, 2);
-        builder.Entity<TelemetryRecord>().Property(r => r.RecordedAt).IsRequired();
-        builder.Entity<TelemetryRecord>().Property(r => r.SyncedAt).IsRequired();
+        builder.Entity<TelemetryRecord>().Property(r => r.RecordedAt)
+            .HasConversion(value => value.UtcDateTime,
+                value => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc)))
+            .IsRequired().HasPrecision(6);
+        builder.Entity<TelemetryRecord>().Property(r => r.SynchronizedAt)
+            .HasConversion(value => value.UtcDateTime,
+                value => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc)))
+            .IsRequired().HasPrecision(6);
+        builder.Entity<TelemetryRecord>().Property(r => r.ClientRecordId).IsRequired().HasColumnType("char(36)");
+        builder.Entity<TelemetryRecord>().HasIndex(r => new { r.SessionId, r.ClientRecordId }).IsUnique()
+            .HasDatabaseName("ux_telemetry_records_session_client_record");
+        builder.Entity<TelemetryRecord>().HasOne<ManifestEntry>().WithMany().HasForeignKey(r => r.MemberId)
+            .IsRequired(false).OnDelete(DeleteBehavior.Restrict);
         builder.Entity<TelemetryRecord>().HasOne<TrackingSession>().WithMany()
             .HasForeignKey(r => r.SessionId).IsRequired().OnDelete(DeleteBehavior.Cascade);
         builder.Entity<TelemetryRecord>().HasIndex(r => r.SessionId);

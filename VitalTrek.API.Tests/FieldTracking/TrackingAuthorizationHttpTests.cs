@@ -167,9 +167,15 @@ public sealed class TrackingApiFixture : IAsyncLifetime
     private HttpClient _client = null!;
     internal TrackingAccessData Data { get; } = new();
     private readonly TrackingStartData? _startData;
+    private readonly TelemetryIngestionData? _telemetryData;
 
     public TrackingApiFixture() { }
     internal TrackingApiFixture(TrackingStartData startData) => _startData = startData;
+    internal TrackingApiFixture(TelemetryIngestionData telemetryData)
+    {
+        _telemetryData = telemetryData;
+        _startData = telemetryData.Ready;
+    }
 
     public async Task InitializeAsync()
     {
@@ -193,8 +199,8 @@ public sealed class TrackingApiFixture : IAsyncLifetime
                 : throw new InvalidOperationException(method.Name)));
         builder.Services.AddSingleton<IExpeditionSetupContextFacade>(_startData?.Expeditions ?? Data.Expeditions);
         builder.Services.AddSingleton<ITrackingSessionRepository>(_startData?.Sessions ?? Data.SessionRepository);
-        builder.Services.AddSingleton<ITelemetryRecordRepository>(Data.TelemetryRepository);
-        builder.Services.AddSingleton<IUnitOfWork>(_startData?.UnitOfWork ?? Data.UnitOfWork);
+        builder.Services.AddSingleton<ITelemetryRecordRepository>(_telemetryData?.Repository ?? Data.TelemetryRepository);
+        builder.Services.AddSingleton<IUnitOfWork>(_telemetryData?.UnitOfWork ?? _startData?.UnitOfWork ?? Data.UnitOfWork);
         builder.Services.AddScoped<ITrackingSessionQueryService, TrackingSessionQueryService>();
         builder.Services.AddScoped<ITelemetryRecordQueryService, TelemetryRecordQueryService>();
         builder.Services.AddScoped<ITrackingSessionCommandService, TrackingSessionCommandService>();
@@ -218,7 +224,8 @@ public sealed class TrackingApiFixture : IAsyncLifetime
         if (token is not null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         if (method == "POST") request.Content = JsonContent.Create(body ?? (path.EndsWith("telemetry-records")
             ? (object)new { wearableDeviceId = 100, records = new[] { new { latitude = -9.5, longitude = -77.5,
-                altitude = 3000, recordedAt = DateTimeOffset.UtcNow.AddMinutes(-1) } } }
+                altitude = 3000, recordedAt = DateTimeOffset.UtcNow.AddMinutes(-1), clientRecordId = Guid.NewGuid(),
+                heartRate = 88, battery = 85, deviationMeters = 0 } } }
             : new { expeditionGroupId = 101 }));
         return SendAndDispose(request);
     }

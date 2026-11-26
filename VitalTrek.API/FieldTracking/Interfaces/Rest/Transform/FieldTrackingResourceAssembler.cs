@@ -17,5 +17,6 @@ public static class FieldTrackingResourceAssembler
     /// <summary>Transforms a <see cref="TelemetryRecord"/> into a <see cref="TelemetryRecordResource"/>.</summary>
     public static TelemetryRecordResource ToResourceFromEntity(TelemetryRecord entity) =>
         new(entity.Id, entity.SessionId, entity.WearableDeviceId, entity.Latitude, entity.Longitude,
-            entity.Altitude, entity.RecordedAt, entity.SyncedAt);
+            entity.Altitude, entity.RecordedAt, entity.SynchronizedAt, entity.ClientRecordId, entity.MemberId,
+            entity.HeartRate, entity.Battery, entity.DeviationMeters, entity.DeviationMeters.HasValue);
 }
