@@ -88,16 +88,16 @@ public partial class SyncBatch
         string.Equals(ContentFingerprint, contentFingerprint, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Registers a record stored by this batch.</summary>
-    public void Accept(Guid clientRecordId, SyncRecordKind kind) =>
-        Add(new SyncBatchRecord(clientRecordId, kind, SyncRecordOutcome.Accepted, null));
+    public void Accept(Guid clientRecordId, SyncRecordKind kind, string recordFingerprint) =>
+        Add(new SyncBatchRecord(clientRecordId, kind, SyncRecordOutcome.Accepted, null, recordFingerprint));
 
     /// <summary>Registers a record that was already stored before; the first evidence is kept.</summary>
-    public void MarkDuplicate(Guid clientRecordId, SyncRecordKind kind) =>
-        Add(new SyncBatchRecord(clientRecordId, kind, SyncRecordOutcome.Duplicate, null));
+    public void MarkDuplicate(Guid clientRecordId, SyncRecordKind kind, string recordFingerprint) =>
+        Add(new SyncBatchRecord(clientRecordId, kind, SyncRecordOutcome.Duplicate, null, recordFingerprint));
 
     /// <summary>Registers a record that was not stored, with its stable rejection code.</summary>
-    public void Reject(Guid clientRecordId, SyncRecordKind kind, string code) =>
-        Add(new SyncBatchRecord(clientRecordId, kind, SyncRecordOutcome.Rejected, code));
+    public void Reject(Guid clientRecordId, SyncRecordKind kind, string code, string recordFingerprint) =>
+        Add(new SyncBatchRecord(clientRecordId, kind, SyncRecordOutcome.Rejected, code, recordFingerprint));
 
     /// <summary>Returns the identities with the given outcome, in a stable order.</summary>
     public IReadOnlyList<Guid> RecordIdsWith(SyncRecordOutcome outcome) =>

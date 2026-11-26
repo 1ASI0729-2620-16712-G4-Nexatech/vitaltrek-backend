@@ -28,6 +28,9 @@ public class SyncBatchRecord
     /// <summary>Gets the stable rejection code; only present when the record was rejected.</summary>
     public string? RejectionCode { get; private set; }
 
+    /// <summary>Gets the fingerprint of the record content, used to detect a reused identity with different data.</summary>
+    public string RecordFingerprint { get; private set; } = string.Empty;
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="SyncBatchRecord"/> class for Entity Framework Core.
     /// </summary>
@@ -38,11 +41,16 @@ public class SyncBatchRecord
     /// <summary>
     ///     Initializes a new record result.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when the identity or the rejection code is invalid.</exception>
-    internal SyncBatchRecord(Guid clientRecordId, SyncRecordKind kind, SyncRecordOutcome outcome, string? rejectionCode)
+    /// <exception cref="ArgumentException">Thrown when the identity, fingerprint or rejection code is invalid.</exception>
+    internal SyncBatchRecord(Guid clientRecordId, SyncRecordKind kind, SyncRecordOutcome outcome, string? rejectionCode,
+        string recordFingerprint)
     {
         if (clientRecordId == Guid.Empty)
             throw new ArgumentException("ClientRecordId is required.", nameof(clientRecordId));
+        if (recordFingerprint is not { Length: Aggregates.SyncBatch.FingerprintLength } ||
+            !recordFingerprint.All(Uri.IsHexDigit))
+            throw new ArgumentException("The record fingerprint must be a SHA-256 hexadecimal value.",
+                nameof(recordFingerprint));
         if (!Enum.IsDefined(kind)) throw new ArgumentException("Unknown record kind.", nameof(kind));
         if (!Enum.IsDefined(outcome)) throw new ArgumentException("Unknown record outcome.", nameof(outcome));
         if (outcome == SyncRecordOutcome.Rejected)
@@ -57,5 +65,6 @@ public class SyncBatchRecord
         Kind = kind;
         Outcome = outcome;
         RejectionCode = rejectionCode;
+        RecordFingerprint = recordFingerprint.ToLowerInvariant();
     }
 }

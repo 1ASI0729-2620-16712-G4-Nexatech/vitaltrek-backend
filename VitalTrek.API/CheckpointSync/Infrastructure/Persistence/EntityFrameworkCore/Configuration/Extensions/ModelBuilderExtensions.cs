@@ -62,7 +62,12 @@ public static class ModelBuilderExtensions
             .IsRequired().HasMaxLength(20);
         builder.Entity<SyncBatchRecord>().Property(r => r.RejectionCode)
             .HasMaxLength(SyncBatchRecord.MaximumRejectionCodeLength);
+        builder.Entity<SyncBatchRecord>().Property(r => r.RecordFingerprint).IsRequired()
+            .HasColumnType($"char({SyncBatch.FingerprintLength})");
         builder.Entity<SyncBatchRecord>().HasIndex(r => new { r.SyncBatchId, r.ClientRecordId }).IsUnique()
             .HasDatabaseName("ux_sync_batch_records_batch_client_record");
+        // Looks up earlier results of a record identity to detect reuse with different data.
+        builder.Entity<SyncBatchRecord>().HasIndex(r => r.ClientRecordId)
+            .HasDatabaseName("ix_sync_batch_records_client_record");
     }
 }

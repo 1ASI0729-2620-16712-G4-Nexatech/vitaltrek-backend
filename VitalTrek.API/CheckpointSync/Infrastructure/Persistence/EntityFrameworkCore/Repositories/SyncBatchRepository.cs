@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using VitalTrek.API.CheckpointSync.Domain.Model.Aggregates;
+using VitalTrek.API.CheckpointSync.Domain.Model.Entities;
+using VitalTrek.API.CheckpointSync.Domain.Model.ValueObjects;
 using VitalTrek.API.CheckpointSync.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Configuration;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
@@ -24,4 +26,16 @@ public class SyncBatchRepository(AppDbContext context) : BaseRepository<SyncBatc
         await Context.Set<SyncBatch>().Include(batch => batch.Records)
             .FirstOrDefaultAsync(batch => batch.SessionId == sessionId && batch.ClientBatchId == clientBatchId,
                 cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<SyncBatchRecord>> FindNonRejectedRecordsAsync(int sessionId,
+        IReadOnlyCollection<Guid> clientRecordIds, CancellationToken cancellationToken = default)
+    {
+        if (clientRecordIds.Count == 0) return [];
+        return await Context.Set<SyncBatch>().AsNoTracking().Where(batch => batch.SessionId == sessionId)
+            .SelectMany(batch => batch.Records)
+            .Where(record => clientRecordIds.Contains(record.ClientRecordId) &&
+                             record.Outcome != SyncRecordOutcome.Rejected)
+            .ToListAsync(cancellationToken);
+    }
 }

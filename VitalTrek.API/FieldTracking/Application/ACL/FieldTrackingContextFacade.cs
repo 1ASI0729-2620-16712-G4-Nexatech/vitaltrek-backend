@@ -99,4 +99,9 @@ public class FieldTrackingContextFacade(ITrackingSessionRepository trackingSessi
     /// <inheritdoc />
     public async Task<int?> FindExpeditionGroupIdBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default) =>
         (await trackingSessionRepository.FindByIdAsync(sessionId, cancellationToken))?.ExpeditionGroupId;
+
+    /// <inheritdoc />
+    public async Task<DateTimeOffset?> FindSessionStartedAtAsync(int agencyId, int sessionId,
+        CancellationToken cancellationToken = default) =>
+        (await trackingSessionRepository.FindByIdAndAgencyIdAsync(sessionId, agencyId, cancellationToken))?.StartedAt;
 }

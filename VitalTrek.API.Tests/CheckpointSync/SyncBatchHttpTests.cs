@@ -124,7 +124,7 @@ public sealed class SyncBatchHttpTests
             record => record.GetProperty("clientRecordId").GetGuid(), record => record.GetProperty("code").GetString());
         Assert.Equal(4, rejected.Count);
         Assert.Equal("Telemetry.WearableNotAssigned", rejected[foreignWearable]);
-        Assert.Equal("Telemetry.InvalidData", rejected[invalidBattery]);
+        Assert.Equal("Telemetry.InvalidBattery", rejected[invalidBattery]);
         Assert.Equal("Telemetry.ConsentRequired", rejected[withoutConsent]);
         Assert.Equal("Passage.CheckpointNotInRoute", rejected[offRoute]);
         Assert.Equal(valid, Assert.Single(data.StoredReadings).ClientRecordId);
@@ -366,6 +366,7 @@ internal sealed class SyncBatchApi : IAsyncDisposable
         builder.Services.AddScoped<IFieldTrackingContextFacade, FieldTrackingContextFacade>();
         builder.Services.AddScoped<ExternalFieldTrackingService>();
         builder.Services.AddScoped<ICheckpointPassageCommandService, CheckpointPassageCommandService>();
+        builder.Services.AddScoped<ICheckpointPassageQueryService, CheckpointPassageQueryService>();
         builder.Services.AddScoped<ISyncBatchCommandService, SyncBatchCommandService>();
         builder.Services.AddScoped<ISyncBatchQueryService, SyncBatchQueryService>();
         var app = builder.Build();

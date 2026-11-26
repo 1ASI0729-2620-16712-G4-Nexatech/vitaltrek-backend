@@ -1,4 +1,6 @@
 using VitalTrek.API.CheckpointSync.Domain.Model.Aggregates;
+using VitalTrek.API.CheckpointSync.Domain.Model.Entities;
+using VitalTrek.API.CheckpointSync.Domain.Model.ValueObjects;
 using VitalTrek.API.CheckpointSync.Domain.Repositories;
 using VitalTrek.API.FieldTracking.Domain.Model.Aggregates;
 using VitalTrek.API.FieldTracking.Domain.Repositories;
@@ -58,6 +60,10 @@ internal sealed class SyncBatchData
                     batch.ClientBatchId == (Guid)args[1]!)),
             nameof(ISyncBatchRepository.FindByIdAndAgencyIdAsync) => Task.FromResult(
                 StoredBatches.FirstOrDefault(batch => batch.Id == (int)args[0]! && batch.AgencyId == (int)args[1]!)),
+            nameof(ISyncBatchRepository.FindNonRejectedRecordsAsync) => Task.FromResult<IReadOnlyList<SyncBatchRecord>>(
+                StoredBatches.Where(batch => batch.SessionId == (int)args[0]!).SelectMany(batch => batch.Records)
+                    .Where(record => ((IReadOnlyCollection<Guid>)args[1]!).Contains(record.ClientRecordId) &&
+                                     record.Outcome != SyncRecordOutcome.Rejected).ToArray()),
             nameof(ISyncBatchRepository.AddAsync) => Add(PendingBatches, (SyncBatch)args[0]!),
             _ => throw new InvalidOperationException(method.Name)
         });

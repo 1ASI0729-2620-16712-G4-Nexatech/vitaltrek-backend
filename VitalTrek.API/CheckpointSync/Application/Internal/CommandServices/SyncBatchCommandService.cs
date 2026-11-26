@@ -93,52 +93,69 @@ public class SyncBatchCommandService(
         if (!session.ContainsCheckpoint(command.CheckpointId))
             return Fail(ESubmitSyncBatchError.CheckpointNotInSessionRoute);
 
+        var readingFingerprints = command.Readings.ToDictionary(reading => reading.ClientRecordId,
+            SyncBatchFingerprint.ForReading);
+        var passageFingerprints = command.Passages.ToDictionary(passage => passage.ClientRecordId,
+            SyncBatchFingerprint.ForPassage);
+        if (await ReusesIdentityWithDifferentData(command.SessionId, readingFingerprints, passageFingerprints,
+                cancellationToken))
+            return Fail(ESubmitSyncBatchError.RecordIdentityConflict);
+
         var batch = new SyncBatch(command, fingerprint, DateTimeOffset.UtcNow);
-        foreach (var reading in command.Readings)
+
+        // Offline events are processed in capture order, so dependencies are judged by when they happened.
+        foreach (var reading in command.Readings.OrderBy(reading => reading.RecordedAt)
+                     .ThenBy(reading => reading.ClientRecordId))
         {
+            var recordFingerprint = readingFingerprints[reading.ClientRecordId];
+            var invalid = SyncReadingRules.RejectionCodeOf(reading, session.StartedAt, batch.ReceivedAt);
+            if (invalid is not null)
+            {
+                batch.Reject(reading.ClientRecordId, SyncRecordKind.Reading, invalid, recordFingerprint);
+                continue;
+            }
+
             var staged = await externalFieldTrackingService.StageReading(actor, command.SessionId, reading,
                 cancellationToken);
             switch (staged.Status)
             {
                 case TelemetryReadingStageStatus.Accepted:
-                    batch.Accept(reading.ClientRecordId, SyncRecordKind.Reading);
+                    batch.Accept(reading.ClientRecordId, SyncRecordKind.Reading, recordFingerprint);
                     break;
                 case TelemetryReadingStageStatus.Duplicate:
-                    batch.MarkDuplicate(reading.ClientRecordId, SyncRecordKind.Reading);
+                    batch.MarkDuplicate(reading.ClientRecordId, SyncRecordKind.Reading, recordFingerprint);
                     break;
                 case TelemetryReadingStageStatus.InvalidData:
                 case TelemetryReadingStageStatus.WearableNotAssigned:
                 case TelemetryReadingStageStatus.ConsentRequired:
-                    batch.Reject(reading.ClientRecordId, SyncRecordKind.Reading, ReadingRejectionCode(staged.Status));
+                    batch.Reject(reading.ClientRecordId, SyncRecordKind.Reading, ReadingRejectionCode(staged.Status),
+                        recordFingerprint);
                     break;
                 default:
                     return Abort(ToBatchError(staged.Status));
             }
         }
 
-        foreach (var passage in command.Passages)
+        foreach (var passage in command.Passages.OrderBy(passage => passage.PassedAt)
+                     .ThenBy(passage => session.PositionOf(passage.CheckpointId))
+                     .ThenBy(passage => passage.ClientRecordId))
         {
-            if (!session.ContainsCheckpoint(passage.CheckpointId))
-            {
-                batch.Reject(passage.ClientRecordId, SyncRecordKind.Passage, SyncBatchRejectionCodes.PassageCheckpointNotInRoute);
-                continue;
-            }
-
+            var recordFingerprint = passageFingerprints[passage.ClientRecordId];
             var staged = await passageCommandService.StagePassage(new RecordCheckpointPassageCommand(command.AgencyId,
-                command.FieldGuideId, command.SessionId, passage.CheckpointId, passage.PassedAt), batch.ReceivedAt,
-                cancellationToken);
+                command.FieldGuideId, command.SessionId, passage.CheckpointId, passage.PassedAt), session,
+                batch.ReceivedAt, cancellationToken);
             switch (staged)
             {
                 case Result<(CheckpointPassage Passage, bool WasCreated), ERecordCheckpointPassageError>.Success
                     { Value.WasCreated: true }:
-                    batch.Accept(passage.ClientRecordId, SyncRecordKind.Passage);
+                    batch.Accept(passage.ClientRecordId, SyncRecordKind.Passage, recordFingerprint);
                     break;
                 case Result<(CheckpointPassage Passage, bool WasCreated), ERecordCheckpointPassageError>.Success:
-                    batch.MarkDuplicate(passage.ClientRecordId, SyncRecordKind.Passage);
+                    batch.MarkDuplicate(passage.ClientRecordId, SyncRecordKind.Passage, recordFingerprint);
                     break;
-                case Result<(CheckpointPassage Passage, bool WasCreated), ERecordCheckpointPassageError>.Failure
-                    { Error: ERecordCheckpointPassageError.InvalidData }:
-                    batch.Reject(passage.ClientRecordId, SyncRecordKind.Passage, SyncBatchRejectionCodes.PassageInvalidData);
+                case Result<(CheckpointPassage Passage, bool WasCreated), ERecordCheckpointPassageError>.Failure failure
+                    when PassageRejectionCode(failure.Error) is { } code:
+                    batch.Reject(passage.ClientRecordId, SyncRecordKind.Passage, code, recordFingerprint);
                     break;
                 default:
                     return Abort(ESubmitSyncBatchError.UnexpectedError);
@@ -148,6 +165,25 @@ public class SyncBatchCommandService(
         await syncBatchRepository.AddAsync(batch, cancellationToken);
         await unitOfWork.CompleteAsync(cancellationToken);
         return new Result<SyncBatch, ESubmitSyncBatchError>.Success(batch);
+    }
+
+    /// <summary>
+    ///     A record identity stored or reported as duplicate by an earlier batch must keep its content. Rejected
+    ///     results do not count, so a corrected record may be sent again with the same identity.
+    /// </summary>
+    private async Task<bool> ReusesIdentityWithDifferentData(int sessionId,
+        IReadOnlyDictionary<Guid, string> readingFingerprints, IReadOnlyDictionary<Guid, string> passageFingerprints,
+        CancellationToken cancellationToken)
+    {
+        var identities = readingFingerprints.Keys.Concat(passageFingerprints.Keys).ToArray();
+        var earlier = await syncBatchRepository.FindNonRejectedRecordsAsync(sessionId, identities, cancellationToken);
+        return earlier.Any(record =>
+        {
+            var current = readingFingerprints.TryGetValue(record.ClientRecordId, out var reading)
+                ? reading
+                : passageFingerprints[record.ClientRecordId];
+            return !string.Equals(record.RecordFingerprint, current, StringComparison.OrdinalIgnoreCase);
+        });
     }
 
     private static bool HasValidShape(SubmitSyncBatchCommand command)
@@ -166,9 +202,18 @@ public class SyncBatchCommandService(
 
     private static string ReadingRejectionCode(TelemetryReadingStageStatus status) => status switch
     {
-        TelemetryReadingStageStatus.WearableNotAssigned => SyncBatchRejectionCodes.TelemetryWearableNotAssigned,
-        TelemetryReadingStageStatus.ConsentRequired => SyncBatchRejectionCodes.TelemetryConsentRequired,
-        _ => SyncBatchRejectionCodes.TelemetryInvalidData
+        TelemetryReadingStageStatus.WearableNotAssigned => SyncRejectionCodes.TelemetryWearableNotAssigned,
+        TelemetryReadingStageStatus.ConsentRequired => SyncRejectionCodes.TelemetryConsentRequired,
+        _ => SyncRejectionCodes.TelemetryInvalidData
+    };
+
+    private static string? PassageRejectionCode(ERecordCheckpointPassageError error) => error switch
+    {
+        ERecordCheckpointPassageError.CheckpointNotInSessionRoute => SyncRejectionCodes.PassageCheckpointNotInRoute,
+        ERecordCheckpointPassageError.InvalidPassedAt or ERecordCheckpointPassageError.InvalidData =>
+            SyncRejectionCodes.PassageInvalidPassedAt,
+        ERecordCheckpointPassageError.OutOfSequence => SyncRejectionCodes.PassageOutOfSequence,
+        _ => null
     };
 
     private static ESubmitSyncBatchError ToBatchError(TelemetryReadingStageStatus status) => status switch
@@ -190,25 +235,4 @@ public class SyncBatchCommandService(
 
     private static Result<SyncBatch, ESubmitSyncBatchError> Fail(ESubmitSyncBatchError error) =>
         new Result<SyncBatch, ESubmitSyncBatchError>.Failure(error);
-}
-
-/// <summary>
-///     Stable codes of the records rejected inside a sync batch. Telemetry codes reuse the Field Tracking codes.
-/// </summary>
-public static class SyncBatchRejectionCodes
-{
-    /// <summary>The reading has an invalid identity, timestamp or measurement.</summary>
-    public const string TelemetryInvalidData = "Telemetry.InvalidData";
-
-    /// <summary>The wearable is not assigned to a participant of the session group.</summary>
-    public const string TelemetryWearableNotAssigned = "Telemetry.WearableNotAssigned";
-
-    /// <summary>The participant has not granted active monitoring consent.</summary>
-    public const string TelemetryConsentRequired = "Telemetry.ConsentRequired";
-
-    /// <summary>The passage checkpoint does not belong to the session route.</summary>
-    public const string PassageCheckpointNotInRoute = "Passage.CheckpointNotInRoute";
-
-    /// <summary>The passage has an invalid timestamp.</summary>
-    public const string PassageInvalidData = "Passage.InvalidData";
 }

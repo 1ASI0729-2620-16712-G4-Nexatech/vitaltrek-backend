@@ -8,6 +8,7 @@ namespace VitalTrek.API.Tests.CheckpointSync.Domain;
 
 public class SyncBatchTests
 {
+    private static readonly string Fingerprint = new('a', SyncBatch.FingerprintLength);
     private static readonly DateTimeOffset CapturedAt = new(2026, 11, 26, 10, 0, 0, TimeSpan.FromHours(-5));
 
     [Fact]
@@ -26,10 +27,10 @@ public class SyncBatchTests
     {
         var batch = new SyncBatch(Command(), SyncBatchFingerprint.Compute(Command()), CapturedAt);
         var ids = Enumerable.Range(0, 4).Select(_ => Guid.NewGuid()).ToArray();
-        batch.Accept(ids[0], SyncRecordKind.Reading);
-        batch.Accept(ids[1], SyncRecordKind.Passage);
-        batch.MarkDuplicate(ids[2], SyncRecordKind.Reading);
-        batch.Reject(ids[3], SyncRecordKind.Reading, "Telemetry.InvalidData");
+        batch.Accept(ids[0], SyncRecordKind.Reading, Fingerprint);
+        batch.Accept(ids[1], SyncRecordKind.Passage, Fingerprint);
+        batch.MarkDuplicate(ids[2], SyncRecordKind.Reading, Fingerprint);
+        batch.Reject(ids[3], SyncRecordKind.Reading, "Telemetry.InvalidData", Fingerprint);
 
         Assert.Equal(new[] { ids[0], ids[1] }.Order(), batch.RecordIdsWith(SyncRecordOutcome.Accepted));
         Assert.Equal([ids[2]], batch.RecordIdsWith(SyncRecordOutcome.Duplicate));
@@ -43,11 +44,12 @@ public class SyncBatchTests
     {
         var batch = new SyncBatch(Command(), SyncBatchFingerprint.Compute(Command()), CapturedAt);
         var id = Guid.NewGuid();
-        batch.Accept(id, SyncRecordKind.Reading);
+        batch.Accept(id, SyncRecordKind.Reading, Fingerprint);
 
-        Assert.Throws<InvalidOperationException>(() => batch.MarkDuplicate(id, SyncRecordKind.Reading));
-        Assert.Throws<ArgumentException>(() => batch.Reject(Guid.NewGuid(), SyncRecordKind.Reading, " "));
-        Assert.Throws<ArgumentException>(() => batch.Accept(Guid.Empty, SyncRecordKind.Reading));
+        Assert.Throws<InvalidOperationException>(() => batch.MarkDuplicate(id, SyncRecordKind.Reading, Fingerprint));
+        Assert.Throws<ArgumentException>(() => batch.Reject(Guid.NewGuid(), SyncRecordKind.Reading, " ", Fingerprint));
+        Assert.Throws<ArgumentException>(() => batch.Accept(Guid.NewGuid(), SyncRecordKind.Reading, "short"));
+        Assert.Throws<ArgumentException>(() => batch.Accept(Guid.Empty, SyncRecordKind.Reading, Fingerprint));
     }
 
     [Theory]

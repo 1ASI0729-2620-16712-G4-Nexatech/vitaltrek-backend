@@ -48,4 +48,11 @@ public interface IFieldTrackingContextFacade
     ///     Returns the identifier of the expedition group tracked by a session, or null if the session does not exist.
     /// </summary>
     Task<int?> FindExpeditionGroupIdBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Returns the start time of a tracking session of the agency, or null if it does not exist there.
+    ///     Checkpoint Sync uses it to reject passages captured before the session started.
+    /// </summary>
+    Task<DateTimeOffset?> FindSessionStartedAtAsync(int agencyId, int sessionId,
+        CancellationToken cancellationToken = default);
 }

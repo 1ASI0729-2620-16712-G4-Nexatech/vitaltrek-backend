@@ -921,4 +921,6 @@
     <data name="GetSyncBatchByIdDescription" xml:space="preserve"><value>Returns the persisted result of a sync batch of the current agency: accepted, duplicate and rejected record identifiers and the evaluation status.</value></data>
     <data name="SubmitSyncBatchSchema" xml:space="preserve"><value>Readings and checkpoint passages captured offline and sent together.</value></data>
     <data name="SyncBatchSchema" xml:space="preserve"><value>Persisted result of a sync batch.</value></data>
+    <data name="InvalidCheckpointPassedAt" xml:space="preserve"><value>The passage time must be within the tracking session and not after its synchronization.</value></data>
+    <data name="CheckpointPassageOutOfSequence" xml:space="preserve"><value>The previous checkpoint of the route has not been passed before this passage.</value></data>
 </root>

@@ -60,10 +60,14 @@ public partial class CheckpointPassage
         AgencyId = DomainGuard.RequirePositive(command.AgencyId, nameof(command.AgencyId));
         if (command.PassedAt > syncedAt + ClockTolerance)
             throw new ArgumentException("PassedAt cannot be later than the synchronization moment.", nameof(command));
-        PassedAt = command.PassedAt;
-        SyncedAt = syncedAt;
+        // The passage columns store whole seconds without offset; normalize so the stored and compared times match.
+        PassedAt = ToStoredPrecision(command.PassedAt);
+        SyncedAt = ToStoredPrecision(syncedAt);
         Status = SyncedAt - PassedAt > MaximumOnTimeSyncDelay
             ? CheckpointPassageStatus.DelayedSync
             : CheckpointPassageStatus.Synced;
     }
+
+    private static DateTimeOffset ToStoredPrecision(DateTimeOffset value) =>
+        DateTimeOffset.FromUnixTimeSeconds(value.ToUnixTimeSeconds());
 }

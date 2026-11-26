@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using VitalTrek.API.CheckpointSync.Application.Errors;
 using VitalTrek.API.CheckpointSync.Domain.Model.Aggregates;
+using VitalTrek.API.CheckpointSync.Domain.Model.ValueObjects;
 using VitalTrek.API.Shared.Resources;
 using VitalTrek.API.Shared.Application.Patterns;
 
@@ -95,6 +96,12 @@ public static class ActionResultFromCheckpointSyncResultAssembler
             ERecordCheckpointPassageError.SessionNotActive => controller.Conflict(localizer["TrackingSessionNotActive"].Value),
             ERecordCheckpointPassageError.CheckpointNotInSessionRoute =>
                 controller.BadRequest(localizer["CheckpointNotInSessionRoute"].Value),
+            ERecordCheckpointPassageError.AccessForbidden => controller.Problem(title: localizer["AccessForbidden"].Value,
+                statusCode: StatusCodes.Status403Forbidden),
+            ERecordCheckpointPassageError.InvalidPassedAt => CodedProblem(controller, localizer,
+                "InvalidCheckpointPassedAt", SyncRejectionCodes.PassageInvalidPassedAt, StatusCodes.Status400BadRequest),
+            ERecordCheckpointPassageError.OutOfSequence => CodedProblem(controller, localizer,
+                "CheckpointPassageOutOfSequence", SyncRejectionCodes.PassageOutOfSequence, StatusCodes.Status409Conflict),
             _ => Unexpected(controller, localizer)
         };
 
