@@ -36,6 +36,9 @@ public class CheckpointPassageRepository(AppDbContext context)
     /// <inheritdoc />
     public async Task<CheckpointPassage?> FindBySessionIdAndCheckpointIdAsync(int sessionId, int checkpointId,
         CancellationToken cancellationToken = default) =>
+        // Passages staged in the current unit of work count too, so one batch cannot stage the same checkpoint twice.
+        Context.Set<CheckpointPassage>().Local.FirstOrDefault(passage =>
+            passage.SessionId == sessionId && passage.CheckpointId == checkpointId) ??
         await Context.Set<CheckpointPassage>().FirstOrDefaultAsync(
             passage => passage.SessionId == sessionId && passage.CheckpointId == checkpointId, cancellationToken);
 

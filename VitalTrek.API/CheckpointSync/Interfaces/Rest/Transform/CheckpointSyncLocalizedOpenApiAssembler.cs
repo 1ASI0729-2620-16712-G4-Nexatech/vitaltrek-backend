@@ -12,12 +12,14 @@ namespace VitalTrek.API.CheckpointSync.Interfaces.Rest.Transform;
 /// </summary>
 public static class CheckpointSyncLocalizedOpenApiAssembler
 {
-    private static readonly string[] Operations = ["RecordCheckpointPassage", "GetPassageById", "GetPassages"];
+    private static readonly string[] Operations =
+        ["RecordCheckpointPassage", "GetPassageById", "GetPassages", "SubmitSyncBatch", "GetSyncBatchById"];
 
     private static readonly Dictionary<string, string> ResponseResources = new()
     {
         ["200"] = "OperationSuccess",
         ["201"] = "OperationCreated",
+        ["202"] = "OperationAccepted",
         ["400"] = "OperationBadRequest",
         ["401"] = "OperationUnauthorized",
         ["403"] = "OperationForbidden",
@@ -29,7 +31,9 @@ public static class CheckpointSyncLocalizedOpenApiAssembler
     private static readonly Dictionary<Type, string> SchemaResources = new()
     {
         [typeof(CheckpointPassageResource)] = "CheckpointPassageSchema",
-        [typeof(RecordCheckpointPassageResource)] = "RecordCheckpointPassageSchema"
+        [typeof(RecordCheckpointPassageResource)] = "RecordCheckpointPassageSchema",
+        [typeof(SubmitSyncBatchResource)] = "SubmitSyncBatchSchema",
+        [typeof(SyncBatchResource)] = "SyncBatchSchema"
     };
 
     /// <summary>

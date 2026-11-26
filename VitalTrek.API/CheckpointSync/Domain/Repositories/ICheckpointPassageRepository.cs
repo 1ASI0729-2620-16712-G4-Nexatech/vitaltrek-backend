@@ -19,7 +19,7 @@ public interface ICheckpointPassageRepository : IBaseRepository<CheckpointPassag
     Task<IEnumerable<CheckpointPassage>> FindByCheckpointIdAndAgencyIdAsync(int checkpointId, int agencyId,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Finds the passage registered for a checkpoint within a session, if any.</summary>
+    /// <summary>Finds the passage registered for a checkpoint within a session, including one staged in this unit of work.</summary>
     Task<CheckpointPassage?> FindBySessionIdAndCheckpointIdAsync(int sessionId, int checkpointId,
         CancellationToken cancellationToken = default);
 

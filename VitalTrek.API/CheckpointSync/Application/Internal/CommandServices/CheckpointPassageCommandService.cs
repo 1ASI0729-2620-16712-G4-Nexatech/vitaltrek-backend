@@ -53,6 +53,8 @@ public class CheckpointPassageCommandService(
             {
                 logger.LogWarning(ex, "Concurrent duplicate passage for session {SessionId} and checkpoint {CheckpointId}",
                     command.SessionId, command.CheckpointId);
+                // Drop the unsaved passage so the lookup reads the committed winner, not the local copy.
+                unitOfWork.DiscardChanges();
                 var winner = await passageRepository.FindBySessionIdAndCheckpointIdAsync(command.SessionId,
                     command.CheckpointId, cancellationToken);
                 return winner is not null ? Ok(winner, false) : Fail(ERecordCheckpointPassageError.UnexpectedError);
@@ -74,6 +76,29 @@ public class CheckpointPassageCommandService(
             logger.LogError(ex, "Unexpected error recording passage for session {SessionId}", command.SessionId);
             return Fail(ERecordCheckpointPassageError.UnexpectedError);
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<Result<(CheckpointPassage Passage, bool WasCreated), ERecordCheckpointPassageError>> StagePassage(
+        RecordCheckpointPassageCommand command, DateTimeOffset syncedAt, CancellationToken cancellationToken)
+    {
+        CheckpointPassage passage;
+        try
+        {
+            // Invalid evidence is rejected even when the checkpoint already has a passage.
+            passage = new CheckpointPassage(command, syncedAt);
+        }
+        catch (ArgumentException ex)
+        {
+            logger.LogInformation(ex, "Invalid passage staged for session {SessionId}", command.SessionId);
+            return Fail(ERecordCheckpointPassageError.InvalidData);
+        }
+
+        var existing = await passageRepository.FindBySessionIdAndCheckpointIdAsync(command.SessionId,
+            command.CheckpointId, cancellationToken);
+        if (existing is not null) return Ok(existing, false);
+        await passageRepository.AddAsync(passage, cancellationToken);
+        return Ok(passage, true);
     }
 
     private static Result<(CheckpointPassage Passage, bool WasCreated), ERecordCheckpointPassageError> Ok(

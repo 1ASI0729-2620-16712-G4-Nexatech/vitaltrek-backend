@@ -13,4 +13,12 @@ public static class CheckpointSyncResourceAssembler
     public static CheckpointPassageResource ToResourceFromEntity(CheckpointPassage entity) =>
         new(entity.Id, entity.SessionId, entity.CheckpointId, entity.FieldGuideId, entity.AgencyId, entity.PassedAt,
             entity.SyncedAt, entity.Status.ToCode());
+
+    /// <summary>Transforms a <see cref="SyncBatch"/> into a <see cref="SyncBatchResource"/>.</summary>
+    public static SyncBatchResource ToResourceFromEntity(SyncBatch entity) =>
+        new(entity.Id, entity.ClientBatchId, entity.SessionId, entity.CheckpointId, entity.ReceivedAt,
+            entity.RecordIdsWith(SyncRecordOutcome.Accepted), entity.RecordIdsWith(SyncRecordOutcome.Duplicate),
+            entity.RejectedRecords().Select(record => new RejectedSyncRecordResource(record.ClientRecordId,
+                record.RejectionCode!)).ToArray(),
+            entity.EvaluationStatus.ToCode());
 }

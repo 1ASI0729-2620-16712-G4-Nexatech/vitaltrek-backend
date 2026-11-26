@@ -222,6 +222,9 @@ builder.Services.AddScoped<IFieldTrackingContextFacade, FieldTrackingContextFaca
 builder.Services.AddScoped<ICheckpointPassageRepository, CheckpointPassageRepository>();
 builder.Services.AddScoped<ICheckpointPassageCommandService, CheckpointPassageCommandService>();
 builder.Services.AddScoped<ICheckpointPassageQueryService, CheckpointPassageQueryService>();
+builder.Services.AddScoped<ISyncBatchRepository, SyncBatchRepository>();
+builder.Services.AddScoped<ISyncBatchCommandService, SyncBatchCommandService>();
+builder.Services.AddScoped<ISyncBatchQueryService, SyncBatchQueryService>();
 builder.Services.AddScoped<ExternalFieldTrackingService>();
 builder.Services.AddScoped<ICheckpointSyncContextFacade, CheckpointSyncContextFacade>();
 
