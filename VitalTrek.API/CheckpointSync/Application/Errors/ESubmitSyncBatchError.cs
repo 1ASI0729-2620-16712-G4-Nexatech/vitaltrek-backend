@@ -21,6 +21,12 @@ public enum ESubmitSyncBatchError
     /// <summary>The checkpoint where the batch was synchronized does not belong to the session route.</summary>
     CheckpointNotInSessionRoute,
 
+    /// <summary>
+    ///     The checkpoint where the batch was synchronized has no valid arrival, neither persisted nor accepted in the
+    ///     same batch.
+    /// </summary>
+    CheckpointArrivalRequired,
+
     /// <summary>The client batch identity was already used with a different content.</summary>
     BatchIdentityConflict,
 

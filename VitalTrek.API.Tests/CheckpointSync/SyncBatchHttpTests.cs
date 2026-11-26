@@ -94,6 +94,7 @@ public sealed class SyncBatchHttpTests
     [Fact]
     public Task ReusedBatchIdentityWithDifferentContentReturns409AndKeepsTheAcceptedData() => WithApi(async (data, api) =>
     {
+        data.SeedArrival(30, CapturedAt);
         var (batchId, readingId) = (Guid.NewGuid(), Guid.NewGuid());
         using var first = await api.Send("POST", Path, Guide, Batch(batchId, [Reading(readingId)], []));
         using var conflict = await api.Send("POST", Path, Guide, Batch(batchId, [Reading(readingId, heartRate: 99)], []));
@@ -152,6 +153,7 @@ public sealed class SyncBatchHttpTests
     [Fact]
     public Task ReusedRecordIdentityWithDifferentDataRejectsTheWholeBatch() => WithApi(async (data, api) =>
     {
+        data.SeedArrival(30, CapturedAt);
         var readingId = Guid.NewGuid();
         using var first = await api.Send("POST", Path, Guide, Batch(Guid.NewGuid(), [Reading(readingId)], []));
         using var conflict = await api.Send("POST", Path, Guide, Batch(Guid.NewGuid(),
@@ -160,7 +162,7 @@ public sealed class SyncBatchHttpTests
         Assert.Equal(HttpStatusCode.Conflict, conflict.StatusCode);
         Assert.Equal("SyncBatch.RecordIdentityConflict", (await Json(conflict)).GetProperty("code").GetString());
         Assert.Equal(88, Assert.Single(data.StoredReadings).HeartRate);
-        Assert.Empty(data.StoredPassages);
+        Assert.Single(data.StoredPassages);
         Assert.Single(data.StoredBatches);
     });
 
@@ -358,7 +360,7 @@ internal sealed class SyncBatchApi : IAsyncDisposable
                 : throw new InvalidOperationException(method.Name)));
         builder.Services.AddSingleton<IExpeditionSetupContextFacade>(data.Ready.Expeditions);
         builder.Services.AddSingleton(data.Sessions);
-        builder.Services.AddSingleton(data.Telemetry.Repository);
+        builder.Services.AddSingleton(data.TelemetryRepository);
         builder.Services.AddSingleton(data.PassageRepository);
         builder.Services.AddSingleton(data.BatchRepository);
         builder.Services.AddSingleton(data.UnitOfWork);

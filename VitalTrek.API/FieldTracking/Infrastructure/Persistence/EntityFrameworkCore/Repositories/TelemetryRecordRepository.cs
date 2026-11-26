@@ -39,6 +39,16 @@ public class TelemetryRecordRepository(AppDbContext context)
             record.ClientRecordId == clientRecordId, ct);
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<TelemetryRecord>> FindByClientRecordIdsAsync(int sessionId,
+        IReadOnlyCollection<Guid> clientRecordIds, CancellationToken ct = default)
+    {
+        if (clientRecordIds.Count == 0) return [];
+        return await Context.Set<TelemetryRecord>().AsNoTracking()
+            .Where(record => record.SessionId == sessionId && clientRecordIds.Contains(record.ClientRecordId))
+            .OrderBy(record => record.RecordedAt).ToListAsync(ct);
+    }
+
+    /// <inheritdoc />
     public async Task<IEnumerable<TelemetryRecord>> FindAllBySessionIdAsync(int sessionId, CancellationToken ct = default) =>
         await Context.Set<TelemetryRecord>()
             .Where(r => r.SessionId == sessionId)

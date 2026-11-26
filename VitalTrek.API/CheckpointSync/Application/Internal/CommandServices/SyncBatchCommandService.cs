@@ -21,12 +21,14 @@ namespace VitalTrek.API.CheckpointSync.Application.Internal.CommandServices;
 ///     saves, so the batch and every accepted record are committed together by a single unit of work.
 /// </summary>
 /// <param name="syncBatchRepository">The sync batch repository.</param>
+/// <param name="passageRepository">The checkpoint passage repository, used to confirm the arrival at the batch checkpoint.</param>
 /// <param name="passageCommandService">The checkpoint passage command service.</param>
 /// <param name="externalFieldTrackingService">The outbound service for sessions and telemetry.</param>
 /// <param name="unitOfWork">The unit of work used to commit the batch.</param>
 /// <param name="logger">Logger for diagnostics.</param>
 public class SyncBatchCommandService(
     ISyncBatchRepository syncBatchRepository,
+    ICheckpointPassageRepository passageRepository,
     ICheckpointPassageCommandService passageCommandService,
     ExternalFieldTrackingService externalFieldTrackingService,
     IUnitOfWork unitOfWork,
@@ -161,6 +163,12 @@ public class SyncBatchCommandService(
                     return Abort(ESubmitSyncBatchError.UnexpectedError);
             }
         }
+
+        // A batch is synchronized physically at a checkpoint: it needs a valid arrival there, already confirmed or
+        // accepted in this batch. A rejected passage never qualifies because it was not staged.
+        if (await passageRepository.FindBySessionIdAndCheckpointIdAsync(command.SessionId, command.CheckpointId,
+                cancellationToken) is null)
+            return Abort(ESubmitSyncBatchError.CheckpointArrivalRequired);
 
         await syncBatchRepository.AddAsync(batch, cancellationToken);
         await unitOfWork.CompleteAsync(cancellationToken);

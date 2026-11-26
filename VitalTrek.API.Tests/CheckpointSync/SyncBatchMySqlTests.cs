@@ -141,7 +141,8 @@ public sealed class SyncBatchMySqlTests
             expedition);
         var passages = new CheckpointPassageCommandService(new CheckpointPassageRepository(context), external, work,
             NullLogger<CheckpointPassageCommandService>.Instance);
-        return new SyncBatchCommandService(new SyncBatchRepository(context), passages, external, work,
+        return new SyncBatchCommandService(new SyncBatchRepository(context), new CheckpointPassageRepository(context),
+            passages, external, work,
             NullLogger<SyncBatchCommandService>.Instance);
     }
 

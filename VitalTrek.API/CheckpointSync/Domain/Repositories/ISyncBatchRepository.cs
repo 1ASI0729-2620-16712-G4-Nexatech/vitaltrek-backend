@@ -22,4 +22,7 @@ public interface ISyncBatchRepository : IBaseRepository<SyncBatch>
     /// </summary>
     Task<IReadOnlyList<SyncBatchRecord>> FindNonRejectedRecordsAsync(int sessionId,
         IReadOnlyCollection<Guid> clientRecordIds, CancellationToken cancellationToken = default);
+
+    /// <summary>Finds the oldest batches whose evaluation is still pending, without tracking.</summary>
+    Task<IReadOnlyList<SyncBatch>> FindPendingEvaluationAsync(int maxCount, CancellationToken cancellationToken = default);
 }

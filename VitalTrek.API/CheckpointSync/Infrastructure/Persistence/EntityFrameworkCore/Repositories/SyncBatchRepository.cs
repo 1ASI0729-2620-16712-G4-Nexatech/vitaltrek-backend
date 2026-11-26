@@ -38,4 +38,12 @@ public class SyncBatchRepository(AppDbContext context) : BaseRepository<SyncBatc
                              record.Outcome != SyncRecordOutcome.Rejected)
             .ToListAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<SyncBatch>> FindPendingEvaluationAsync(int maxCount,
+        CancellationToken cancellationToken = default) =>
+        await Context.Set<SyncBatch>().AsNoTracking()
+            .Where(batch => batch.EvaluationStatus == SyncBatchEvaluationStatus.Pending)
+            .OrderBy(batch => batch.ReceivedAt).ThenBy(batch => batch.Id)
+            .Take(Math.Clamp(maxCount, 1, 100)).ToListAsync(cancellationToken);
 }

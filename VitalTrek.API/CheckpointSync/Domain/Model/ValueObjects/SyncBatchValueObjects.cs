@@ -28,13 +28,16 @@ public enum SyncRecordOutcome
 }
 
 /// <summary>
-///     Safety evaluation state of the readings accepted by a sync batch. Batches are stored as pending; the
-///     Safety Monitoring evaluation (D01 and D02) owns the later transitions.
+///     Safety evaluation state of the readings accepted by a sync batch. Batches are stored as pending; Safety
+///     Monitoring (D01 and D02) marks them evaluated through the Checkpoint Sync facade once its alerts are saved.
 /// </summary>
 public enum SyncBatchEvaluationStatus
 {
     /// <summary>The accepted readings still have to be evaluated.</summary>
-    Pending
+    Pending,
+
+    /// <summary>The accepted readings were evaluated and the result was saved.</summary>
+    Evaluated
 }
 
 /// <summary>

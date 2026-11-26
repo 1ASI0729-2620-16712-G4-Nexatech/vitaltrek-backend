@@ -83,6 +83,11 @@ public partial class SyncBatch
         EvaluationStatus = SyncBatchEvaluationStatus.Pending;
     }
 
+    /// <summary>
+    ///     Records that the accepted readings were evaluated. Idempotent: a repeated evaluation keeps the state.
+    /// </summary>
+    public void MarkEvaluated() => EvaluationStatus = SyncBatchEvaluationStatus.Evaluated;
+
     /// <summary>Returns whether a submission carries exactly the content this batch was created from.</summary>
     public bool HasSameContent(string contentFingerprint) =>
         string.Equals(ContentFingerprint, contentFingerprint, StringComparison.OrdinalIgnoreCase);

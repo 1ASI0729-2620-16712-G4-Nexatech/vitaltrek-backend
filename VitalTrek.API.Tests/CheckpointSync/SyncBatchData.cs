@@ -1,4 +1,5 @@
 using VitalTrek.API.CheckpointSync.Domain.Model.Aggregates;
+using VitalTrek.API.CheckpointSync.Domain.Model.Commands;
 using VitalTrek.API.CheckpointSync.Domain.Model.Entities;
 using VitalTrek.API.CheckpointSync.Domain.Model.ValueObjects;
 using VitalTrek.API.CheckpointSync.Domain.Repositories;
@@ -29,6 +30,8 @@ internal sealed class SyncBatchData
     /// <summary>One-shot hook that runs when the next save starts; it may throw to simulate a storage failure.</summary>
     public Action? BeforeNextSave { get; set; }
 
+    /// <summary>Telemetry repository of Field Tracking plus the lookup by client identities used for evaluation.</summary>
+    public ITelemetryRecordRepository TelemetryRepository { get; }
     public ITrackingSessionRepository Sessions { get; }
     public ICheckpointPassageRepository PassageRepository { get; }
     public ISyncBatchRepository BatchRepository { get; }
@@ -64,9 +67,18 @@ internal sealed class SyncBatchData
                 StoredBatches.Where(batch => batch.SessionId == (int)args[0]!).SelectMany(batch => batch.Records)
                     .Where(record => ((IReadOnlyCollection<Guid>)args[1]!).Contains(record.ClientRecordId) &&
                                      record.Outcome != SyncRecordOutcome.Rejected).ToArray()),
+            nameof(ISyncBatchRepository.FindPendingEvaluationAsync) => Task.FromResult<IReadOnlyList<SyncBatch>>(
+                StoredBatches.Where(batch => batch.EvaluationStatus == SyncBatchEvaluationStatus.Pending)
+                    .OrderBy(batch => batch.ReceivedAt).Take((int)args[0]!).ToArray()),
             nameof(ISyncBatchRepository.AddAsync) => Add(PendingBatches, (SyncBatch)args[0]!),
             _ => throw new InvalidOperationException(method.Name)
         });
+        TelemetryRepository = InterfaceStub<ITelemetryRecordRepository>.Create((method, args) =>
+            method.Name == nameof(ITelemetryRecordRepository.FindByClientRecordIdsAsync)
+                ? Task.FromResult<IReadOnlyList<TelemetryRecord>>(StoredReadings.Where(record =>
+                    record.SessionId == (int)args[0]! &&
+                    ((IReadOnlyCollection<Guid>)args[1]!).Contains(record.ClientRecordId)).ToArray())
+                : method.Invoke(Telemetry.Repository, args));
         UnitOfWork = InterfaceStub<IUnitOfWork>.Create((method, _) =>
         {
             if (method.Name == nameof(IUnitOfWork.DiscardChanges))
@@ -86,6 +98,15 @@ internal sealed class SyncBatchData
     }
 
     public static async Task<SyncBatchData> CreateAsync() => new(await TelemetryIngestionData.CreateAsync());
+
+    /// <summary>Stores a confirmed arrival at a checkpoint, as an earlier batch would have done.</summary>
+    public CheckpointPassage SeedArrival(int checkpointId, DateTimeOffset passedAt)
+    {
+        var passage = new CheckpointPassage(new RecordCheckpointPassageCommand(Session.AgencyId, 10, Session.Id,
+            checkpointId, passedAt), passedAt.AddMinutes(1));
+        StoredPassages.Add(TrackingStartData.WithId(passage, 700 + StoredPassages.Count + 1));
+        return passage;
+    }
 
     /// <summary>Commits everything staged so far, as another request would.</summary>
     public void CommitPending()

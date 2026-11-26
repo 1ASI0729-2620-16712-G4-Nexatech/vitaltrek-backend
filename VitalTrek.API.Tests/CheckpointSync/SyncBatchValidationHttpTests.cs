@@ -27,6 +27,7 @@ public sealed class SyncBatchValidationHttpTests
     public Task EachInvalidFieldIsRejectedWithItsOwnCodeWithoutBlockingValidRows(string field, int value,
         string code) => WithApi(async (data, api) =>
     {
+        data.SeedArrival(First, CapturedAt);
         var (valid, invalid) = (Guid.NewGuid(), Guid.NewGuid());
         var reading = Reading(invalid);
         reading[field] = field == "recordedAt" ? DateTimeOffset.UtcNow.AddMinutes(value) : value;
@@ -47,6 +48,7 @@ public sealed class SyncBatchValidationHttpTests
     [InlineData(160)]
     public Task ClinicallyAnomalousPulseIsAcceptedForLaterEvaluation(int heartRate) => WithApi(async (data, api) =>
     {
+        data.SeedArrival(First, CapturedAt);
         var reading = Reading(Guid.NewGuid());
         reading["heartRate"] = heartRate;
 
@@ -74,6 +76,7 @@ public sealed class SyncBatchValidationHttpTests
     [Fact]
     public Task ARejectedReadingCanBeCorrectedInANewBatchWithTheSameIdentity() => WithApi(async (data, api) =>
     {
+        data.SeedArrival(First, CapturedAt);
         var readingId = Guid.NewGuid();
         var wrong = Reading(readingId);
         wrong["battery"] = 140;
@@ -89,20 +92,44 @@ public sealed class SyncBatchValidationHttpTests
     });
 
     [Fact]
-    public Task AnInvalidPassageDoesNotEnableTheNextCheckpoint() => WithApi(async (data, api) =>
+    public Task AnInvalidPassageNeitherEnablesTheNextCheckpointNorCountsAsArrival() => WithApi(async (data, api) =>
     {
-        var (invalid, dependent) = (Guid.NewGuid(), Guid.NewGuid());
-        using var response = await api.Send("POST", Path, Guide, Batch(Guid.NewGuid(), [],
+        using var response = await api.Send("POST", Path, Guide, Batch(Guid.NewGuid(), [Reading(Guid.NewGuid())],
         [
-            Passage(invalid, First, data.Session.StartedAt.AddMinutes(-30)),
-            Passage(dependent, Second, CapturedAt.AddMinutes(5))
-        ]));
+            Passage(Guid.NewGuid(), First, data.Session.StartedAt.AddMinutes(-30)),
+            Passage(Guid.NewGuid(), Second, CapturedAt.AddMinutes(5))
+        ], checkpoint: Second));
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("SyncBatch.CheckpointArrivalRequired", (await Json(response)).GetProperty("code").GetString());
+        Assert.Empty(data.StoredPassages);
+        Assert.Empty(data.StoredReadings);
+        Assert.Empty(data.StoredBatches);
+    });
+
+    [Fact]
+    public Task ARejectedPassageIsReportedWhileTheBatchArrivalIsValid() => WithApi(async (data, api) =>
+    {
+        var (arrival, invalid) = (Guid.NewGuid(), Guid.NewGuid());
+        using var response = await api.Send("POST", Path, Guide, Batch(Guid.NewGuid(), [],
+            [Passage(arrival, First), Passage(invalid, Second, DateTimeOffset.UtcNow.AddMinutes(10))]));
 
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
-        var rejected = Rejected(await Json(response));
-        Assert.Equal("Passage.InvalidPassedAt", rejected[invalid]);
-        Assert.Equal("Passage.OutOfSequence", rejected[dependent]);
-        Assert.Empty(data.StoredPassages);
+        var body = await Json(response);
+        Assert.Equal([arrival], Guids(body, "acceptedRecordIds"));
+        Assert.Equal("Passage.InvalidPassedAt", Rejected(body)[invalid]);
+        Assert.Equal(First, Assert.Single(data.StoredPassages).CheckpointId);
+    });
+
+    [Fact]
+    public Task ABatchWithoutAnArrivalAtItsCheckpointIsRejectedWithoutChanges() => WithApi(async (data, api) =>
+    {
+        using var response = await api.Send("POST", Path, Guide, Batch(Guid.NewGuid(), [Reading(Guid.NewGuid())], []));
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal("SyncBatch.CheckpointArrivalRequired", (await Json(response)).GetProperty("code").GetString());
+        Assert.Empty(data.StoredReadings);
+        Assert.Empty(data.StoredBatches);
     });
 
     [Fact]
@@ -118,15 +145,12 @@ public sealed class SyncBatchValidationHttpTests
             .Select(passage => passage.CheckpointId));
     });
 
-    [Theory]
-    [InlineData("missingPrevious")]
-    [InlineData("passedBeforePrevious")]
-    public Task APassageBeforeThePreviousCheckpointIsOutOfSequence(string fault) => WithApi(async (data, api) =>
+    [Fact]
+    public Task APassageBeforeThePreviousCheckpointIsOutOfSequence() => WithApi(async (data, api) =>
     {
         var later = Guid.NewGuid();
-        object[] passages = fault == "missingPrevious"
-            ? [Passage(later, Second, CapturedAt.AddMinutes(5))]
-            : [Passage(Guid.NewGuid(), First, CapturedAt.AddMinutes(5)), Passage(later, Second, CapturedAt.AddMinutes(5).AddSeconds(-1))];
+        object[] passages =
+            [Passage(Guid.NewGuid(), First, CapturedAt.AddMinutes(5)), Passage(later, Second, CapturedAt.AddMinutes(5).AddSeconds(-1))];
 
         using var response = await api.Send("POST", Path, Guide, Batch(Guid.NewGuid(), [], passages));
 
@@ -175,8 +199,8 @@ public sealed class SyncBatchValidationHttpTests
         body.GetProperty("rejectedRecords").EnumerateArray().ToDictionary(
             record => record.GetProperty("clientRecordId").GetGuid(), record => record.GetProperty("code").GetString());
 
-    private static object Batch(Guid clientBatchId, object[] readings, object[] passages) =>
-        new { clientBatchId, sessionId = 501, checkpointId = First, readings, passages };
+    private static object Batch(Guid clientBatchId, object[] readings, object[] passages, int checkpoint = First) =>
+        new { clientBatchId, sessionId = 501, checkpointId = checkpoint, readings, passages };
 
     private static Dictionary<string, object?> Reading(Guid id) => new()
     {

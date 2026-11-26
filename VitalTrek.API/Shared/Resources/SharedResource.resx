@@ -923,4 +923,5 @@
     <data name="SyncBatchSchema" xml:space="preserve"><value>Persisted result of a sync batch.</value></data>
     <data name="InvalidCheckpointPassedAt" xml:space="preserve"><value>The passage time must be within the tracking session and not after its synchronization.</value></data>
     <data name="CheckpointPassageOutOfSequence" xml:space="preserve"><value>The previous checkpoint of the route has not been passed before this passage.</value></data>
+    <data name="SyncBatchCheckpointArrivalRequired" xml:space="preserve"><value>Record a valid arrival at this checkpoint before synchronizing a batch there.</value></data>
 </root>

@@ -923,4 +923,5 @@
     <data name="SyncBatchSchema" xml:space="preserve"><value>Resultado persistido de un lote de sincronización.</value></data>
     <data name="InvalidCheckpointPassedAt" xml:space="preserve"><value>La hora del paso debe estar dentro de la sesión de seguimiento y no ser posterior a su sincronización.</value></data>
     <data name="CheckpointPassageOutOfSequence" xml:space="preserve"><value>El checkpoint anterior de la ruta no se ha pasado antes de este paso.</value></data>
+    <data name="SyncBatchCheckpointArrivalRequired" xml:space="preserve"><value>Registra una llegada válida a este checkpoint antes de sincronizar un lote en él.</value></data>
 </root>

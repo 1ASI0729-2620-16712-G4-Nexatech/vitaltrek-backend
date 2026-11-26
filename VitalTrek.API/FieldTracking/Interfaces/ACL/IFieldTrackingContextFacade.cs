@@ -55,4 +55,11 @@ public interface IFieldTrackingContextFacade
     /// </summary>
     Task<DateTimeOffset?> FindSessionStartedAtAsync(int agencyId, int sessionId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Returns the persisted readings of a session of the agency with the given client identities. Internal use by
+    ///     Checkpoint Sync for the safety evaluation of a batch; returns nothing for a session outside the agency.
+    /// </summary>
+    Task<IReadOnlyList<TelemetryReadingSnapshot>> FindReadingsAsync(int agencyId, int sessionId,
+        IReadOnlyCollection<Guid> clientRecordIds, CancellationToken cancellationToken = default);
 }
