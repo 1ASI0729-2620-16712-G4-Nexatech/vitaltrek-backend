@@ -83,6 +83,120 @@ namespace VitalTrek.API.Migrations
                     b.ToTable("checkpoint_passages");
                 });
 
+            modelBuilder.Entity("VitalTrek.API.CheckpointSync.Domain.Model.Aggregates.SyncBatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AgencyId")
+                        .HasColumnType("int")
+                        .HasColumnName("agency_id");
+
+                    b.Property<int>("CheckpointId")
+                        .HasColumnType("int")
+                        .HasColumnName("checkpoint_id");
+
+                    b.Property<Guid>("ClientBatchId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("client_batch_id");
+
+                    b.Property<string>("ContentFingerprint")
+                        .IsRequired()
+                        .HasColumnType("char(64)")
+                        .HasColumnName("content_fingerprint");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("EvaluationStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("evaluation_status");
+
+                    b.Property<int>("FieldGuideId")
+                        .HasColumnType("int")
+                        .HasColumnName("field_guide_id");
+
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasPrecision(6)
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("received_at");
+
+                    b.Property<int>("SessionId")
+                        .HasColumnType("int")
+                        .HasColumnName("session_id");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_sync_batches");
+
+                    b.HasIndex("AgencyId")
+                        .HasDatabaseName("i_x_sync_batches_agency_id");
+
+                    b.HasIndex("SessionId", "ClientBatchId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_sync_batches_session_client_batch");
+
+                    b.ToTable("sync_batches");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.CheckpointSync.Domain.Model.Entities.SyncBatchRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClientRecordId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("client_record_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("outcome");
+
+                    b.Property<string>("RecordFingerprint")
+                        .IsRequired()
+                        .HasColumnType("char(64)")
+                        .HasColumnName("record_fingerprint");
+
+                    b.Property<string>("RejectionCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("rejection_code");
+
+                    b.Property<int>("SyncBatchId")
+                        .HasColumnType("int")
+                        .HasColumnName("sync_batch_id");
+
+                    b.HasKey("Id")
+                        .HasName("p_k_sync_batch_records");
+
+                    b.HasIndex("ClientRecordId")
+                        .HasDatabaseName("ix_sync_batch_records_client_record");
+
+                    b.HasIndex("SyncBatchId", "ClientRecordId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_sync_batch_records_batch_client_record");
+
+                    b.ToTable("sync_batch_records");
+                });
+
             modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Checkpoint", b =>
                 {
                     b.Property<int>("Id")
@@ -1159,6 +1273,16 @@ namespace VitalTrek.API.Migrations
                     b.ToTable("tour_summaries", (string)null);
                 });
 
+            modelBuilder.Entity("VitalTrek.API.CheckpointSync.Domain.Model.Entities.SyncBatchRecord", b =>
+                {
+                    b.HasOne("VitalTrek.API.CheckpointSync.Domain.Model.Aggregates.SyncBatch", null)
+                        .WithMany("Records")
+                        .HasForeignKey("SyncBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("f_k_sync_batch_records_sync_batches_sync_batch_id");
+                });
+
             modelBuilder.Entity("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Checkpoint", b =>
                 {
                     b.HasOne("VitalTrek.API.ExpeditionSetup.Domain.Model.Aggregates.Route", null)
@@ -1340,6 +1464,11 @@ namespace VitalTrek.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("f_k_users_agencies_agency_id");
+                });
+
+            modelBuilder.Entity("VitalTrek.API.CheckpointSync.Domain.Model.Aggregates.SyncBatch", b =>
+                {
+                    b.Navigation("Records");
                 });
 #pragma warning restore 612, 618
         }
