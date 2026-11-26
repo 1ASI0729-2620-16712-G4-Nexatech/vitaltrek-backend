@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 using VitalTrek.API.SafetyMonitoring.Interfaces.Rest.Resources;
 
 namespace VitalTrek.API.SafetyMonitoring.Interfaces.Rest.Transform;

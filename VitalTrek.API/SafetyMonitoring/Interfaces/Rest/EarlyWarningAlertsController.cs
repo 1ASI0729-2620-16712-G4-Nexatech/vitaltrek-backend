@@ -4,7 +4,7 @@ using Microsoft.Extensions.Localization;
 using VitalTrek.API.IAM.Domain.Model.ValueObjects;
 using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Attributes;
 using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Extensions;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 using VitalTrek.API.SafetyMonitoring.Application.Services;
 using VitalTrek.API.SafetyMonitoring.Domain.Model.Commands;
 using VitalTrek.API.SafetyMonitoring.Domain.Model.Queries;

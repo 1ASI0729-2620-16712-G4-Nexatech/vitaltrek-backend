@@ -9,7 +9,7 @@ using VitalTrek.API.ExpeditionSetup.Interfaces.Rest.Transform;
 using VitalTrek.API.IAM.Domain.Model.ValueObjects;
 using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Attributes;
 using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Extensions;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 
 namespace VitalTrek.API.ExpeditionSetup.Interfaces.Rest;
 

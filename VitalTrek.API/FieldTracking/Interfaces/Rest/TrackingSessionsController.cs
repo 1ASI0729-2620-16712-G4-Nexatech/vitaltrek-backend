@@ -8,7 +8,7 @@ using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Extensions;
 using VitalTrek.API.IAM.Domain.Model.ValueObjects;
 using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Attributes;
 using VitalTrek.API.IAM.Interfaces.ACL.Resources;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 
 namespace VitalTrek.API.FieldTracking.Interfaces.Rest;
 

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi;
 using VitalTrek.API.CheckpointSync.Interfaces.Rest.Resources;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 
 namespace VitalTrek.API.CheckpointSync.Interfaces.Rest.Transform;
 

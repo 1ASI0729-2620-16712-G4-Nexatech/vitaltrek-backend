@@ -8,7 +8,7 @@ using VitalTrek.API.IncidentResponse.Application.Services;
 using VitalTrek.API.IncidentResponse.Domain.Model.Queries;
 using VitalTrek.API.IncidentResponse.Interfaces.Rest.Resources;
 using VitalTrek.API.IncidentResponse.Interfaces.Rest.Transform;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 
 namespace VitalTrek.API.IncidentResponse.Interfaces.Rest;
 

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using VitalTrek.API.IAM.Application.Errors;
 using VitalTrek.API.IAM.Domain.Model.Aggregates;
-using VitalTrek.API.Resources;
+using VitalTrek.API.Shared.Resources;
 using VitalTrek.API.Shared.Application.Patterns;
 
 namespace VitalTrek.API.IAM.Interfaces.Rest.Transform;
