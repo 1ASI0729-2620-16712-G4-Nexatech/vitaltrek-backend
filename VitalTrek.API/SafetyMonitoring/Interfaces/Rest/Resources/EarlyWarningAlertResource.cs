@@ -1,7 +1,8 @@
 namespace VitalTrek.API.SafetyMonitoring.Interfaces.Rest.Resources;
 
 /// <summary>
-///     Resource representing an early warning alert returned to clients.
+///     Resource representing an early warning alert returned to clients. Rule identifies the rule that produced the
+///     alert and Evidence, present for evaluated alerts, keeps the original capture time of the observation.
 /// </summary>
 public record EarlyWarningAlertResource(
     int Id,
@@ -13,4 +14,7 @@ public record EarlyWarningAlertResource(
     string Severity,
     string Status,
     string Description,
-    DateTimeOffset RaisedAt);
+    DateTimeOffset RaisedAt,
+    string Rule,
+    int? MemberId,
+    AlertEvidenceResource? Evidence);

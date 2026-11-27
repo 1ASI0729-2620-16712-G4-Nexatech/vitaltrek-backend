@@ -789,6 +789,9 @@
     <data name="EarlyWarningAlertSchema" xml:space="preserve">
         <value>Información de la alerta temprana. El estado es active, acknowledged, dismissed o resolved.</value>
     </data>
+    <data name="AlertEvidenceSchema" xml:space="preserve">
+        <value>Evidencia de una alerta evaluada: valor observado, límites esperados, unidad (bpm, m o min) y hora original de captura. Los valores simulados provienen de la simulación académica y los límites son reglas de demostración, no una evaluación médica.</value>
+    </data>
     <data name="RaiseEarlyWarningAlertSchema" xml:space="preserve">
         <value>Datos requeridos para levantar una alerta temprana.</value>
     </data>

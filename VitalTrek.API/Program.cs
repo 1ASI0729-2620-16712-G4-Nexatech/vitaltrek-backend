@@ -160,6 +160,7 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
 
 // Shared Bounded Context Injection Configuration
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<SharedProblemDetailsFactory>();
 
 // IAM Bounded Context Injection Configuration
@@ -236,6 +237,7 @@ builder.Services.AddScoped<IEarlyWarningAlertQueryService, EarlyWarningAlertQuer
 builder.Services.AddScoped<ExternalTrackingSessionService>();
 builder.Services.AddScoped<ExternalRouteSetupService>();
 builder.Services.AddScoped<ExternalCheckpointPassageService>();
+builder.Services.AddScoped<ExternalSyncBatchService>();
 builder.Services.AddScoped<ISafetyMonitoringContextFacade, SafetyMonitoringContextFacade>();
 
 // Incident Response Bounded Context Injection Configuration
