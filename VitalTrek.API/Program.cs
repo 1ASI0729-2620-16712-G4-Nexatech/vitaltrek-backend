@@ -58,6 +58,8 @@ using VitalTrek.API.SafetyMonitoring.Application.Internal.QueryServices;
 using VitalTrek.API.SafetyMonitoring.Application.Services;
 using VitalTrek.API.SafetyMonitoring.Domain.Repositories;
 using VitalTrek.API.SafetyMonitoring.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
+using VitalTrek.API.SafetyMonitoring.Infrastructure.Scheduling.Configuration;
+using VitalTrek.API.SafetyMonitoring.Infrastructure.Scheduling.Services;
 using VitalTrek.API.SafetyMonitoring.Interfaces.ACL;
 using VitalTrek.API.SafetyMonitoring.Interfaces.Rest.Transform;
 using VitalTrek.API.Shared.Domain.Repositories;
@@ -239,6 +241,10 @@ builder.Services.AddScoped<ExternalRouteSetupService>();
 builder.Services.AddScoped<ExternalCheckpointPassageService>();
 builder.Services.AddScoped<ExternalSyncBatchService>();
 builder.Services.AddScoped<ISafetyMonitoringContextFacade, SafetyMonitoringContextFacade>();
+builder.Services.AddScoped<ISafetyEvaluationWorkQueryService, SafetyEvaluationWorkQueryService>();
+builder.Services.Configure<SafetyEvaluationSettings>(
+    builder.Configuration.GetSection(SafetyEvaluationSettings.SectionName));
+builder.Services.AddHostedService<SafetyEvaluationWorker>();
 
 // Incident Response Bounded Context Injection Configuration
 builder.Services.AddScoped<IIncidentRepository, IncidentRepository>();

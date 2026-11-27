@@ -42,6 +42,15 @@ public class ExternalSyncBatchService(ISyncBatchContextFacade syncBatchContextFa
     /// <returns><see langword="true"/> when the batch was found in the agency.</returns>
     public Task<bool> StageEvaluationCompleted(int agencyId, int batchId, CancellationToken cancellationToken) =>
         syncBatchContextFacade.StageEvaluationCompletedAsync(agencyId, batchId, cancellationToken);
+
+    /// <summary>Returns the persisted batches whose evaluation is still pending, oldest first.</summary>
+    /// <param name="maxCount">The maximum number of batches to return.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    public async Task<IReadOnlyList<PendingSyncBatch>> FindPendingBatches(int maxCount,
+        CancellationToken cancellationToken) =>
+        (await syncBatchContextFacade.FindPendingEvaluationsAsync(maxCount, cancellationToken))
+        .Select(batch => new PendingSyncBatch(batch.BatchId, batch.AgencyId))
+        .ToArray();
 }
 
 /// <summary>A persisted sync batch as seen by the safety evaluation.</summary>
@@ -61,3 +70,8 @@ public sealed record SyncBatchToEvaluate(int BatchId, int AgencyId, int SessionI
 /// <param name="DeviationMeters">The simulated route deviation, in meters, if reported.</param>
 public sealed record ReadingToEvaluate(Guid ClientRecordId, int? MemberId, DateTimeOffset RecordedAt, int? HeartRate,
     double? DeviationMeters);
+
+/// <summary>A persisted sync batch whose evaluation is still pending.</summary>
+/// <param name="BatchId">The sync batch identifier.</param>
+/// <param name="AgencyId">The agency that owns the batch.</param>
+public sealed record PendingSyncBatch(int BatchId, int AgencyId);
