@@ -42,6 +42,26 @@ public class EarlyWarningAlertRepository(AppDbContext context)
             cancellationToken);
 
     /// <inheritdoc />
+    public async Task<IReadOnlySet<string>> FindExistingEvidenceKeysAsync(int sessionId,
+        IReadOnlyCollection<string> evidenceKeys, CancellationToken cancellationToken = default)
+    {
+        // The comparison follows the case-insensitive collation of the unique index.
+        if (evidenceKeys.Count == 0) return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var keys = evidenceKeys.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var existing = await Context.Set<EarlyWarningAlert>().AsNoTracking()
+            .Where(alert => alert.SessionId == sessionId && keys.Contains(alert.EvidenceKey))
+            .Select(alert => alert.EvidenceKey)
+            .ToListAsync(cancellationToken);
+        return existing.ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <inheritdoc />
+    public async Task<EarlyWarningAlert?> FindBySessionIdAndEvidenceKeyAsync(int sessionId, string evidenceKey,
+        CancellationToken cancellationToken = default) =>
+        await Context.Set<EarlyWarningAlert>().FirstOrDefaultAsync(
+            alert => alert.SessionId == sessionId && alert.EvidenceKey == evidenceKey, cancellationToken);
+
+    /// <inheritdoc />
     public async Task<bool> HasOpenBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default) =>
         await Context.Set<EarlyWarningAlert>().AnyAsync(
             alert => alert.SessionId == sessionId && (alert.Status == AlertStatus.Active || alert.Status == AlertStatus.Acknowledged), cancellationToken);

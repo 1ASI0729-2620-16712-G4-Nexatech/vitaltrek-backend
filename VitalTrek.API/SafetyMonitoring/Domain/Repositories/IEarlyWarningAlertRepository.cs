@@ -23,6 +23,17 @@ public interface IEarlyWarningAlertRepository : IBaseRepository<EarlyWarningAler
     Task<bool> ExistsBySessionIdCheckpointIdAndTypeAsync(int sessionId, int checkpointId, AlertType alertType,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Returns which evidence identities already produced an alert in a session, whatever the status of that alert,
+    ///     so a closed alert is never raised again for the same evidence.
+    /// </summary>
+    Task<IReadOnlySet<string>> FindExistingEvidenceKeysAsync(int sessionId, IReadOnlyCollection<string> evidenceKeys,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Finds the alert produced by an evidence identity within a session, whatever its status.</summary>
+    Task<EarlyWarningAlert?> FindBySessionIdAndEvidenceKeyAsync(int sessionId, string evidenceKey,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Checks whether a session has open (active or acknowledged) alerts.</summary>
     Task<bool> HasOpenBySessionIdAsync(int sessionId, CancellationToken cancellationToken = default);
 
