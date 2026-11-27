@@ -95,7 +95,8 @@ public static class ExpeditionSetupDemoDataSeeder
             !routes.ContainsKey("Marcahuasi Stone Forest Route")) return;
 
         var guides = new[] { "Elena Vargas", "Diego Huamán", "Lucía Paredes", "Mateo Salazar" }
-            .Select(name => new FieldGuide(new CreateFieldGuideCommand(agencyId, name))).ToList();
+            .Select((name, index) => new FieldGuide(new CreateFieldGuideCommand(agencyId, name, $"GU-{index + 1:D3}")))
+            .ToList();
         context.Set<FieldGuide>().AddRange(guides);
         var wearables = Enumerable.Range(1, 20)
             .Select(number => new WearableDevice(new CreateWearableDeviceCommand(agencyId, $"VT-W-{number:D3}"))).ToList();

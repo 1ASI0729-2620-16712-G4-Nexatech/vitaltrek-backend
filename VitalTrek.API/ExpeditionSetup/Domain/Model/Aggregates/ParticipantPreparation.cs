@@ -14,6 +14,9 @@ public partial class ParticipantPreparation
     /// <summary>Default upper heart rate limit of the baseline range, in beats per minute.</summary>
     public const int DefaultBaselineMax = 140;
 
+    /// <summary>Maximum length of the optional health information shared by the participant.</summary>
+    public const int MaximumHealthNotesLength = 500;
+
     /// <summary>Gets the preparation identifier.</summary>
     public int Id { get; private set; }
 
@@ -52,6 +55,16 @@ public partial class ParticipantPreparation
 
     /// <summary>Gets the upper heart rate limit considered normal for the participant.</summary>
     public int BaselineMax { get; private set; }
+
+    /// <summary>
+    ///     Gets the optional health information the participant chose to share for the expedition, such as allergies,
+    ///     conditions or medication. Only the participant writes it; only the participant, the agency administrators and
+    ///     the guide assigned to the group read it. It is never copied to summaries or notifications.
+    /// </summary>
+    public string? HealthNotes { get; private set; }
+
+    /// <summary>Gets the moment the participant last saved or cleared the health information.</summary>
+    public DateTimeOffset? HealthNotesRecordedAt { get; private set; }
 
     /// <summary>Gets the moment the wearable was returned at closure.</summary>
     public DateTimeOffset? ReturnedAt { get; private set; }
@@ -111,6 +124,22 @@ public partial class ParticipantPreparation
         EmergencyContactName = contact.Name;
         EmergencyContactPhone = contact.Phone;
         EmergencyContactRelationship = contact.Relationship;
+    }
+
+    /// <summary>
+    ///     Saves or clears the optional health information shared by the participant. Empty text clears it.
+    /// </summary>
+    /// <param name="healthNotes">The health information, or null or empty to clear it.</param>
+    /// <param name="recordedAt">The moment the participant saved it.</param>
+    /// <exception cref="ArgumentException">Thrown when the text is too long.</exception>
+    public void RegisterHealthInformation(string? healthNotes, DateTimeOffset recordedAt)
+    {
+        var trimmed = string.IsNullOrWhiteSpace(healthNotes) ? null : healthNotes.Trim();
+        if (trimmed is { Length: > MaximumHealthNotesLength })
+            throw new ArgumentException($"Health notes cannot exceed {MaximumHealthNotesLength} characters.",
+                nameof(healthNotes));
+        HealthNotes = trimmed;
+        HealthNotesRecordedAt = recordedAt;
     }
 
     /// <summary>

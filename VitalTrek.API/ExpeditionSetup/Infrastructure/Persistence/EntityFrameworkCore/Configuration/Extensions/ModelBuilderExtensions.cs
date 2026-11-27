@@ -85,6 +85,9 @@ public static class ModelBuilderExtensions
         builder.Entity<FieldGuide>().HasKey(guide => guide.Id);
         builder.Entity<FieldGuide>().Property(guide => guide.Id).IsRequired().ValueGeneratedOnAdd();
         builder.Entity<FieldGuide>().Property(guide => guide.Name).IsRequired().HasMaxLength(120);
+        builder.Entity<FieldGuide>().Property(guide => guide.Code).IsRequired().HasMaxLength(FieldGuide.MaximumCodeLength);
+        builder.Entity<FieldGuide>().HasIndex(guide => new { guide.AgencyId, guide.Code }).IsUnique()
+            .HasDatabaseName("ux_field_guides_agency_code");
         builder.Entity<FieldGuide>().HasOne<Agency>().WithMany().HasForeignKey(guide => guide.AgencyId).IsRequired();
 
         // Expedition groups
@@ -135,6 +138,8 @@ public static class ModelBuilderExtensions
         builder.Entity<ParticipantPreparation>().Property(preparation => preparation.EmergencyContactName).HasMaxLength(120);
         builder.Entity<ParticipantPreparation>().Property(preparation => preparation.EmergencyContactPhone).HasMaxLength(25);
         builder.Entity<ParticipantPreparation>().Property(preparation => preparation.EmergencyContactRelationship).HasMaxLength(60);
+        builder.Entity<ParticipantPreparation>().Property(preparation => preparation.HealthNotes)
+            .HasMaxLength(ParticipantPreparation.MaximumHealthNotesLength);
         builder.Entity<ParticipantPreparation>().Property(preparation => preparation.ReturnCondition)
             .HasConversion(condition => condition.HasValue ? condition.Value.ToCode() : null,
                 code => code == null ? null : WearableDeviceStatusExtensions.FromCode(code))

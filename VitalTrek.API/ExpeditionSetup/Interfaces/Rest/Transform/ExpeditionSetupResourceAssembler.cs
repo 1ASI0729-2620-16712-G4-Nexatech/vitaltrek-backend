@@ -34,7 +34,8 @@ public static class ExpeditionSetupResourceAssembler
         new(entity.Id, entity.AgencyId, entity.RouteId, entity.Instructions, entity.Status.ToCode());
 
     /// <summary>Transforms a <see cref="FieldGuide"/> into a <see cref="FieldGuideResource"/>.</summary>
-    public static FieldGuideResource ToResourceFromEntity(FieldGuide entity) => new(entity.Id, entity.AgencyId, entity.Name);
+    public static FieldGuideResource ToResourceFromEntity(FieldGuide entity) =>
+        new(entity.Id, entity.AgencyId, entity.Name, entity.Code);
 
     /// <summary>Transforms an <see cref="ExpeditionGroup"/> into an <see cref="ExpeditionGroupResource"/>.</summary>
     public static ExpeditionGroupResource ToResourceFromEntity(ExpeditionGroup entity) =>
@@ -56,5 +57,6 @@ public static class ExpeditionSetupResourceAssembler
             entity.EmergencyContact is { } contact
                 ? new EmergencyContactResource(contact.Name, contact.Phone, contact.Relationship)
                 : null,
-            entity.BaselineMin, entity.BaselineMax, entity.ReturnedAt, entity.ReturnCondition?.ToCode(), entity.IsReady);
+            entity.BaselineMin, entity.BaselineMax, entity.ReturnedAt, entity.ReturnCondition?.ToCode(), entity.IsReady,
+            entity.HealthNotes, entity.HealthNotesRecordedAt);
 }

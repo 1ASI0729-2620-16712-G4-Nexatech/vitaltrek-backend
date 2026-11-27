@@ -126,6 +126,32 @@ public class ParticipantPreparationsController(
     }
 
     /// <summary>
+    ///     Saves or clears the optional health information of the authenticated adventure tourist. Only the tourist edits
+    ///     it; the guide assigned to the group and the agency administrators read it in the preparation. It is never
+    ///     included in summaries or notifications.
+    /// </summary>
+    /// <param name="id">The preparation identifier.</param>
+    /// <param name="resource">The health information resource.</param>
+    /// <param name="cancellationToken">Token to cancel the asynchronous operation.</param>
+    /// <returns>The updated preparation.</returns>
+    [HttpPut("{id:int}/health-information")]
+    [Authorize(Role.AdventureTourist)]
+    [ProducesResponseType(typeof(ParticipantPreparationResource), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult> RegisterHealthInformation(int id, [FromBody] HealthInformationResource resource,
+        CancellationToken cancellationToken)
+    {
+        var command = ExpeditionSetupCommandFromResourceAssembler.ToCommandFromResource(resource, id, Scope);
+        var result = await commandService.Handle(command, cancellationToken);
+        return ActionResultFromExpeditionSetupResultAssembler.ToActionResult(result, this, localizer,
+            ExpeditionSetupResourceAssembler.ToResourceFromEntity, preparation => preparation.Id);
+    }
+
+    /// <summary>
     ///     Grants or revokes the monitoring consent of the authenticated adventure tourist. Granting it activates the
     ///     wearable and records the date and time of the consent (Law N.° 29733).
     /// </summary>

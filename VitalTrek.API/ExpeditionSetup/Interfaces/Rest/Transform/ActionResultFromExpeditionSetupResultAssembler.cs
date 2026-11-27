@@ -67,6 +67,7 @@ public static class ActionResultFromExpeditionSetupResultAssembler
             ESafetyProtocolError.SafetyProtocolNotFound => controller.NotFound(localizer["SafetyProtocolNotFound"].Value),
             ESafetyProtocolError.DuplicateProtocol => controller.Conflict(localizer["SafetyProtocolDuplicated"].Value),
             ECreateFieldGuideError.InvalidData => controller.BadRequest(localizer["InvalidFieldGuideRequest"].Value),
+            ECreateFieldGuideError.DuplicateCode => controller.Conflict(localizer["FieldGuideCodeAlreadyExists"].Value),
             ECreateExpeditionGroupError.InvalidData => controller.BadRequest(localizer["InvalidExpeditionGroupRequest"].Value),
             ECreateExpeditionGroupError.RouteNotFound => controller.BadRequest(localizer["RouteNotFound"].Value),
             ECreateExpeditionGroupError.RouteNotEnabled => controller.Conflict(localizer["RouteNotEnabledForGroups"].Value),

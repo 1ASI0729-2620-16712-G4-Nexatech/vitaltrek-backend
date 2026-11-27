@@ -19,6 +19,16 @@ public class FieldGuideRepository(AppDbContext context) : BaseRepository<FieldGu
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc />
+    public async Task<bool> ExistsByAgencyIdAndCodeAsync(int agencyId, string code,
+        CancellationToken cancellationToken = default) =>
+        await Context.Set<FieldGuide>().AnyAsync(guide => guide.AgencyId == agencyId && guide.Code == code,
+            cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<int> CountByAgencyIdAsync(int agencyId, CancellationToken cancellationToken = default) =>
+        await Context.Set<FieldGuide>().CountAsync(guide => guide.AgencyId == agencyId, cancellationToken);
+
+    /// <inheritdoc />
     public async Task<FieldGuide?> FindByIdAndAgencyIdAsync(int fieldGuideId, int agencyId,
         CancellationToken cancellationToken = default) =>
         await Context.Set<FieldGuide>().FirstOrDefaultAsync(guide => guide.Id == fieldGuideId && guide.AgencyId == agencyId,
