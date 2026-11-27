@@ -72,4 +72,15 @@ public interface IExpeditionSetupContextFacade
     /// </returns>
     Task<IReadOnlyList<(int FromCheckpointId, int ToCheckpointId, int MaximumMinutes)>> FindExpectedTimeWindowsByExpeditionGroup(
         int agencyId, int expeditionGroupId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Returns the heart rate baselines of the participants of an expedition group of an agency. It is an internal
+    ///     lookup for the server-side safety evaluation and exposes no contact, consent or other health details.
+    /// </summary>
+    /// <param name="agencyId">The agency identifier.</param>
+    /// <param name="expeditionGroupId">The expedition group identifier.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>The baselines of the group participants, or an empty list when the group is not in the agency.</returns>
+    Task<IReadOnlyList<ParticipantBaseline>> FindParticipantBaselinesByExpeditionGroup(int agencyId, int expeditionGroupId,
+        CancellationToken cancellationToken = default);
 }

@@ -112,6 +112,19 @@ public class ExpeditionSetupContextFacade(
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<ParticipantBaseline>> FindParticipantBaselinesByExpeditionGroup(int agencyId,
+        int expeditionGroupId, CancellationToken cancellationToken = default)
+    {
+        if (agencyId <= 0 || expeditionGroupId <= 0) return [];
+        var preparations = await participantPreparationRepository.FindByScopeAsync(new AccessScope(agencyId),
+            expeditionGroupId, cancellationToken);
+        return preparations
+            .Select(preparation => new ParticipantBaseline(preparation.MemberId, preparation.BaselineMin,
+                preparation.BaselineMax))
+            .ToArray();
+    }
+
+    /// <inheritdoc />
     public async Task<bool> ExistsCheckpointInExpeditionGroupRoute(int agencyId, int expeditionGroupId, int checkpointId,
         CancellationToken cancellationToken = default)
     {
