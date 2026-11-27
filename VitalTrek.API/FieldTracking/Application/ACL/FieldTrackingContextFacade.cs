@@ -122,4 +122,15 @@ public class FieldTrackingContextFacade(ITrackingSessionRepository trackingSessi
             record.WearableDeviceId, record.RecordedAt, record.SynchronizedAt, record.Latitude, record.Longitude,
             record.Altitude, record.HeartRate, record.Battery, record.DeviationMeters)).ToArray();
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<ActiveTrackingSession>> FindActiveSessionsAsync(int maxCount,
+        CancellationToken cancellationToken = default)
+    {
+        if (maxCount <= 0) return [];
+        var sessions = await trackingSessionRepository.FindActiveAsync(maxCount, cancellationToken);
+        return sessions
+            .Select(session => new ActiveTrackingSession(session.Id, session.AgencyId, session.ExpeditionGroupId))
+            .ToArray();
+    }
 }

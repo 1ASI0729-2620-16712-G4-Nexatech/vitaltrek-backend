@@ -62,4 +62,15 @@ public interface IFieldTrackingContextFacade
     /// </summary>
     Task<IReadOnlyList<TelemetryReadingSnapshot>> FindReadingsAsync(int agencyId, int sessionId,
         IReadOnlyCollection<Guid> clientRecordIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Returns the oldest active tracking sessions of every agency, at most <paramref name="maxCount"/> and never
+    ///     more than 100. It is an internal lookup for periodic server work, such as the safety evaluation of delays,
+    ///     and exposes only identifiers.
+    /// </summary>
+    /// <param name="maxCount">The maximum number of sessions to return.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>The active sessions, oldest first; empty when <paramref name="maxCount"/> is not positive.</returns>
+    Task<IReadOnlyList<ActiveTrackingSession>> FindActiveSessionsAsync(int maxCount,
+        CancellationToken cancellationToken = default);
 }
