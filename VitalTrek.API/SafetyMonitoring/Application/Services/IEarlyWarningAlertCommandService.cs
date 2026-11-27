@@ -11,21 +11,24 @@ namespace VitalTrek.API.SafetyMonitoring.Application.Services;
 /// </summary>
 public interface IEarlyWarningAlertCommandService
 {
-    /// <summary>Raises an early warning alert for an active tracking session.</summary>
+    /// <summary>
+    ///     Raises an early warning alert for an active tracking session of a group the actor can operate; a session
+    ///     outside that scope is reported as not found.
+    /// </summary>
     Task<Result<EarlyWarningAlert, ERaiseEarlyWarningAlertError>> Handle(RaiseEarlyWarningAlertCommand command,
-        CancellationToken cancellationToken);
+        AuthenticatedActor actor, CancellationToken cancellationToken);
 
-    /// <summary>Acknowledges an active alert.</summary>
+    /// <summary>Acknowledges an active alert of a group the actor can operate.</summary>
     Task<Result<EarlyWarningAlert, EUpdateAlertStatusError>> Handle(AcknowledgeAlertCommand command,
-        CancellationToken cancellationToken);
+        AuthenticatedActor actor, CancellationToken cancellationToken);
 
-    /// <summary>Dismisses an open alert.</summary>
+    /// <summary>Dismisses an open alert of a group the actor can operate.</summary>
     Task<Result<EarlyWarningAlert, EUpdateAlertStatusError>> Handle(DismissAlertCommand command,
-        CancellationToken cancellationToken);
+        AuthenticatedActor actor, CancellationToken cancellationToken);
 
-    /// <summary>Resolves an acknowledged alert.</summary>
+    /// <summary>Resolves an acknowledged alert of a group the actor can operate.</summary>
     Task<Result<EarlyWarningAlert, EUpdateAlertStatusError>> Handle(ResolveAlertCommand command,
-        CancellationToken cancellationToken);
+        AuthenticatedActor actor, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Evaluates the delay of an active tracking session. Only the segment that leaves the furthest confirmed

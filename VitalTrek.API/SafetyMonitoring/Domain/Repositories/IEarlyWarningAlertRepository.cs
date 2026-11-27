@@ -15,6 +15,10 @@ public interface IEarlyWarningAlertRepository : IBaseRepository<EarlyWarningAler
     /// <summary>Finds the open (active or acknowledged) alerts of an agency, most recent first.</summary>
     Task<IEnumerable<EarlyWarningAlert>> FindOpenByAgencyIdAsync(int agencyId, CancellationToken cancellationToken = default);
 
+    /// <summary>Finds the open (active or acknowledged) alerts of some groups of an agency, most recent first.</summary>
+    Task<IEnumerable<EarlyWarningAlert>> FindOpenByAgencyIdAndGroupIdsAsync(int agencyId,
+        IReadOnlyCollection<int> expeditionGroupIds, CancellationToken cancellationToken = default);
+
     /// <summary>Finds the alerts of a session in an agency, most recent first.</summary>
     Task<IEnumerable<EarlyWarningAlert>> FindBySessionIdAndAgencyIdAsync(int sessionId, int agencyId,
         CancellationToken cancellationToken = default);

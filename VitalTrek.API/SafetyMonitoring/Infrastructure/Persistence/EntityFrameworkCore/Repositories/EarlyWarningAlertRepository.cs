@@ -28,6 +28,18 @@ public class EarlyWarningAlertRepository(AppDbContext context)
             .OrderByDescending(alert => alert.RaisedAt).ToListAsync(cancellationToken);
 
     /// <inheritdoc />
+    public async Task<IEnumerable<EarlyWarningAlert>> FindOpenByAgencyIdAndGroupIdsAsync(int agencyId,
+        IReadOnlyCollection<int> expeditionGroupIds, CancellationToken cancellationToken = default)
+    {
+        if (expeditionGroupIds.Count == 0) return [];
+        var groupIds = expeditionGroupIds.Distinct().ToArray();
+        return await Context.Set<EarlyWarningAlert>()
+            .Where(alert => alert.AgencyId == agencyId && groupIds.Contains(alert.ExpeditionGroupId) &&
+                            (alert.Status == AlertStatus.Active || alert.Status == AlertStatus.Acknowledged))
+            .OrderByDescending(alert => alert.RaisedAt).ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<IEnumerable<EarlyWarningAlert>> FindBySessionIdAndAgencyIdAsync(int sessionId, int agencyId,
         CancellationToken cancellationToken = default) =>
         await Context.Set<EarlyWarningAlert>()

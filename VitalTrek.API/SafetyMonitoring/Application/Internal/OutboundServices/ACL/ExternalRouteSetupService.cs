@@ -38,4 +38,18 @@ public class ExternalRouteSetupService(IExpeditionSetupContextFacade expeditionS
     public async Task<bool> CanAccessGroup(AuthenticatedActor actor, int expeditionGroupId,
         CancellationToken cancellationToken) =>
         await expeditionSetupContextFacade.CanAccessExpeditionGroup(actor, expeditionGroupId, cancellationToken);
+
+    /// <summary>Returns the expedition groups an authenticated actor can see.</summary>
+    public async Task<IReadOnlyCollection<int>> FindAccessibleGroupIds(AuthenticatedActor actor,
+        CancellationToken cancellationToken) =>
+        await expeditionSetupContextFacade.FindAccessibleExpeditionGroupIds(actor, cancellationToken);
+
+    /// <summary>
+    ///     Returns the manifest entries an authenticated actor can see in an expedition group; for an adventure tourist,
+    ///     only their own entries.
+    /// </summary>
+    public async Task<IReadOnlyCollection<int>> FindVisibleMemberIds(AuthenticatedActor actor, int expeditionGroupId,
+        CancellationToken cancellationToken) =>
+        (await expeditionSetupContextFacade.FindTrackingProgressContext(actor, expeditionGroupId, cancellationToken))
+        ?.MemberIds ?? [];
 }

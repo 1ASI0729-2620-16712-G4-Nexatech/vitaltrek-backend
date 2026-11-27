@@ -38,7 +38,7 @@ public class EarlyWarningAlertCommandService(
 {
     /// <inheritdoc />
     public async Task<Result<EarlyWarningAlert, ERaiseEarlyWarningAlertError>> Handle(RaiseEarlyWarningAlertCommand command,
-        CancellationToken cancellationToken)
+        AuthenticatedActor actor, CancellationToken cancellationToken)
     {
         try
         {
@@ -47,7 +47,9 @@ public class EarlyWarningAlertCommandService(
             if (!await externalTrackingSessionService.IsSessionActive(command.SessionId, cancellationToken))
                 return Fail(ERaiseEarlyWarningAlertError.SessionNotActive);
             var groupId = await externalTrackingSessionService.FindExpeditionGroupId(command.SessionId, cancellationToken);
-            if (groupId is null) return Fail(ERaiseEarlyWarningAlertError.SessionNotFound);
+            // A session whose group the actor cannot operate, such as one with another assigned guide, is not found.
+            if (groupId is null || !await externalRouteSetupService.CanAccessGroup(actor, groupId.Value, cancellationToken))
+                return Fail(ERaiseEarlyWarningAlertError.SessionNotFound);
             if (command.CheckpointId is not null && !await externalRouteSetupService.ExistsCheckpointInGroupRoute(
                     command.AgencyId, groupId.Value, command.CheckpointId.Value, cancellationToken))
                 return Fail(ERaiseEarlyWarningAlertError.CheckpointNotInSessionRoute);
@@ -75,20 +77,20 @@ public class EarlyWarningAlertCommandService(
 
     /// <inheritdoc />
     public Task<Result<EarlyWarningAlert, EUpdateAlertStatusError>> Handle(AcknowledgeAlertCommand command,
-        CancellationToken cancellationToken) =>
-        ChangeStatus(command.AgencyId, command.AlertId,
+        AuthenticatedActor actor, CancellationToken cancellationToken) =>
+        ChangeStatus(command.AgencyId, command.AlertId, actor,
             alert => alert.Acknowledge(command.UserId, timeProvider.GetUtcNow()), "acknowledging", cancellationToken);
 
     /// <inheritdoc />
     public Task<Result<EarlyWarningAlert, EUpdateAlertStatusError>> Handle(DismissAlertCommand command,
-        CancellationToken cancellationToken) =>
-        ChangeStatus(command.AgencyId, command.AlertId,
+        AuthenticatedActor actor, CancellationToken cancellationToken) =>
+        ChangeStatus(command.AgencyId, command.AlertId, actor,
             alert => alert.Dismiss(command.UserId, timeProvider.GetUtcNow()), "dismissing", cancellationToken);
 
     /// <inheritdoc />
     public Task<Result<EarlyWarningAlert, EUpdateAlertStatusError>> Handle(ResolveAlertCommand command,
-        CancellationToken cancellationToken) =>
-        ChangeStatus(command.AgencyId, command.AlertId,
+        AuthenticatedActor actor, CancellationToken cancellationToken) =>
+        ChangeStatus(command.AgencyId, command.AlertId, actor,
             alert => alert.Resolve(command.UserId, timeProvider.GetUtcNow()), "resolving", cancellationToken);
 
     /// <inheritdoc />
@@ -328,10 +330,13 @@ public class EarlyWarningAlertCommandService(
         EarlyWarningAlert.EvidenceKeyFor(command.Rule, command.EvidenceReference);
 
     private async Task<Result<EarlyWarningAlert, EUpdateAlertStatusError>> ChangeStatus(int agencyId, int alertId,
-        Action<EarlyWarningAlert> transition, string operation, CancellationToken cancellationToken)
+        AuthenticatedActor actor, Action<EarlyWarningAlert> transition, string operation,
+        CancellationToken cancellationToken)
     {
         var alert = await alertRepository.FindByIdAndAgencyIdAsync(alertId, agencyId, cancellationToken);
-        if (alert is null)
+        // An alert of a group the actor cannot operate, such as one with another assigned guide, is not found.
+        if (alert is null || !await externalRouteSetupService.CanAccessGroup(actor, alert.ExpeditionGroupId,
+                cancellationToken))
             return new Result<EarlyWarningAlert, EUpdateAlertStatusError>.Failure(EUpdateAlertStatusError.AlertNotFound);
 
         try

@@ -171,6 +171,16 @@ public partial class EarlyWarningAlert
     /// <summary>Gets whether the alert still requires attention (active or acknowledged).</summary>
     public bool IsOpen => Status is AlertStatus.Active or AlertStatus.Acknowledged;
 
+    /// <summary>
+    ///     Determines whether a participant of the group may see the alert: a delay concerns the whole group, while an
+    ///     alert about a participant is visible only to that participant. Manual reports stay with the operation, since
+    ///     their free text may describe other people.
+    /// </summary>
+    /// <param name="ownMemberIds">The manifest entries of the participant in the group of the alert.</param>
+    /// <returns><see langword="true"/> when the participant may see the alert.</returns>
+    public bool IsVisibleToParticipant(IReadOnlyCollection<int> ownMemberIds) =>
+        Rule == SafetyRule.CheckpointDelay || (MemberId is { } memberId && ownMemberIds.Contains(memberId));
+
     /// <summary>Gets whether the alert is critical and has not been dismissed.</summary>
     public bool IsCritical => Severity == AlertSeverity.Critical && Status != AlertStatus.Dismissed;
 
