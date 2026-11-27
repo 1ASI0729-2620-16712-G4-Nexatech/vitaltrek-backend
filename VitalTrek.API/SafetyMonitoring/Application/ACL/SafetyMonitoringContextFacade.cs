@@ -1,7 +1,9 @@
 using VitalTrek.API.SafetyMonitoring.Application.Services;
 using VitalTrek.API.SafetyMonitoring.Domain.Model.Commands;
+using VitalTrek.API.SafetyMonitoring.Domain.Model.ValueObjects;
 using VitalTrek.API.SafetyMonitoring.Domain.Repositories;
 using VitalTrek.API.SafetyMonitoring.Interfaces.ACL;
+using VitalTrek.API.SafetyMonitoring.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.SafetyMonitoring.Application.ACL;
 
@@ -25,4 +27,11 @@ public class SafetyMonitoringContextFacade(
     /// <inheritdoc />
     public async Task<bool> EvaluateSyncBatchAsync(int agencyId, int batchId, CancellationToken cancellationToken = default) =>
         (await alertCommandService.Handle(new EvaluateSyncBatchCommand(agencyId, batchId), cancellationToken)).IsSuccess;
+
+    /// <inheritdoc />
+    public async Task<AlertReference?> FindAlertReferenceAsync(int agencyId, int alertId,
+        CancellationToken cancellationToken = default) =>
+        await alertRepository.FindByIdAndAgencyIdAsync(alertId, agencyId, cancellationToken) is { } alert
+            ? new AlertReference(alert.Id, alert.SessionId, alert.ExpeditionGroupId, alert.Status.ToCode())
+            : null;
 }
