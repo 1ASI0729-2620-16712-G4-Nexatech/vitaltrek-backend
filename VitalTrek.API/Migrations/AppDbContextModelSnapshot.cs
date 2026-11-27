@@ -1155,6 +1155,14 @@ namespace VitalTrek.API.Migrations
                         .HasColumnType("int")
                         .HasColumnName("id");
 
+                    b.Property<DateTimeOffset?>("AcknowledgedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("acknowledged_at");
+
+                    b.Property<int?>("AcknowledgedByUserId")
+                        .HasColumnType("int")
+                        .HasColumnName("acknowledged_by_user_id");
+
                     b.Property<int>("AgencyId")
                         .HasColumnType("int")
                         .HasColumnName("agency_id");
@@ -1169,6 +1177,14 @@ namespace VitalTrek.API.Migrations
                         .HasColumnType("int")
                         .HasColumnName("checkpoint_id");
 
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("closed_at");
+
+                    b.Property<int?>("ClosedByUserId")
+                        .HasColumnType("int")
+                        .HasColumnName("closed_by_user_id");
+
                     b.Property<DateTimeOffset?>("CreatedAt")
                         .HasColumnType("datetime")
                         .HasColumnName("created_at");
@@ -1179,13 +1195,62 @@ namespace VitalTrek.API.Migrations
                         .HasColumnType("varchar(500)")
                         .HasColumnName("description");
 
+                    b.Property<decimal?>("EvidenceExpectedMaximum")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("evidence_expected_maximum");
+
+                    b.Property<decimal?>("EvidenceExpectedMinimum")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("evidence_expected_minimum");
+
+                    b.Property<string>("EvidenceKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)")
+                        .HasColumnName("evidence_key");
+
+                    b.Property<decimal?>("EvidenceObservedValue")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("evidence_observed_value");
+
+                    b.Property<DateTimeOffset?>("EvidenceRecordedAt")
+                        .HasPrecision(6)
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("evidence_recorded_at");
+
+                    b.Property<bool>("EvidenceSimulated")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("evidence_simulated");
+
+                    b.Property<Guid?>("EvidenceSourceRecordId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("evidence_source_record_id");
+
+                    b.Property<string>("EvidenceUnit")
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)")
+                        .HasColumnName("evidence_unit");
+
                     b.Property<int>("ExpeditionGroupId")
                         .HasColumnType("int")
                         .HasColumnName("expedition_group_id");
 
+                    b.Property<int?>("MemberId")
+                        .HasColumnType("int")
+                        .HasColumnName("member_id");
+
                     b.Property<DateTimeOffset>("RaisedAt")
                         .HasColumnType("datetime")
                         .HasColumnName("raised_at");
+
+                    b.Property<string>("Rule")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("rule");
 
                     b.Property<int>("SessionId")
                         .HasColumnType("int")
@@ -1215,6 +1280,10 @@ namespace VitalTrek.API.Migrations
 
                     b.HasIndex("AgencyId", "Status")
                         .HasDatabaseName("i_x_early_warning_alerts_agency_id_status");
+
+                    b.HasIndex("SessionId", "EvidenceKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_early_warning_alerts_session_evidence_key");
 
                     b.HasIndex("SessionId", "CheckpointId", "AlertType")
                         .HasDatabaseName("ix_early_warning_alerts_session_checkpoint_type");
