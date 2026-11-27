@@ -25,6 +25,7 @@ using VitalTrek.API.IAM.Domain.Model.Queries;
 using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Extensions;
 using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Configuration;
 using VitalTrek.API.IAM.Infrastructure.Tokens.JWT.Services;
+using VitalTrek.API.SafetyMonitoring.Interfaces.ACL;
 using VitalTrek.API.Shared.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Interfaces.Asp.Configuration;
 using VitalTrek.API.Tests.FieldTracking;
@@ -342,7 +343,8 @@ internal sealed class SyncBatchApi : IAsyncDisposable
         _client = new HttpClient { BaseAddress = new Uri(app.Urls.Single()), Timeout = TimeSpan.FromSeconds(15) };
     }
 
-    public static async Task<SyncBatchApi> StartAsync(SyncBatchData data)
+    public static async Task<SyncBatchApi> StartAsync(SyncBatchData data,
+        ISafetyMonitoringContextFacade? safetyMonitoring = null)
     {
         var users = new TrackingAccessData();
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Development" });
@@ -370,6 +372,7 @@ internal sealed class SyncBatchApi : IAsyncDisposable
         builder.Services.AddScoped<ICheckpointPassageCommandService, CheckpointPassageCommandService>();
         builder.Services.AddScoped<ICheckpointPassageQueryService, CheckpointPassageQueryService>();
         builder.Services.AddScoped<ISyncBatchCommandService, SyncBatchCommandService>();
+        if (safetyMonitoring is not null) builder.Services.AddSingleton(safetyMonitoring);
         builder.Services.AddScoped<ISyncBatchQueryService, SyncBatchQueryService>();
         var app = builder.Build();
         app.UseExceptionHandler();

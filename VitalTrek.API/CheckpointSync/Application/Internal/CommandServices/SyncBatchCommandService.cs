@@ -9,6 +9,7 @@ using VitalTrek.API.CheckpointSync.Domain.Repositories;
 using VitalTrek.API.CheckpointSync.Domain.Services;
 using VitalTrek.API.FieldTracking.Interfaces.ACL.Resources;
 using VitalTrek.API.IAM.Interfaces.ACL.Resources;
+using VitalTrek.API.SafetyMonitoring.Interfaces.ACL;
 using VitalTrek.API.Shared.Application.Patterns;
 using VitalTrek.API.Shared.Domain.Repositories;
 using VitalTrek.API.Shared.Infrastructure.Persistence.EntityFrameworkCore.Extensions;
@@ -26,13 +27,18 @@ namespace VitalTrek.API.CheckpointSync.Application.Internal.CommandServices;
 /// <param name="externalFieldTrackingService">The outbound service for sessions and telemetry.</param>
 /// <param name="unitOfWork">The unit of work used to commit the batch.</param>
 /// <param name="logger">Logger for diagnostics.</param>
+/// <param name="safetyMonitoringContextFacade">
+///     The Safety Monitoring facade that evaluates a batch right after its commit. It is optional so existing
+///     constructions keep compiling; DI always provides it. Without it, the periodic evaluation handles the batch.
+/// </param>
 public class SyncBatchCommandService(
     ISyncBatchRepository syncBatchRepository,
     ICheckpointPassageRepository passageRepository,
     ICheckpointPassageCommandService passageCommandService,
     ExternalFieldTrackingService externalFieldTrackingService,
     IUnitOfWork unitOfWork,
-    ILogger<SyncBatchCommandService> logger) : ISyncBatchCommandService
+    ILogger<SyncBatchCommandService> logger,
+    ISafetyMonitoringContextFacade? safetyMonitoringContextFacade = null) : ISyncBatchCommandService
 {
     private const int MaximumAttempts = 3;
 
@@ -50,7 +56,11 @@ public class SyncBatchCommandService(
         {
             try
             {
-                return await Receive(command, actor, fingerprint, cancellationToken);
+                var received = await Receive(command, actor, fingerprint, cancellationToken);
+                return received is Result<SyncBatch, ESubmitSyncBatchError>.Success success
+                    ? new Result<SyncBatch, ESubmitSyncBatchError>.Success(
+                        await RequestSafetyEvaluationAsync(success.Value, cancellationToken))
+                    : received;
             }
             catch (Exception ex) when (ex is DbUpdateException update && update.IsDuplicateKeyViolation() ||
                                        ex.IsMySqlTransactionConflict())
@@ -74,6 +84,54 @@ public class SyncBatchCommandService(
         }
 
         return Fail(ESubmitSyncBatchError.ConcurrentChange);
+    }
+
+    /// <summary>
+    ///     Asks Safety Monitoring to evaluate a committed batch through its internal port (D01). The batch is already
+    ///     persisted, so a failed evaluation never changes the reception result: its staged changes are discarded, the
+    ///     committed batch is answered with its pending status and the periodic evaluation retries it later.
+    /// </summary>
+    /// <param name="batch">The committed batch.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>The batch with its committed evaluation status.</returns>
+    private async Task<SyncBatch> RequestSafetyEvaluationAsync(SyncBatch batch, CancellationToken cancellationToken)
+    {
+        // A replay of an evaluated batch needs nothing more.
+        if (safetyMonitoringContextFacade is null || batch.EvaluationStatus == SyncBatchEvaluationStatus.Evaluated)
+            return batch;
+
+        var evaluated = false;
+        try
+        {
+            evaluated = await safetyMonitoringContextFacade.EvaluateSyncBatchAsync(batch.AgencyId, batch.Id,
+                cancellationToken);
+            if (!evaluated)
+                logger.LogWarning("Safety evaluation of sync batch {BatchId} stays pending for the periodic evaluation.",
+                    batch.Id);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Safety evaluation of sync batch {BatchId} failed; it stays pending for the periodic evaluation.",
+                batch.Id);
+        }
+
+        if (evaluated && batch.EvaluationStatus == SyncBatchEvaluationStatus.Evaluated) return batch;
+        // A failed evaluation may have staged changes, such as the evaluated status, that were never saved.
+        if (!evaluated) unitOfWork.DiscardChanges();
+        try
+        {
+            return await syncBatchRepository.FindByIdAndAgencyIdAsync(batch.Id, batch.AgencyId, cancellationToken) ?? batch;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+        {
+            logger.LogWarning(ex, "Committed sync batch {BatchId} could not be reloaded after its safety evaluation.",
+                batch.Id);
+            return batch;
+        }
     }
 
     private async Task<Result<SyncBatch, ESubmitSyncBatchError>> Receive(SubmitSyncBatchCommand command,
