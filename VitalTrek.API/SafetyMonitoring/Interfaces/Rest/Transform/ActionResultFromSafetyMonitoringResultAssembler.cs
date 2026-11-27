@@ -55,6 +55,8 @@ public static class ActionResultFromSafetyMonitoringResultAssembler
                 controller.Conflict(localizer["EarlyWarningAlertTransitionInvalid"].Value),
             EEvaluateSessionDelaysError.SessionNotFound => controller.NotFound(localizer["TrackingSessionNotFound"].Value),
             EEvaluateSessionDelaysError.SessionNotActive => controller.Conflict(localizer["TrackingSessionNotActive"].Value),
+            EEvaluateSessionDelaysError.ConcurrentEvaluation =>
+                controller.Conflict(localizer["SafetyEvaluationConflict"].Value),
             _ => Unexpected(controller, localizer)
         };
 

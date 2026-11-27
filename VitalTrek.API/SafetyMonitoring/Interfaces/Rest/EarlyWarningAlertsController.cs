@@ -88,7 +88,7 @@ public class EarlyWarningAlertsController(
         CancellationToken cancellationToken)
     {
         var command = SafetyMonitoringCommandFromResourceAssembler.ToCommandFromResource(resource, AgencyId);
-        var result = await commandService.Handle(command, cancellationToken);
+        var result = await commandService.Handle(command, HttpContext.GetAuthenticatedActor()!, cancellationToken);
         return ActionResultFromSafetyMonitoringResultAssembler.ToActionResult(result, this, localizer,
             alerts => alerts.Select(SafetyMonitoringResourceAssembler.ToResourceFromEntity));
     }

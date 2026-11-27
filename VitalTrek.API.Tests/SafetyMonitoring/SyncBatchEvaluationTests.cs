@@ -36,6 +36,7 @@ public sealed class SyncBatchEvaluationTests
     private TelemetryReadingSnapshot[] _readings = [];
     private string _evaluationStatus = "pending";
     private bool _evaluationStaged;
+    private bool _sessionActive;
     private int _saves;
     private Exception? _saveFailure;
 
@@ -179,6 +180,23 @@ public sealed class SyncBatchEvaluationTests
     }
 
     [Fact]
+    public async Task ActiveSessionEvaluatesTheNextDelayInTheSameSave()
+    {
+        _sessionActive = true;
+        _readings = [Reading(Guid.NewGuid(), heartRate: 160)];
+
+        var alerts = Success(await Evaluate());
+
+        Assert.Equal(2, alerts.Count);
+        var delay = Assert.Single(alerts, alert => alert.Rule == SafetyRule.CheckpointDelay);
+        Assert.Equal(4, delay.CheckpointId);
+        Assert.Equal(AlertSeverity.Critical, delay.Severity);
+        Assert.Equal(CapturedAt.AddHours(-2), delay.Evidence!.RecordedAt);
+        Assert.Equal(1, _saves);
+        Assert.Equal(2, _savedAlerts.Count);
+    }
+
+    [Fact]
     public async Task FacadePortReportsWhetherTheBatchIsEvaluated()
     {
         _readings = [Reading(Guid.NewGuid(), heartRate: 160)];
@@ -206,7 +224,7 @@ public sealed class SyncBatchEvaluationTests
         AlertRepository(),
         new ExternalTrackingSessionService(FieldTracking()),
         new ExternalRouteSetupService(ExpeditionSetup()),
-        new ExternalCheckpointPassageService(InterfaceStub<ICheckpointSyncContextFacade>.Create()),
+        new ExternalCheckpointPassageService(Passages()),
         new ExternalSyncBatchService(SyncBatches()),
         UnitOfWork(),
         new FixedTimeProvider(Now),
@@ -231,21 +249,35 @@ public sealed class SyncBatchEvaluationTests
             }
         });
 
-    private static IFieldTrackingContextFacade FieldTracking() =>
+    private IFieldTrackingContextFacade FieldTracking() =>
         InterfaceStub<IFieldTrackingContextFacade>.Create((method, args) => method.Name switch
         {
             nameof(IFieldTrackingContextFacade.SessionExistsInAgencyAsync) =>
                 Task.FromResult((int)args[0]! == Agency && (int)args[1]! == Session),
+            nameof(IFieldTrackingContextFacade.IsSessionActiveAsync) =>
+                Task.FromResult(_sessionActive && (int)args[0]! == Session),
             nameof(IFieldTrackingContextFacade.FindExpeditionGroupIdBySessionIdAsync) =>
                 Task.FromResult<int?>((int)args[0]! == Session ? Group : null),
             _ => throw new InvalidOperationException(method.Name)
         });
 
     private static IExpeditionSetupContextFacade ExpeditionSetup() =>
-        InterfaceStub<IExpeditionSetupContextFacade>.Create((method, args) =>
-            method.Name == nameof(IExpeditionSetupContextFacade.FindParticipantBaselinesByExpeditionGroup) &&
-            (int)args[0]! == Agency && (int)args[1]! == Group
-                ? Task.FromResult<IReadOnlyList<ParticipantBaseline>>([new ParticipantBaseline(Member, 50, 140)])
+        InterfaceStub<IExpeditionSetupContextFacade>.Create((method, args) => method.Name switch
+        {
+            nameof(IExpeditionSetupContextFacade.FindParticipantBaselinesByExpeditionGroup)
+                when (int)args[0]! == Agency && (int)args[1]! == Group =>
+                Task.FromResult<IReadOnlyList<ParticipantBaseline>>([new ParticipantBaseline(Member, 50, 140)]),
+            nameof(IExpeditionSetupContextFacade.FindExpectedTimeWindowsByExpeditionGroup)
+                when (int)args[0]! == Agency && (int)args[1]! == Group =>
+                Task.FromResult<IReadOnlyList<(int FromCheckpointId, int ToCheckpointId, int MaximumMinutes)>>([(3, 4, 60)]),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+
+    // The group passed checkpoint 3 two hours before the capture and has not reached checkpoint 4.
+    private static ICheckpointSyncContextFacade Passages() =>
+        InterfaceStub<ICheckpointSyncContextFacade>.Create((method, args) =>
+            method.Name == nameof(ICheckpointSyncContextFacade.GetLastPassageTimeAtCheckpointBySessionAsync)
+                ? Task.FromResult<DateTimeOffset?>((int)args[1]! == 3 ? CapturedAt.AddHours(-2) : null)
                 : throw new InvalidOperationException(method.Name));
 
     private IEarlyWarningAlertRepository AlertRepository() =>
@@ -262,6 +294,14 @@ public sealed class SyncBatchEvaluationTests
                         .Where(alert => alert.SessionId == (int)args[0]! && requested.Contains(alert.EvidenceKey))
                         .Select(alert => alert.EvidenceKey).ToHashSet(StringComparer.OrdinalIgnoreCase);
                     return Task.FromResult(existing);
+                case nameof(IEarlyWarningAlertRepository.FindBySessionIdAndEvidenceKeyAsync):
+                    return Task.FromResult(_savedAlerts.FirstOrDefault(alert =>
+                        alert.SessionId == (int)args[0]! && alert.EvidenceKey == (string)args[1]!));
+                case nameof(IEarlyWarningAlertRepository.ExistsBySessionIdCheckpointIdAndTypeAsync):
+                    return Task.FromResult(_savedAlerts.Any(alert => alert.SessionId == (int)args[0]! &&
+                        alert.CheckpointId == (int)args[1]! && alert.AlertType == (AlertType)args[2]!));
+                case nameof(IEarlyWarningAlertRepository.Update):
+                    return null;
                 default:
                     throw new InvalidOperationException(method.Name);
             }

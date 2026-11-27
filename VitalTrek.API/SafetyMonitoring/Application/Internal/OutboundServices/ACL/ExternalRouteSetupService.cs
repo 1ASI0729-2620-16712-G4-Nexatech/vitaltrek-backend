@@ -1,4 +1,5 @@
 using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.SafetyMonitoring.Application.Internal.OutboundServices.ACL;
 
@@ -29,4 +30,12 @@ public class ExternalRouteSetupService(IExpeditionSetupContextFacade expeditionS
             cancellationToken))
         .GroupBy(baseline => baseline.MemberId)
         .ToDictionary(group => group.Key, group => (group.First().BaselineMin, group.First().BaselineMax));
+
+    /// <summary>
+    ///     Checks whether an authenticated actor can see an expedition group: administrators of its agency, its assigned
+    ///     guide or its participants.
+    /// </summary>
+    public async Task<bool> CanAccessGroup(AuthenticatedActor actor, int expeditionGroupId,
+        CancellationToken cancellationToken) =>
+        await expeditionSetupContextFacade.CanAccessExpeditionGroup(actor, expeditionGroupId, cancellationToken);
 }

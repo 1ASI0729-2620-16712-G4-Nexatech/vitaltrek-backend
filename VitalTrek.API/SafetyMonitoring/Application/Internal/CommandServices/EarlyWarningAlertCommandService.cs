@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
 using VitalTrek.API.SafetyMonitoring.Application.Errors;
 using VitalTrek.API.SafetyMonitoring.Application.Internal.OutboundServices.ACL;
 using VitalTrek.API.SafetyMonitoring.Application.Services;
@@ -51,7 +52,7 @@ public class EarlyWarningAlertCommandService(
                     command.AgencyId, groupId.Value, command.CheckpointId.Value, cancellationToken))
                 return Fail(ERaiseEarlyWarningAlertError.CheckpointNotInSessionRoute);
 
-            var alert = new EarlyWarningAlert(command, groupId.Value, DateTimeOffset.UtcNow);
+            var alert = new EarlyWarningAlert(command, groupId.Value, timeProvider.GetUtcNow());
             await alertRepository.AddAsync(alert, cancellationToken);
             await unitOfWork.CompleteAsync(cancellationToken);
             return new Result<EarlyWarningAlert, ERaiseEarlyWarningAlertError>.Success(alert);
@@ -92,6 +93,35 @@ public class EarlyWarningAlertCommandService(
 
     /// <inheritdoc />
     public async Task<Result<IReadOnlyList<EarlyWarningAlert>, EEvaluateSessionDelaysError>> Handle(
+        EvaluateSessionDelaysCommand command, AuthenticatedActor requestedBy, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // A requester outside the group scope, such as an unassigned guide, cannot learn whether the session exists.
+            var groupId = requestedBy.AgencyId == command.AgencyId &&
+                          await externalTrackingSessionService.ExistsSession(command.AgencyId, command.SessionId,
+                              cancellationToken)
+                ? await externalTrackingSessionService.FindExpeditionGroupId(command.SessionId, cancellationToken)
+                : null;
+            if (groupId is null ||
+                !await externalRouteSetupService.CanAccessGroup(requestedBy, groupId.Value, cancellationToken))
+                return EvaluationFail(EEvaluateSessionDelaysError.SessionNotFound);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error checking the scope of session {SessionId}", command.SessionId);
+            return EvaluationFail(EEvaluateSessionDelaysError.UnexpectedError);
+        }
+
+        return await Handle(command, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<Result<IReadOnlyList<EarlyWarningAlert>, EEvaluateSessionDelaysError>> Handle(
         EvaluateSessionDelaysCommand command, CancellationToken cancellationToken)
     {
         try
@@ -103,38 +133,15 @@ public class EarlyWarningAlertCommandService(
             var groupId = await externalTrackingSessionService.FindExpeditionGroupId(command.SessionId, cancellationToken);
             if (groupId is null) return EvaluationFail(EEvaluateSessionDelaysError.SessionNotFound);
 
-            var now = DateTimeOffset.UtcNow;
-            var raised = new List<EarlyWarningAlert>();
-            var windows = await externalRouteSetupService.FindExpectedTimeWindows(command.AgencyId, groupId.Value,
-                cancellationToken);
-            foreach (var (fromCheckpointId, toCheckpointId, maximumMinutes) in windows)
-            {
-                var departedAt = await externalCheckpointPassageService.FindLastPassageTime(command.SessionId,
-                    fromCheckpointId, cancellationToken);
-                if (departedAt is null) continue;
-                var arrivedAt = await externalCheckpointPassageService.FindLastPassageTime(command.SessionId,
-                    toCheckpointId, cancellationToken);
-                if (arrivedAt is not null) continue;
-
-                var elapsed = now - departedAt.Value;
-                var severity = EarlyWarningAlert.DelaySeverityFor(elapsed, maximumMinutes);
-                if (severity is null) continue;
-                if (await alertRepository.ExistsBySessionIdCheckpointIdAndTypeAsync(command.SessionId, toCheckpointId,
-                        AlertType.Delay, cancellationToken))
-                    continue;
-
-                var description = $"The group has not reached checkpoint {toCheckpointId} " +
-                                  $"{(int)elapsed.TotalMinutes} minutes after passing checkpoint {fromCheckpointId}. " +
-                                  $"Maximum expected time: {maximumMinutes} minutes.";
-                var alert = new EarlyWarningAlert(
-                    new RaiseEarlyWarningAlertCommand(command.AgencyId, command.SessionId, toCheckpointId, AlertType.Delay,
-                        severity.Value, description), groupId.Value, now);
-                await alertRepository.AddAsync(alert, cancellationToken);
-                raised.Add(alert);
-            }
-
-            if (raised.Count > 0) await unitOfWork.CompleteAsync(cancellationToken);
-            return new Result<IReadOnlyList<EarlyWarningAlert>, EEvaluateSessionDelaysError>.Success(raised);
+            var changed = await StageDelayEvaluation(command.AgencyId, command.SessionId, groupId.Value,
+                timeProvider.GetUtcNow(), cancellationToken);
+            if (changed.Count > 0) await unitOfWork.CompleteAsync(cancellationToken);
+            return new Result<IReadOnlyList<EarlyWarningAlert>, EEvaluateSessionDelaysError>.Success(changed);
+        }
+        catch (DbUpdateException ex) when (ex.IsDuplicateKeyViolation())
+        {
+            logger.LogWarning(ex, "Concurrent delay evaluation of session {SessionId}", command.SessionId);
+            return EvaluationFail(EEvaluateSessionDelaysError.ConcurrentEvaluation);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -145,6 +152,64 @@ public class EarlyWarningAlertCommandService(
             logger.LogError(ex, "Unexpected error evaluating delays of session {SessionId}", command.SessionId);
             return EvaluationFail(EEvaluateSessionDelaysError.UnexpectedError);
         }
+    }
+
+    private async Task<IReadOnlyList<EarlyWarningAlert>> StageDelayEvaluation(int agencyId, int sessionId, int groupId,
+        DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var windows = await externalRouteSetupService.FindExpectedTimeWindows(agencyId, groupId, cancellationToken);
+        if (windows.Count == 0) return [];
+        var segments = windows.Select(window => (window.FromCheckpointId, window.ToCheckpointId)).ToArray();
+        var passedAt = new Dictionary<int, DateTimeOffset>();
+        foreach (var checkpointId in segments
+                     .SelectMany(segment => new[] { segment.FromCheckpointId, segment.ToCheckpointId }).Distinct())
+        {
+            var passage = await externalCheckpointPassageService.FindLastPassageTime(sessionId, checkpointId,
+                cancellationToken);
+            if (passage is not null) passedAt[checkpointId] = passage.Value;
+        }
+
+        var changed = new List<EarlyWarningAlert>();
+        foreach (var (fromCheckpointId, toCheckpointId) in
+                 RouteSegmentProgress.PendingSegments(segments, passedAt.Keys.ToHashSet()))
+        {
+            var maximumMinutes = windows.First(window =>
+                window.FromCheckpointId == fromCheckpointId && window.ToCheckpointId == toCheckpointId).MaximumMinutes;
+            // The delay is measured from the captured passage, never from the moment it was synchronized.
+            var departedAt = passedAt[fromCheckpointId];
+            var elapsed = now - departedAt;
+            var severity = EarlyWarningAlert.DelaySeverityFor(elapsed, maximumMinutes);
+            if (severity is null) continue;
+
+            var evidence = new AlertEvidence(Math.Round((decimal)elapsed.TotalMinutes, 2), null, maximumMinutes,
+                AlertEvidence.Minutes, departedAt);
+            var description = string.Format(CultureInfo.InvariantCulture,
+                "The group has not reached checkpoint {0} {1:0} minutes after passing checkpoint {2}. " +
+                "Maximum expected time: {3} minutes.", toCheckpointId, Math.Floor(elapsed.TotalMinutes),
+                fromCheckpointId, maximumMinutes);
+            var reference = toCheckpointId.ToString(CultureInfo.InvariantCulture);
+            var existing = await alertRepository.FindBySessionIdAndEvidenceKeyAsync(sessionId,
+                EarlyWarningAlert.EvidenceKeyFor(SafetyRule.CheckpointDelay, reference), cancellationToken);
+            if (existing is not null)
+            {
+                // The same delay worsened: an open alert raises its severity, a closed one stays closed.
+                if (!existing.Escalate(severity.Value, evidence, description)) continue;
+                alertRepository.Update(existing);
+                changed.Add(existing);
+                continue;
+            }
+
+            // A delay alert raised before evidence identities existed, or reported manually, keeps protecting the segment.
+            if (await alertRepository.ExistsBySessionIdCheckpointIdAndTypeAsync(sessionId, toCheckpointId, AlertType.Delay,
+                    cancellationToken))
+                continue;
+            var alert = new EarlyWarningAlert(new RecordEvaluatedAlertCommand(agencyId, sessionId, toCheckpointId, null,
+                SafetyRule.CheckpointDelay, severity.Value, evidence, reference, description), groupId, now);
+            await alertRepository.AddAsync(alert, cancellationToken);
+            changed.Add(alert);
+        }
+
+        return changed;
     }
 
     /// <inheritdoc />
@@ -188,6 +253,11 @@ public class EarlyWarningAlertCommandService(
                 await alertRepository.AddAsync(alert, cancellationToken);
                 raised.Add(alert);
             }
+
+            // Delays are evaluated with the passages this batch confirmed, in the same unit of work.
+            if (await externalTrackingSessionService.IsSessionActive(batch.SessionId, cancellationToken))
+                raised.AddRange(await StageDelayEvaluation(batch.AgencyId, batch.SessionId, groupId.Value, raisedAt,
+                    cancellationToken));
 
             // Alerts and the evaluated status are saved together: a failure keeps the batch pending for a retry.
             await unitOfWork.CompleteAsync(cancellationToken);

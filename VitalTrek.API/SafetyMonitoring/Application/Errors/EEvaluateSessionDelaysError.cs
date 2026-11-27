@@ -11,6 +11,9 @@ public enum EEvaluateSessionDelaysError
     /// <summary>The tracking session is not active.</summary>
     SessionNotActive,
 
+    /// <summary>Another evaluation stored the same delay first; the request can be retried.</summary>
+    ConcurrentEvaluation,
+
     /// <summary>An unexpected persistence or system error occurred.</summary>
     UnexpectedError
 }
