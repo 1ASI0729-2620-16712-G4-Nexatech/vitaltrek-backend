@@ -13,6 +13,12 @@ public partial class EarlyWarningAlert
     /// <summary>Maximum length of the alert description.</summary>
     public const int DescriptionMaxLength = 500;
 
+    /// <summary>Maximum length of the reference that identifies the evidence within its rule.</summary>
+    public const int EvidenceReferenceMaxLength = 80;
+
+    /// <summary>Maximum length of the evidence identity.</summary>
+    public const int EvidenceKeyMaxLength = 120;
+
     /// <summary>Gets the alert identifier.</summary>
     public int Id { get; private set; }
 
@@ -42,6 +48,39 @@ public partial class EarlyWarningAlert
 
     /// <summary>Gets the description of the risk condition.</summary>
     public string Description { get; private set; } = string.Empty;
+
+    /// <summary>Gets the participant concerned by the alert, when the rule evaluates a single participant.</summary>
+    public int? MemberId { get; private set; }
+
+    /// <summary>Gets the rule that produced the alert.</summary>
+    public SafetyRule Rule { get; private set; }
+
+    /// <summary>
+    ///     Gets the identity of the evidence within the session. The same evidence never produces a second alert, so a
+    ///     repeated evaluation cannot duplicate or reopen it.
+    /// </summary>
+    public string EvidenceKey { get; private set; } = string.Empty;
+
+    /// <summary>Gets the observed value of the evidence, if the alert was evaluated.</summary>
+    public decimal? EvidenceObservedValue { get; private set; }
+
+    /// <summary>Gets the lowest expected value of the evidence, if any.</summary>
+    public decimal? EvidenceExpectedMinimum { get; private set; }
+
+    /// <summary>Gets the highest expected value of the evidence, if any.</summary>
+    public decimal? EvidenceExpectedMaximum { get; private set; }
+
+    /// <summary>Gets the unit of the evidence values, if the alert was evaluated.</summary>
+    public string? EvidenceUnit { get; private set; }
+
+    /// <summary>Gets the original moment of the observation, if the alert was evaluated.</summary>
+    public DateTimeOffset? EvidenceRecordedAt { get; private set; }
+
+    /// <summary>Gets the client identity of the reading or passage that supports the evidence, if any.</summary>
+    public Guid? EvidenceSourceRecordId { get; private set; }
+
+    /// <summary>Gets whether the evidence comes from the academic simulation.</summary>
+    public bool EvidenceSimulated { get; private set; }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="EarlyWarningAlert"/> class for Entity Framework Core.
@@ -73,7 +112,49 @@ public partial class EarlyWarningAlert
         Description = DomainGuard.RequireText(command.Description, DescriptionMaxLength, nameof(command.Description));
         RaisedAt = raisedAt;
         Status = AlertStatus.Active;
+        Rule = SafetyRule.Manual;
+        // Every manual report is a distinct evidence: it never deduplicates against another report.
+        EvidenceKey = EvidenceKeyFor(SafetyRule.Manual, Guid.NewGuid().ToString("N"));
     }
+
+    /// <summary>
+    ///     Initializes a new active alert produced by an automatic safety rule over persisted data.
+    /// </summary>
+    /// <param name="command">The record evaluated alert command.</param>
+    /// <param name="expeditionGroupId">The expedition group tracked by the session.</param>
+    /// <param name="raisedAt">The moment the alert is raised by the evaluation.</param>
+    /// <exception cref="ArgumentException">Thrown when the alert data is invalid or does not match its rule.</exception>
+    public EarlyWarningAlert(RecordEvaluatedAlertCommand command, int expeditionGroupId, DateTimeOffset raisedAt)
+    {
+        AgencyId = DomainGuard.RequirePositive(command.AgencyId, nameof(command.AgencyId));
+        SessionId = DomainGuard.RequirePositive(command.SessionId, nameof(command.SessionId));
+        ExpeditionGroupId = DomainGuard.RequirePositive(expeditionGroupId, nameof(expeditionGroupId));
+        if (command.CheckpointId is not null)
+            CheckpointId = DomainGuard.RequirePositive(command.CheckpointId.Value, nameof(command.CheckpointId));
+        if (command.MemberId is not null)
+            MemberId = DomainGuard.RequirePositive(command.MemberId.Value, nameof(command.MemberId));
+        if (!Enum.IsDefined(command.Rule) || command.Rule == SafetyRule.Manual)
+            throw new ArgumentException("Only an automatic safety rule records an evaluated alert.", nameof(command));
+        if (!Enum.IsDefined(command.Severity))
+            throw new ArgumentException("Unknown alert severity.", nameof(command));
+        ArgumentNullException.ThrowIfNull(command.Evidence, nameof(command.Evidence));
+        RequireRuleScope(command.Rule, CheckpointId, MemberId, command.Evidence);
+        Rule = command.Rule;
+        AlertType = command.Rule.ToAlertType();
+        Severity = command.Severity;
+        EvidenceKey = EvidenceKeyFor(command.Rule, command.EvidenceReference);
+        ApplyEvidence(command.Evidence);
+        Description = DomainGuard.RequireText(command.Description, DescriptionMaxLength, nameof(command.Description));
+        RaisedAt = raisedAt.ToUniversalTime();
+        Status = AlertStatus.Active;
+    }
+
+    /// <summary>Gets the evidence of an evaluated alert, or <see langword="null"/> for a manual alert.</summary>
+    public AlertEvidence? Evidence =>
+        EvidenceObservedValue is null || EvidenceUnit is null || EvidenceRecordedAt is null
+            ? null
+            : new AlertEvidence(EvidenceObservedValue.Value, EvidenceExpectedMinimum, EvidenceExpectedMaximum, EvidenceUnit,
+                EvidenceRecordedAt.Value, EvidenceSourceRecordId, EvidenceSimulated);
 
     /// <summary>Gets whether the alert still requires attention (active or acknowledged).</summary>
     public bool IsOpen => Status is AlertStatus.Active or AlertStatus.Acknowledged;
@@ -122,5 +203,53 @@ public partial class EarlyWarningAlert
         var maximum = TimeSpan.FromMinutes(maximumMinutes);
         if (elapsed <= maximum) return null;
         return elapsed >= maximum * 2 ? AlertSeverity.Critical : AlertSeverity.High;
+    }
+
+    /// <summary>
+    ///     Builds the identity of an evidence within a session: the rule code and the reference of the evidence.
+    /// </summary>
+    /// <param name="rule">The rule that evaluates the evidence.</param>
+    /// <param name="reference">The reference of the evidence within its rule.</param>
+    /// <returns>The evidence identity.</returns>
+    /// <exception cref="ArgumentException">Thrown when the rule is unknown or the reference is empty or too long.</exception>
+    public static string EvidenceKeyFor(SafetyRule rule, string reference)
+    {
+        if (!Enum.IsDefined(rule))
+            throw new ArgumentException("Unknown safety rule.", nameof(rule));
+        return $"{rule.ToCode()}:{DomainGuard.RequireText(reference, EvidenceReferenceMaxLength, nameof(reference))}";
+    }
+
+    private static void RequireRuleScope(SafetyRule rule, int? checkpointId, int? memberId, AlertEvidence evidence)
+    {
+        switch (rule)
+        {
+            case SafetyRule.HeartRateOutsideBaseline:
+                if (memberId is null || evidence.Unit != AlertEvidence.BeatsPerMinute)
+                    throw new ArgumentException("A heart rate alert requires a participant and a heart rate evidence.",
+                        nameof(rule));
+                break;
+            case SafetyRule.SimulatedRouteDeviation:
+                if (memberId is null || evidence.Unit != AlertEvidence.Meters || !evidence.Simulated)
+                    throw new ArgumentException(
+                        "A route deviation alert requires a participant and a simulated distance evidence.", nameof(rule));
+                break;
+            case SafetyRule.CheckpointDelay:
+                if (checkpointId is null || memberId is not null || evidence.Unit != AlertEvidence.Minutes)
+                    throw new ArgumentException(
+                        "A delay alert concerns the group at a checkpoint and requires an elapsed time evidence.",
+                        nameof(rule));
+                break;
+        }
+    }
+
+    private void ApplyEvidence(AlertEvidence evidence)
+    {
+        EvidenceObservedValue = evidence.ObservedValue;
+        EvidenceExpectedMinimum = evidence.ExpectedMinimum;
+        EvidenceExpectedMaximum = evidence.ExpectedMaximum;
+        EvidenceUnit = evidence.Unit;
+        EvidenceRecordedAt = evidence.RecordedAt;
+        EvidenceSourceRecordId = evidence.SourceRecordId;
+        EvidenceSimulated = evidence.Simulated;
     }
 }

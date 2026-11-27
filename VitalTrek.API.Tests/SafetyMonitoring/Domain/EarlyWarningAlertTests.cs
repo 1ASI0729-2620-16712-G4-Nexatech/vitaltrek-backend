@@ -121,4 +121,114 @@ public class EarlyWarningAlertTests
 	{
 		Assert.Throws<ArgumentException>(() => AlertTypeExtensions.FromCode("flood"));
 	}
+
+	private static readonly DateTimeOffset CapturedAt = new(2026, 11, 10, 6, 40, 0, TimeSpan.FromHours(-5));
+	private static readonly Guid ReadingId = Guid.Parse("7f1c2a4e-5b6d-4e8f-9a0b-1c2d3e4f5a6b");
+
+	private static AlertEvidence HeartRateEvidence() =>
+		new(160, 50, 140, AlertEvidence.BeatsPerMinute, CapturedAt, ReadingId);
+
+	private static RecordEvaluatedAlertCommand Evaluated(SafetyRule rule = SafetyRule.HeartRateOutsideBaseline,
+		int? checkpointId = null, int? memberId = 60, AlertEvidence? evidence = null) =>
+		new(1, 2, checkpointId, memberId, rule, AlertSeverity.High, evidence ?? HeartRateEvidence(),
+			ReadingId.ToString(), "Heart rate outside the demonstration baseline.");
+
+	[Fact]
+	public void EvaluatedAlert_KeepsRuleEvidenceAndOriginalCaptureTime()
+	{
+		var alert = new EarlyWarningAlert(Evaluated(), 5, RaisedAt);
+
+		Assert.Equal(SafetyRule.HeartRateOutsideBaseline, alert.Rule);
+		Assert.Equal(AlertType.VitalSignAnomaly, alert.AlertType);
+		Assert.Equal(AlertStatus.Active, alert.Status);
+		Assert.Equal(60, alert.MemberId);
+		Assert.Equal($"heart_rate_outside_baseline:{ReadingId}", alert.EvidenceKey);
+		Assert.Equal(HeartRateEvidence(), alert.Evidence);
+		Assert.Equal(CapturedAt, alert.Evidence!.RecordedAt);
+		Assert.Equal(TimeSpan.Zero, alert.Evidence.RecordedAt.Offset);
+		Assert.Equal(RaisedAt, alert.RaisedAt);
+		Assert.False(alert.Evidence.Simulated);
+	}
+
+	[Fact]
+	public void EvaluatedDeviationAndDelayAlerts_RaiseTheirAlertTypes()
+	{
+		var deviation = new EarlyWarningAlert(Evaluated(SafetyRule.SimulatedRouteDeviation,
+			evidence: new AlertEvidence(150, null, 100, AlertEvidence.Meters, CapturedAt, ReadingId, simulated: true)), 5, RaisedAt);
+		var delay = new EarlyWarningAlert(Evaluated(SafetyRule.CheckpointDelay, checkpointId: 3, memberId: null,
+			evidence: new AlertEvidence(95, null, 60, AlertEvidence.Minutes, CapturedAt)), 5, RaisedAt);
+
+		Assert.Equal(AlertType.RouteDeviation, deviation.AlertType);
+		Assert.True(deviation.Evidence!.Simulated);
+		Assert.Equal(AlertType.Delay, delay.AlertType);
+		Assert.Null(delay.MemberId);
+	}
+
+	[Fact]
+	public void ManualAlert_HasManualRuleAndADistinctEvidenceIdentity()
+	{
+		var first = NewAlert();
+		var second = NewAlert();
+
+		Assert.Equal(SafetyRule.Manual, first.Rule);
+		Assert.StartsWith("manual:", first.EvidenceKey);
+		Assert.NotEqual(first.EvidenceKey, second.EvidenceKey);
+		Assert.Null(first.Evidence);
+	}
+
+	[Fact]
+	public void EvaluatedAlert_WithManualRule_ThrowsArgumentException()
+	{
+		Assert.Throws<ArgumentException>(() => new EarlyWarningAlert(Evaluated(SafetyRule.Manual), 5, RaisedAt));
+	}
+
+	[Fact]
+	public void HeartRateAlert_WithoutParticipant_ThrowsArgumentException()
+	{
+		Assert.Throws<ArgumentException>(() => new EarlyWarningAlert(Evaluated(memberId: null), 5, RaisedAt));
+	}
+
+	[Fact]
+	public void DeviationAlert_WithoutSimulatedEvidence_ThrowsArgumentException()
+	{
+		var evidence = new AlertEvidence(150, null, 100, AlertEvidence.Meters, CapturedAt, ReadingId);
+		Assert.Throws<ArgumentException>(() =>
+			new EarlyWarningAlert(Evaluated(SafetyRule.SimulatedRouteDeviation, evidence: evidence), 5, RaisedAt));
+	}
+
+	[Fact]
+	public void DelayAlert_ForAParticipantOrWithoutCheckpoint_ThrowsArgumentException()
+	{
+		var evidence = new AlertEvidence(95, null, 60, AlertEvidence.Minutes, CapturedAt);
+		Assert.Throws<ArgumentException>(() =>
+			new EarlyWarningAlert(Evaluated(SafetyRule.CheckpointDelay, checkpointId: 3, evidence: evidence), 5, RaisedAt));
+		Assert.Throws<ArgumentException>(() =>
+			new EarlyWarningAlert(Evaluated(SafetyRule.CheckpointDelay, memberId: null, evidence: evidence), 5, RaisedAt));
+	}
+
+	[Theory]
+	[InlineData(null, null, AlertEvidence.BeatsPerMinute)]
+	[InlineData(140, 50, AlertEvidence.BeatsPerMinute)]
+	[InlineData(50, 140, "percent")]
+	public void Evidence_WithInvalidLimitsOrUnit_ThrowsArgumentException(int? minimum, int? maximum, string unit)
+	{
+		Assert.Throws<ArgumentException>(() => new AlertEvidence(160, minimum, maximum, unit, CapturedAt));
+	}
+
+	[Theory]
+	[InlineData("heart_rate_outside_baseline", SafetyRule.HeartRateOutsideBaseline)]
+	[InlineData("SIMULATED_ROUTE_DEVIATION", SafetyRule.SimulatedRouteDeviation)]
+	[InlineData("checkpoint_delay", SafetyRule.CheckpointDelay)]
+	[InlineData("manual", SafetyRule.Manual)]
+	public void SafetyRuleFromCode_ParsesKnownCodes(string code, SafetyRule expected)
+	{
+		Assert.Equal(expected, SafetyRuleExtensions.FromCode(code));
+		Assert.Equal(code.ToLowerInvariant(), expected.ToCode());
+	}
+
+	[Fact]
+	public void ManualRule_DoesNotDetermineAnAlertType()
+	{
+		Assert.Throws<ArgumentException>(() => SafetyRule.Manual.ToAlertType());
+	}
 }
