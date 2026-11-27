@@ -12,10 +12,11 @@ namespace VitalTrek.API.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "sent_at",
-                table: "incident_notifications",
-                newName: "requested_at");
+            // The MySQL provider renders RenameColumn as a CHANGE that restates the column type, and the
+            // restated type does not match the one MySQL 8 reports for this column, so the statement is rejected.
+            // RENAME COLUMN is native to MySQL 8 and keeps the declared type untouched.
+            migrationBuilder.Sql(
+                "ALTER TABLE incident_notifications RENAME COLUMN sent_at TO requested_at;");
 
             migrationBuilder.AddColumn<string>(
                 name: "health_notes",
@@ -208,8 +209,10 @@ namespace VitalTrek.API.Migrations
                 "UPDATE incident_notifications SET status = 'failed', failure_code = 'legacy_unverified', " +
                 "failed_at = requested_at WHERE status = 'sent';");
             // 4. Existing field guides receive a unique operational code derived from their identifier.
+            // LPAD truncates when the value is longer than the requested length, so guides 100 and 1000 would both
+            // become GU-100 and collide in ux_field_guides_agency_code. The padding only applies below three digits.
             migrationBuilder.Sql(
-                "UPDATE field_guides SET code = CONCAT('GU-', LPAD(id, 3, '0')) WHERE code = '';");
+                "UPDATE field_guides SET code = CONCAT('GU-', IF(id < 1000, LPAD(id, 3, '0'), id)) WHERE code = '';");
 
             migrationBuilder.CreateTable(
                 name: "evacuation_actions",
@@ -469,10 +472,8 @@ namespace VitalTrek.API.Migrations
                 name: "code",
                 table: "field_guides");
 
-            migrationBuilder.RenameColumn(
-                name: "requested_at",
-                table: "incident_notifications",
-                newName: "sent_at");
+            migrationBuilder.Sql(
+                "ALTER TABLE incident_notifications RENAME COLUMN requested_at TO sent_at;");
 
             migrationBuilder.AlterColumn<string>(
                 name: "status",
