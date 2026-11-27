@@ -1,4 +1,5 @@
 using VitalTrek.API.ExpeditionSetup.Interfaces.ACL;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
 
 namespace VitalTrek.API.SafetyMonitoring.Application.Internal.OutboundServices.ACL;
 
@@ -19,4 +20,36 @@ public class ExternalRouteSetupService(IExpeditionSetupContextFacade expeditionS
         int agencyId, int expeditionGroupId, CancellationToken cancellationToken) =>
         await expeditionSetupContextFacade.FindExpectedTimeWindowsByExpeditionGroup(agencyId, expeditionGroupId,
             cancellationToken);
+
+    /// <summary>
+    ///     Returns the heart rate baseline of each participant of an expedition group of an agency, by manifest entry.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<int, (int BaselineMin, int BaselineMax)>> FindParticipantBaselines(int agencyId,
+        int expeditionGroupId, CancellationToken cancellationToken) =>
+        (await expeditionSetupContextFacade.FindParticipantBaselinesByExpeditionGroup(agencyId, expeditionGroupId,
+            cancellationToken))
+        .GroupBy(baseline => baseline.MemberId)
+        .ToDictionary(group => group.Key, group => (group.First().BaselineMin, group.First().BaselineMax));
+
+    /// <summary>
+    ///     Checks whether an authenticated actor can see an expedition group: administrators of its agency, its assigned
+    ///     guide or its participants.
+    /// </summary>
+    public async Task<bool> CanAccessGroup(AuthenticatedActor actor, int expeditionGroupId,
+        CancellationToken cancellationToken) =>
+        await expeditionSetupContextFacade.CanAccessExpeditionGroup(actor, expeditionGroupId, cancellationToken);
+
+    /// <summary>Returns the expedition groups an authenticated actor can see.</summary>
+    public async Task<IReadOnlyCollection<int>> FindAccessibleGroupIds(AuthenticatedActor actor,
+        CancellationToken cancellationToken) =>
+        await expeditionSetupContextFacade.FindAccessibleExpeditionGroupIds(actor, cancellationToken);
+
+    /// <summary>
+    ///     Returns the manifest entries an authenticated actor can see in an expedition group; for an adventure tourist,
+    ///     only their own entries.
+    /// </summary>
+    public async Task<IReadOnlyCollection<int>> FindVisibleMemberIds(AuthenticatedActor actor, int expeditionGroupId,
+        CancellationToken cancellationToken) =>
+        (await expeditionSetupContextFacade.FindTrackingProgressContext(actor, expeditionGroupId, cancellationToken))
+        ?.MemberIds ?? [];
 }

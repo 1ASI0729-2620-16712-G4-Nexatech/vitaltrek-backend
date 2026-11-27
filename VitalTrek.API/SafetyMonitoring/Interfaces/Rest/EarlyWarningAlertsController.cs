@@ -4,6 +4,7 @@ using Microsoft.Extensions.Localization;
 using VitalTrek.API.IAM.Domain.Model.ValueObjects;
 using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Attributes;
 using VitalTrek.API.IAM.Infrastructure.Pipeline.Middleware.Extensions;
+using VitalTrek.API.IAM.Interfaces.ACL.Resources;
 using VitalTrek.API.Shared.Resources;
 using VitalTrek.API.SafetyMonitoring.Application.Services;
 using VitalTrek.API.SafetyMonitoring.Domain.Model.Commands;
@@ -34,6 +35,10 @@ public class EarlyWarningAlertsController(
 {
     private int AgencyId => HttpContext.GetAuthenticatedUser()!.AgencyId;
 
+    private int UserId => HttpContext.GetAuthenticatedUser()!.Id;
+
+    private AuthenticatedActor Actor => HttpContext.GetAuthenticatedActor()!;
+
     /// <summary>
     ///     Raises an early warning alert for an active tracking session.
     /// </summary>
@@ -55,7 +60,7 @@ public class EarlyWarningAlertsController(
         try
         {
             var command = SafetyMonitoringCommandFromResourceAssembler.ToCommandFromResource(resource, AgencyId);
-            var result = await commandService.Handle(command, cancellationToken);
+            var result = await commandService.Handle(command, Actor, cancellationToken);
             return ActionResultFromSafetyMonitoringResultAssembler.ToActionResult(result, this, localizer,
                 SafetyMonitoringResourceAssembler.ToResourceFromEntity, alert => alert.Id,
                 nameof(GetEarlyWarningAlertById));
@@ -86,7 +91,7 @@ public class EarlyWarningAlertsController(
         CancellationToken cancellationToken)
     {
         var command = SafetyMonitoringCommandFromResourceAssembler.ToCommandFromResource(resource, AgencyId);
-        var result = await commandService.Handle(command, cancellationToken);
+        var result = await commandService.Handle(command, Actor, cancellationToken);
         return ActionResultFromSafetyMonitoringResultAssembler.ToActionResult(result, this, localizer,
             alerts => alerts.Select(SafetyMonitoringResourceAssembler.ToResourceFromEntity));
     }
@@ -103,7 +108,7 @@ public class EarlyWarningAlertsController(
     [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GetEarlyWarningAlertById(int id, CancellationToken cancellationToken)
     {
-        var item = await queryService.Handle(new GetAlertByIdQuery(AgencyId, id), cancellationToken);
+        var item = await queryService.Handle(new GetAlertByIdQuery(AgencyId, id), Actor, cancellationToken);
         return item is null
             ? NotFound(localizer["EarlyWarningAlertNotFound"].Value)
             : Ok(SafetyMonitoringResourceAssembler.ToResourceFromEntity(item));
@@ -122,8 +127,8 @@ public class EarlyWarningAlertsController(
     public async Task<ActionResult> GetEarlyWarningAlerts([FromQuery] int? sessionId, CancellationToken cancellationToken)
     {
         var items = sessionId is not null
-            ? await queryService.Handle(new GetAlertsBySessionIdQuery(AgencyId, sessionId.Value), cancellationToken)
-            : await queryService.Handle(new GetActiveAlertsByAgencyIdQuery(AgencyId), cancellationToken);
+            ? await queryService.Handle(new GetAlertsBySessionIdQuery(AgencyId, sessionId.Value), Actor, cancellationToken)
+            : await queryService.Handle(new GetActiveAlertsByAgencyIdQuery(AgencyId), Actor, cancellationToken);
         return Ok(items.Select(SafetyMonitoringResourceAssembler.ToResourceFromEntity));
     }
 
@@ -158,9 +163,9 @@ public class EarlyWarningAlertsController(
 
         var result = status switch
         {
-            AlertStatus.Acknowledged => await commandService.Handle(new AcknowledgeAlertCommand(AgencyId, id), cancellationToken),
-            AlertStatus.Dismissed => await commandService.Handle(new DismissAlertCommand(AgencyId, id), cancellationToken),
-            AlertStatus.Resolved => await commandService.Handle(new ResolveAlertCommand(AgencyId, id), cancellationToken),
+            AlertStatus.Acknowledged => await commandService.Handle(new AcknowledgeAlertCommand(AgencyId, id, UserId), Actor, cancellationToken),
+            AlertStatus.Dismissed => await commandService.Handle(new DismissAlertCommand(AgencyId, id, UserId), Actor, cancellationToken),
+            AlertStatus.Resolved => await commandService.Handle(new ResolveAlertCommand(AgencyId, id, UserId), Actor, cancellationToken),
             _ => null
         };
         if (result is null) return BadRequest(localizer["EarlyWarningAlertStatusNotSupported"].Value);

@@ -30,9 +30,26 @@ public static class ModelBuilderExtensions
         builder.Entity<EarlyWarningAlert>().Property(a => a.Description).IsRequired()
             .HasMaxLength(EarlyWarningAlert.DescriptionMaxLength);
         builder.Entity<EarlyWarningAlert>().Property(a => a.RaisedAt).IsRequired();
+        builder.Entity<EarlyWarningAlert>().Property(a => a.Rule)
+            .HasConversion(rule => rule.ToCode(), code => SafetyRuleExtensions.FromCode(code))
+            .IsRequired().HasMaxLength(40);
+        builder.Entity<EarlyWarningAlert>().Property(a => a.EvidenceKey).IsRequired()
+            .HasMaxLength(EarlyWarningAlert.EvidenceKeyMaxLength);
+        builder.Entity<EarlyWarningAlert>().Property(a => a.EvidenceObservedValue).HasPrecision(10, 2);
+        builder.Entity<EarlyWarningAlert>().Property(a => a.EvidenceExpectedMinimum).HasPrecision(10, 2);
+        builder.Entity<EarlyWarningAlert>().Property(a => a.EvidenceExpectedMaximum).HasPrecision(10, 2);
+        builder.Entity<EarlyWarningAlert>().Property(a => a.EvidenceUnit).HasMaxLength(10);
+        // The original capture keeps microseconds, like the telemetry reading or passage it comes from.
+        builder.Entity<EarlyWarningAlert>().Property(a => a.EvidenceRecordedAt).HasPrecision(6);
+        builder.Entity<EarlyWarningAlert>().Property(a => a.EvidenceSourceRecordId).HasColumnType("char(36)");
+        builder.Entity<EarlyWarningAlert>().Property(a => a.EvidenceSimulated).IsRequired();
+        builder.Entity<EarlyWarningAlert>().Ignore(a => a.Evidence);
         builder.Entity<EarlyWarningAlert>().HasIndex(a => new { a.AgencyId, a.Status });
         builder.Entity<EarlyWarningAlert>().HasIndex(a => new { a.SessionId, a.CheckpointId, a.AlertType })
             .HasDatabaseName("ix_early_warning_alerts_session_checkpoint_type");
         builder.Entity<EarlyWarningAlert>().HasIndex(a => a.ExpeditionGroupId);
+        // One alert per evidence and session: a repeated or concurrent evaluation cannot duplicate or reopen an alert.
+        builder.Entity<EarlyWarningAlert>().HasIndex(a => new { a.SessionId, a.EvidenceKey }).IsUnique()
+            .HasDatabaseName("ix_early_warning_alerts_session_evidence_key");
     }
 }

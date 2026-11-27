@@ -39,4 +39,11 @@ public class TrackingSessionRepository(AppDbContext context)
     public async Task<bool> ExistsActiveByGroupIdAsync(int expeditionGroupId, CancellationToken ct = default) =>
         await Context.Set<TrackingSession>()
             .AnyAsync(s => s.ExpeditionGroupId == expeditionGroupId && s.Status == SessionStatus.Active, ct);
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<TrackingSession>> FindActiveAsync(int maxCount, CancellationToken ct = default) =>
+        await Context.Set<TrackingSession>().AsNoTracking()
+            .Where(session => session.Status == SessionStatus.Active)
+            .OrderBy(session => session.StartedAt).ThenBy(session => session.Id)
+            .Take(Math.Clamp(maxCount, 1, 100)).ToListAsync(ct);
 }

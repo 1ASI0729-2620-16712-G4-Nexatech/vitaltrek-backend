@@ -13,5 +13,13 @@ public static class SafetyMonitoringResourceAssembler
     public static EarlyWarningAlertResource ToResourceFromEntity(EarlyWarningAlert entity) =>
         new(entity.Id, entity.SessionId, entity.ExpeditionGroupId, entity.AgencyId, entity.CheckpointId,
             entity.AlertType.ToCode(), entity.Severity.ToCode(), entity.Status.ToCode(), entity.Description,
-            entity.RaisedAt);
+            entity.RaisedAt, entity.Rule.ToCode(), entity.MemberId, ToResourceFromValueObject(entity.Evidence),
+            entity.AcknowledgedByUserId, entity.AcknowledgedAt, entity.ClosedByUserId, entity.ClosedAt);
+
+    /// <summary>Transforms an <see cref="AlertEvidence"/> into an <see cref="AlertEvidenceResource"/>.</summary>
+    public static AlertEvidenceResource? ToResourceFromValueObject(AlertEvidence? evidence) =>
+        evidence is null
+            ? null
+            : new AlertEvidenceResource(evidence.ObservedValue, evidence.ExpectedMinimum, evidence.ExpectedMaximum,
+                evidence.Unit, evidence.RecordedAt, evidence.SourceRecordId, evidence.Simulated);
 }

@@ -33,6 +33,7 @@ public static class SafetyMonitoringLocalizedOpenApiAssembler
     private static readonly Dictionary<Type, string> SchemaResources = new()
     {
         [typeof(EarlyWarningAlertResource)] = "EarlyWarningAlertSchema",
+        [typeof(AlertEvidenceResource)] = "AlertEvidenceSchema",
         [typeof(RaiseEarlyWarningAlertResource)] = "RaiseEarlyWarningAlertSchema",
         [typeof(EvaluateSessionDelaysResource)] = "EvaluateSessionDelaysSchema",
         [typeof(UpdateEarlyWarningAlertStatusResource)] = "UpdateEarlyWarningAlertStatusSchema"

@@ -21,4 +21,7 @@ public interface ITrackingSessionRepository : IBaseRepository<TrackingSession>
 
     /// <summary>Returns true if an active session already exists for the given group.</summary>
     Task<bool> ExistsActiveByGroupIdAsync(int expeditionGroupId, CancellationToken ct = default);
+
+    /// <summary>Retrieves the oldest active sessions of every agency, without tracking, between 1 and 100.</summary>
+    Task<IReadOnlyList<TrackingSession>> FindActiveAsync(int maxCount, CancellationToken ct = default);
 }

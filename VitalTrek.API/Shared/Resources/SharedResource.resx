@@ -789,6 +789,12 @@
     <data name="EarlyWarningAlertSchema" xml:space="preserve">
         <value>Early warning alert information. The status is active, acknowledged, dismissed or resolved.</value>
     </data>
+    <data name="AlertEvidenceSchema" xml:space="preserve">
+        <value>Evidence of an evaluated alert: observed value, expected limits, unit (bpm, m or min) and original capture time. Simulated values come from the academic simulation and the limits are demonstration rules, not a medical assessment.</value>
+    </data>
+    <data name="SafetyEvaluationConflict" xml:space="preserve">
+        <value>Another safety evaluation of this session is in progress. Retry the request.</value>
+    </data>
     <data name="RaiseEarlyWarningAlertSchema" xml:space="preserve">
         <value>Data required to raise an early warning alert.</value>
     </data>

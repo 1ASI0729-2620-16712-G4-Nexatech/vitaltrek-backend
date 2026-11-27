@@ -15,12 +15,27 @@ public interface IEarlyWarningAlertRepository : IBaseRepository<EarlyWarningAler
     /// <summary>Finds the open (active or acknowledged) alerts of an agency, most recent first.</summary>
     Task<IEnumerable<EarlyWarningAlert>> FindOpenByAgencyIdAsync(int agencyId, CancellationToken cancellationToken = default);
 
+    /// <summary>Finds the open (active or acknowledged) alerts of some groups of an agency, most recent first.</summary>
+    Task<IEnumerable<EarlyWarningAlert>> FindOpenByAgencyIdAndGroupIdsAsync(int agencyId,
+        IReadOnlyCollection<int> expeditionGroupIds, CancellationToken cancellationToken = default);
+
     /// <summary>Finds the alerts of a session in an agency, most recent first.</summary>
     Task<IEnumerable<EarlyWarningAlert>> FindBySessionIdAndAgencyIdAsync(int sessionId, int agencyId,
         CancellationToken cancellationToken = default);
 
     /// <summary>Checks whether an alert of a type was already raised for a checkpoint within a session.</summary>
     Task<bool> ExistsBySessionIdCheckpointIdAndTypeAsync(int sessionId, int checkpointId, AlertType alertType,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Returns which evidence identities already produced an alert in a session, whatever the status of that alert,
+    ///     so a closed alert is never raised again for the same evidence.
+    /// </summary>
+    Task<IReadOnlySet<string>> FindExistingEvidenceKeysAsync(int sessionId, IReadOnlyCollection<string> evidenceKeys,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Finds the alert produced by an evidence identity within a session, whatever its status.</summary>
+    Task<EarlyWarningAlert?> FindBySessionIdAndEvidenceKeyAsync(int sessionId, string evidenceKey,
         CancellationToken cancellationToken = default);
 
     /// <summary>Checks whether a session has open (active or acknowledged) alerts.</summary>
