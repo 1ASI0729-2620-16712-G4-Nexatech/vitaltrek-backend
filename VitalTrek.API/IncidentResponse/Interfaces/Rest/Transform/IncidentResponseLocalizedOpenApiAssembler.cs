@@ -14,8 +14,10 @@ public static class IncidentResponseLocalizedOpenApiAssembler
 {
     private static readonly string[] Operations =
     [
-        "DeclareIncident", "GetIncidentById", "GetIncidents", "UpdateIncidentStatus", "ResolveIncident",
-        "SendIncidentNotification", "GetIncidentNotifications"
+        "DeclareIncident", "GetIncidentById", "GetIncidents", "UpdateIncidentStatus", "ConfirmIncident",
+        "DismissIncident", "DeclareIncidentEmergency", "ResolveIncident", "CloseIncident", "RecordEvacuationAction",
+        "GetEvacuationActions", "SendIncidentNotification", "GetIncidentNotifications", "GetIncidentNotificationById",
+        "RetryIncidentNotification", "RefreshIncidentNotificationStatus"
     ];
 
     private static readonly Dictionary<string, string> ResponseResources = new()
@@ -36,7 +38,11 @@ public static class IncidentResponseLocalizedOpenApiAssembler
         [typeof(DeclareIncidentResource)] = "DeclareIncidentSchema",
         [typeof(UpdateIncidentStatusResource)] = "UpdateIncidentStatusSchema",
         [typeof(IncidentNotificationResource)] = "IncidentNotificationSchema",
-        [typeof(SendNotificationResource)] = "SendNotificationSchema"
+        [typeof(SendNotificationResource)] = "SendNotificationSchema",
+        [typeof(IncidentTransitionResource)] = "IncidentTransitionSchema",
+        [typeof(IncidentStatusChangeResource)] = "IncidentStatusChangeSchema",
+        [typeof(RecordEvacuationActionResource)] = "RecordEvacuationActionSchema",
+        [typeof(EvacuationActionResource)] = "EvacuationActionSchema"
     };
 
     /// <summary>

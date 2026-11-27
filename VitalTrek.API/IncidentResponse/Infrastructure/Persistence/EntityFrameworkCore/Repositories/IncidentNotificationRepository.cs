@@ -18,5 +18,13 @@ public class IncidentNotificationRepository(AppDbContext context)
         CancellationToken cancellationToken = default) =>
         await Context.Set<IncidentNotification>()
             .Where(notification => notification.IncidentId == incidentId && notification.AgencyId == agencyId)
-            .OrderBy(notification => notification.SentAt).ToListAsync(cancellationToken);
+            .OrderBy(notification => notification.RequestedAt).ThenBy(notification => notification.Id)
+            .ToListAsync(cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<IncidentNotification?> FindByNotificationIdAsync(int agencyId, Guid notificationId,
+        CancellationToken cancellationToken = default) =>
+        await Context.Set<IncidentNotification>().FirstOrDefaultAsync(
+            notification => notification.AgencyId == agencyId && notification.NotificationId == notificationId,
+            cancellationToken);
 }

@@ -1,72 +1,93 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using VitalTrek.API.IncidentResponse.Application.Errors;
-using VitalTrek.API.Shared.Resources;
 using VitalTrek.API.Shared.Application.Patterns;
+using VitalTrek.API.Shared.Resources;
 
 namespace VitalTrek.API.IncidentResponse.Interfaces.Rest.Transform;
 
 /// <summary>
-///     Assembles HTTP action results from the results of the Incident Response command handling.
+///     Assembles HTTP action results from the results of the Incident Response command handling. Every error is a
+///     problem details response with a localized title and a stable <c>code</c> extension the client translates.
 /// </summary>
 public static class ActionResultFromIncidentResponseResultAssembler
 {
     /// <summary>
-    ///     Assembles the action result of a command, returning 201 for creations and 200 for updates.
+    ///     Assembles the action result of a command: 201 with a location header when <paramref name="isCreated"/> returns
+    ///     true and <paramref name="createdAtActionName"/> is provided, otherwise 200.
     /// </summary>
-    /// <param name="result">The application result.</param>
-    /// <param name="controller">The controller producing the response.</param>
-    /// <param name="localizer">The string localizer.</param>
-    /// <param name="toResource">Function that maps the aggregate into its resource.</param>
-    /// <param name="getId">Function that obtains the aggregate identifier.</param>
-    /// <param name="createdAtActionName">The action used to build the location header, or null for updates.</param>
-    /// <param name="routeValues">Route values of the location header; the identifier is used when omitted.</param>
-    /// <typeparam name="TEntity">The aggregate type.</typeparam>
-    /// <typeparam name="TError">The error type.</typeparam>
-    /// <typeparam name="TResource">The resource type.</typeparam>
-    /// <returns>The HTTP action result.</returns>
-    public static ActionResult ToActionResult<TEntity, TError, TResource>(
-        Result<TEntity, TError> result,
+    public static ActionResult ToActionResult<TValue, TError, TResource>(
+        Result<TValue, TError> result,
         ControllerBase controller,
         IStringLocalizer<SharedResource> localizer,
-        Func<TEntity, TResource> toResource,
-        Func<TEntity, int> getId,
+        Func<TValue, TResource> toResource,
         string? createdAtActionName = null,
-        Func<TEntity, object>? routeValues = null) where TError : Enum =>
+        Func<TValue, object>? routeValues = null,
+        Func<TValue, bool>? isCreated = null) where TError : Enum =>
         result switch
         {
-            Result<TEntity, TError>.Success success when createdAtActionName is not null =>
-                controller.CreatedAtAction(createdAtActionName,
-                    routeValues is null ? new { id = getId(success.Value) } : routeValues(success.Value),
-                    toResource(success.Value)),
-            Result<TEntity, TError>.Success success => controller.Ok(toResource(success.Value)),
-            Result<TEntity, TError>.Failure failure => ToErrorResult(failure.Error, controller, localizer),
-            _ => Unexpected(controller, localizer)
+            Result<TValue, TError>.Success success when createdAtActionName is not null && routeValues is not null &&
+                                                        (isCreated?.Invoke(success.Value) ?? true) =>
+                controller.CreatedAtAction(createdAtActionName, routeValues(success.Value), toResource(success.Value)),
+            Result<TValue, TError>.Success success => controller.Ok(toResource(success.Value)),
+            Result<TValue, TError>.Failure failure => ToErrorResult(failure.Error, controller, localizer),
+            _ => Problem(controller, localizer, "UnexpectedErrorProcessingRequest", "Incident.UnexpectedError",
+                StatusCodes.Status500InternalServerError)
         };
+
+    /// <summary>Builds a coded problem for errors detected in the controller, such as unknown codes.</summary>
+    public static ActionResult Problem(ControllerBase controller, IStringLocalizer<SharedResource> localizer,
+        string key, string code, int statusCode) =>
+        controller.Problem(title: localizer[key].Value, statusCode: statusCode,
+            extensions: new Dictionary<string, object?> { ["code"] = code });
 
     private static ActionResult ToErrorResult(Enum error, ControllerBase controller,
-        IStringLocalizer<SharedResource> localizer) =>
-        error switch
+        IStringLocalizer<SharedResource> localizer)
+    {
+        var (key, code, status) = error switch
         {
-            EDeclareIncidentError.InvalidData => controller.BadRequest(localizer["InvalidIncidentRequest"].Value),
-            EDeclareIncidentError.SessionNotFound => controller.NotFound(localizer["TrackingSessionNotFound"].Value),
-            EDeclareIncidentError.SessionNotActive => controller.Conflict(localizer["TrackingSessionNotActive"].Value),
-            EUpdateIncidentStatusError.InvalidData => controller.BadRequest(localizer["InvalidIncidentStatus"].Value),
-            EUpdateIncidentStatusError.IncidentNotFound => controller.NotFound(localizer["IncidentNotFound"].Value),
+            EDeclareIncidentError.InvalidData => ("InvalidIncidentRequest", "Incident.InvalidData", 400),
+            EDeclareIncidentError.AccessForbidden => ("AccessForbidden", "Incident.AccessForbidden", 403),
+            EDeclareIncidentError.SessionNotFound => ("TrackingSessionNotFound", "Incident.SessionNotFound", 404),
+            EDeclareIncidentError.SessionNotActive => ("TrackingSessionNotActive", "Incident.SessionNotActive", 409),
+            EDeclareIncidentError.AlertNotFound => ("EarlyWarningAlertNotFound", "Incident.AlertNotFound", 404),
+            EDeclareIncidentError.AlertOutsideSession => ("IncidentAlertOutsideSession", "Incident.AlertOutsideSession", 409),
+            EDeclareIncidentError.AlertDismissed => ("IncidentAlertDismissed", "Incident.AlertDismissed", 409),
+            EDeclareIncidentError.AlertAlreadyLinked => ("IncidentAlertAlreadyLinked", "Incident.AlertAlreadyLinked", 409),
+            EUpdateIncidentStatusError.InvalidData => ("InvalidIncidentStatus", "Incident.InvalidStatus", 400),
+            EUpdateIncidentStatusError.AccessForbidden =>
+                ("IncidentTransitionForbidden", "Incident.TransitionForbidden", 403),
+            EUpdateIncidentStatusError.IncidentNotFound => ("IncidentNotFound", "Incident.NotFound", 404),
             EUpdateIncidentStatusError.InvalidTransition =>
-                controller.Conflict(localizer["IncidentStatusTransitionNotAllowed"].Value),
-            EResolveIncidentError.IncidentNotFound => controller.NotFound(localizer["IncidentNotFound"].Value),
-            EResolveIncidentError.InvalidTransition => controller.Conflict(localizer["IncidentNotOpen"].Value),
+                ("IncidentStatusTransitionNotAllowed", "Incident.InvalidTransition", 409),
+            ERecordEvacuationActionError.InvalidData =>
+                ("InvalidEvacuationActionRequest", "EvacuationAction.InvalidData", 400),
+            ERecordEvacuationActionError.AccessForbidden =>
+                ("EvacuationActionForbidden", "EvacuationAction.AccessForbidden", 403),
+            ERecordEvacuationActionError.IncidentNotFound => ("IncidentNotFound", "EvacuationAction.IncidentNotFound", 404),
+            ERecordEvacuationActionError.EmergencyNotDeclared =>
+                ("EvacuationRequiresEmergency", "EvacuationAction.EmergencyNotDeclared", 409),
+            ERecordEvacuationActionError.ActionIdentityConflict =>
+                ("EvacuationActionIdentityConflict", "EvacuationAction.IdentityConflict", 409),
             ESendNotificationError.InvalidData =>
-                controller.BadRequest(localizer["InvalidIncidentNotificationRequest"].Value),
-            ESendNotificationError.IncidentNotFound => controller.NotFound(localizer["IncidentNotFound"].Value),
-            ESendNotificationError.IncidentClosed => controller.Conflict(localizer["IncidentAlreadyClosed"].Value),
-            _ => Unexpected(controller, localizer)
+                ("InvalidIncidentNotificationRequest", "IncidentNotification.InvalidData", 400),
+            ESendNotificationError.AccessForbidden =>
+                ("IncidentNotificationForbidden", "IncidentNotification.AccessForbidden", 403),
+            ESendNotificationError.IncidentNotFound => ("IncidentNotFound", "IncidentNotification.IncidentNotFound", 404),
+            ESendNotificationError.EmergencyNotDeclared =>
+                ("IncidentNotificationRequiresEmergency", "IncidentNotification.EmergencyNotDeclared", 409),
+            ESendNotificationError.RecipientNotAllowed =>
+                ("IncidentNotificationRecipientNotAllowed", "IncidentNotification.RecipientNotAllowed", 400),
+            ESendNotificationError.NotificationNotFound =>
+                ("IncidentNotificationNotFound", "IncidentNotification.NotFound", 404),
+            ESendNotificationError.IdentityConflict =>
+                ("IncidentNotificationIdentityConflict", "IncidentNotification.IdentityConflict", 409),
+            ESendNotificationError.AttemptInProgress =>
+                ("IncidentNotificationAttemptInProgress", "IncidentNotification.AttemptInProgress", 409),
+            ESendNotificationError.NotRetriable =>
+                ("IncidentNotificationNotRetriable", "IncidentNotification.NotRetriable", 409),
+            _ => ("UnexpectedErrorProcessingRequest", "Incident.UnexpectedError", 500)
         };
-
-    private static ActionResult Unexpected(ControllerBase controller, IStringLocalizer<SharedResource> localizer) =>
-        controller.Problem(
-            title: localizer["UnexpectedServerError"].Value,
-            detail: localizer["UnexpectedErrorProcessingRequest"].Value,
-            statusCode: StatusCodes.Status500InternalServerError);
+        return Problem(controller, localizer, key, code, status);
+    }
 }

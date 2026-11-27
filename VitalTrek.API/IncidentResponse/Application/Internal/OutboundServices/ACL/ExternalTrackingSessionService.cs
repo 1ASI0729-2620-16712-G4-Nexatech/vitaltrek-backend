@@ -16,4 +16,12 @@ public class ExternalTrackingSessionService(IFieldTrackingContextFacade fieldTra
     /// <summary>Checks whether a tracking session is active.</summary>
     public async Task<bool> IsSessionActive(int sessionId, CancellationToken cancellationToken) =>
         await fieldTrackingContextFacade.IsSessionActiveAsync(sessionId, cancellationToken);
+
+    /// <summary>
+    ///     Returns the expedition group tracked by a session of the agency, or null when the session is not in the agency.
+    /// </summary>
+    public async Task<int?> FindExpeditionGroupId(int agencyId, int sessionId, CancellationToken cancellationToken) =>
+        await fieldTrackingContextFacade.SessionExistsInAgencyAsync(agencyId, sessionId, cancellationToken)
+            ? await fieldTrackingContextFacade.FindExpeditionGroupIdBySessionIdAsync(sessionId, cancellationToken)
+            : null;
 }
