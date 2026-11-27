@@ -34,6 +34,8 @@ public class EarlyWarningAlertsController(
 {
     private int AgencyId => HttpContext.GetAuthenticatedUser()!.AgencyId;
 
+    private int UserId => HttpContext.GetAuthenticatedUser()!.Id;
+
     /// <summary>
     ///     Raises an early warning alert for an active tracking session.
     /// </summary>
@@ -158,9 +160,9 @@ public class EarlyWarningAlertsController(
 
         var result = status switch
         {
-            AlertStatus.Acknowledged => await commandService.Handle(new AcknowledgeAlertCommand(AgencyId, id), cancellationToken),
-            AlertStatus.Dismissed => await commandService.Handle(new DismissAlertCommand(AgencyId, id), cancellationToken),
-            AlertStatus.Resolved => await commandService.Handle(new ResolveAlertCommand(AgencyId, id), cancellationToken),
+            AlertStatus.Acknowledged => await commandService.Handle(new AcknowledgeAlertCommand(AgencyId, id, UserId), cancellationToken),
+            AlertStatus.Dismissed => await commandService.Handle(new DismissAlertCommand(AgencyId, id, UserId), cancellationToken),
+            AlertStatus.Resolved => await commandService.Handle(new ResolveAlertCommand(AgencyId, id, UserId), cancellationToken),
             _ => null
         };
         if (result is null) return BadRequest(localizer["EarlyWarningAlertStatusNotSupported"].Value);

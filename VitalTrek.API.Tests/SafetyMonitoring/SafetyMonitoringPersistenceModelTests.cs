@@ -42,6 +42,10 @@ public class SafetyMonitoringPersistenceModelTests
     [InlineData(nameof(EarlyWarningAlert.EvidenceRecordedAt), "evidence_recorded_at")]
     [InlineData(nameof(EarlyWarningAlert.EvidenceSourceRecordId), "evidence_source_record_id")]
     [InlineData(nameof(EarlyWarningAlert.EvidenceSimulated), "evidence_simulated")]
+    [InlineData(nameof(EarlyWarningAlert.AcknowledgedByUserId), "acknowledged_by_user_id")]
+    [InlineData(nameof(EarlyWarningAlert.AcknowledgedAt), "acknowledged_at")]
+    [InlineData(nameof(EarlyWarningAlert.ClosedByUserId), "closed_by_user_id")]
+    [InlineData(nameof(EarlyWarningAlert.ClosedAt), "closed_at")]
     public void EvidenceIsStoredInSnakeCaseColumns(string property, string column)
     {
         Assert.Equal(column, Alert.FindProperty(property)!.GetColumnName());

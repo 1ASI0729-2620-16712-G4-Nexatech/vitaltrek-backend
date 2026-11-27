@@ -5,4 +5,5 @@ namespace VitalTrek.API.SafetyMonitoring.Domain.Model.Commands;
 /// </summary>
 /// <param name="AgencyId">The agency identifier.</param>
 /// <param name="AlertId">The alert identifier.</param>
-public record DismissAlertCommand(int AgencyId, int AlertId);
+/// <param name="UserId">The authenticated user who dismisses the alert.</param>
+public record DismissAlertCommand(int AgencyId, int AlertId, int UserId);

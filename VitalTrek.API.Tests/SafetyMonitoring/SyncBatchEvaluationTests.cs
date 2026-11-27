@@ -116,7 +116,7 @@ public sealed class SyncBatchEvaluationTests
     {
         _readings = [Reading(Guid.NewGuid(), heartRate: 160)];
         Success(await Evaluate());
-        _savedAlerts[0].Dismiss();
+        _savedAlerts[0].Dismiss(9, Now);
         // A retry still sees the batch pending, for example after a concurrent evaluation.
         _evaluationStatus = "pending";
 

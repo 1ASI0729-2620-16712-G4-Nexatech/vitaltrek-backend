@@ -75,17 +75,20 @@ public class EarlyWarningAlertCommandService(
     /// <inheritdoc />
     public Task<Result<EarlyWarningAlert, EUpdateAlertStatusError>> Handle(AcknowledgeAlertCommand command,
         CancellationToken cancellationToken) =>
-        ChangeStatus(command.AgencyId, command.AlertId, alert => alert.Acknowledge(), "acknowledging", cancellationToken);
+        ChangeStatus(command.AgencyId, command.AlertId,
+            alert => alert.Acknowledge(command.UserId, timeProvider.GetUtcNow()), "acknowledging", cancellationToken);
 
     /// <inheritdoc />
     public Task<Result<EarlyWarningAlert, EUpdateAlertStatusError>> Handle(DismissAlertCommand command,
         CancellationToken cancellationToken) =>
-        ChangeStatus(command.AgencyId, command.AlertId, alert => alert.Dismiss(), "dismissing", cancellationToken);
+        ChangeStatus(command.AgencyId, command.AlertId,
+            alert => alert.Dismiss(command.UserId, timeProvider.GetUtcNow()), "dismissing", cancellationToken);
 
     /// <inheritdoc />
     public Task<Result<EarlyWarningAlert, EUpdateAlertStatusError>> Handle(ResolveAlertCommand command,
         CancellationToken cancellationToken) =>
-        ChangeStatus(command.AgencyId, command.AlertId, alert => alert.Resolve(), "resolving", cancellationToken);
+        ChangeStatus(command.AgencyId, command.AlertId,
+            alert => alert.Resolve(command.UserId, timeProvider.GetUtcNow()), "resolving", cancellationToken);
 
     /// <inheritdoc />
     public async Task<Result<IReadOnlyList<EarlyWarningAlert>, EEvaluateSessionDelaysError>> Handle(

@@ -82,6 +82,18 @@ public partial class EarlyWarningAlert
     /// <summary>Gets whether the evidence comes from the academic simulation.</summary>
     public bool EvidenceSimulated { get; private set; }
 
+    /// <summary>Gets the user who acknowledged the alert, if it was acknowledged.</summary>
+    public int? AcknowledgedByUserId { get; private set; }
+
+    /// <summary>Gets the moment the alert was acknowledged, if it was acknowledged.</summary>
+    public DateTimeOffset? AcknowledgedAt { get; private set; }
+
+    /// <summary>Gets the user who closed the alert by resolving or dismissing it, if it was closed.</summary>
+    public int? ClosedByUserId { get; private set; }
+
+    /// <summary>Gets the moment the alert was resolved or dismissed, if it was closed.</summary>
+    public DateTimeOffset? ClosedAt { get; private set; }
+
     /// <summary>
     ///     Initializes a new instance of the <see cref="EarlyWarningAlert"/> class for Entity Framework Core.
     /// </summary>
@@ -162,31 +174,74 @@ public partial class EarlyWarningAlert
     /// <summary>Gets whether the alert is critical and has not been dismissed.</summary>
     public bool IsCritical => Severity == AlertSeverity.Critical && Status != AlertStatus.Dismissed;
 
-    /// <summary>Acknowledges an active alert.</summary>
+    /// <summary>Acknowledges an active alert and records who acknowledged it and when.</summary>
+    /// <param name="userId">The user who acknowledges the alert.</param>
+    /// <param name="acknowledgedAt">The moment of the transition.</param>
+    /// <exception cref="ArgumentException">Thrown when the user identifier is invalid.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the alert is not active.</exception>
-    public void Acknowledge()
+    public void Acknowledge(int userId, DateTimeOffset acknowledgedAt)
     {
+        DomainGuard.RequirePositive(userId, nameof(userId));
         if (Status != AlertStatus.Active)
             throw new InvalidOperationException("Only an active alert can be acknowledged.");
         Status = AlertStatus.Acknowledged;
+        AcknowledgedByUserId = userId;
+        AcknowledgedAt = acknowledgedAt.ToUniversalTime();
     }
 
-    /// <summary>Dismisses an open alert as a false alarm.</summary>
+    /// <summary>Dismisses an open alert as a false alarm and records who closed it and when.</summary>
+    /// <param name="userId">The user who dismisses the alert.</param>
+    /// <param name="dismissedAt">The moment of the transition.</param>
+    /// <exception cref="ArgumentException">Thrown when the user identifier is invalid.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the alert is already closed.</exception>
-    public void Dismiss()
+    public void Dismiss(int userId, DateTimeOffset dismissedAt)
     {
+        DomainGuard.RequirePositive(userId, nameof(userId));
         if (!IsOpen)
             throw new InvalidOperationException("Only an open alert can be dismissed.");
         Status = AlertStatus.Dismissed;
+        Close(userId, dismissedAt);
     }
 
-    /// <summary>Resolves an acknowledged alert.</summary>
+    /// <summary>Resolves an acknowledged alert and records who closed it and when.</summary>
+    /// <param name="userId">The user who resolves the alert.</param>
+    /// <param name="resolvedAt">The moment of the transition.</param>
+    /// <exception cref="ArgumentException">Thrown when the user identifier is invalid.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the alert was not acknowledged.</exception>
-    public void Resolve()
+    public void Resolve(int userId, DateTimeOffset resolvedAt)
     {
+        DomainGuard.RequirePositive(userId, nameof(userId));
         if (Status != AlertStatus.Acknowledged)
             throw new InvalidOperationException("Only an acknowledged alert can be resolved.");
         Status = AlertStatus.Resolved;
+        Close(userId, resolvedAt);
+    }
+
+    /// <summary>
+    ///     Raises the severity of an open delay alert when the same delay worsens, refreshing its evidence and
+    ///     description. A closed alert or a severity that is not higher leaves the alert unchanged, so reprocessing the
+    ///     same evidence never reopens or downgrades it. The status is kept: an acknowledged alert stays acknowledged.
+    /// </summary>
+    /// <param name="severity">The severity of the worsened delay.</param>
+    /// <param name="evidence">The refreshed elapsed time evidence.</param>
+    /// <param name="description">The refreshed description.</param>
+    /// <returns><see langword="true"/> when the severity was raised.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the alert was not produced by the delay rule.</exception>
+    /// <exception cref="ArgumentException">Thrown when the severity, evidence or description is invalid.</exception>
+    public bool Escalate(AlertSeverity severity, AlertEvidence evidence, string description)
+    {
+        if (Rule != SafetyRule.CheckpointDelay)
+            throw new InvalidOperationException("Only a delay alert can be escalated.");
+        if (!Enum.IsDefined(severity))
+            throw new ArgumentException("Unknown alert severity.", nameof(severity));
+        ArgumentNullException.ThrowIfNull(evidence);
+        RequireRuleScope(Rule, CheckpointId, MemberId, evidence);
+        var escalatedDescription = DomainGuard.RequireText(description, DescriptionMaxLength, nameof(description));
+        if (!IsOpen || severity <= Severity) return false;
+        Severity = severity;
+        ApplyEvidence(evidence);
+        Description = escalatedDescription;
+        return true;
     }
 
     /// <summary>
@@ -240,6 +295,12 @@ public partial class EarlyWarningAlert
                         nameof(rule));
                 break;
         }
+    }
+
+    private void Close(int userId, DateTimeOffset closedAt)
+    {
+        ClosedByUserId = userId;
+        ClosedAt = closedAt.ToUniversalTime();
     }
 
     private void ApplyEvidence(AlertEvidence evidence)

@@ -9,6 +9,8 @@ namespace VitalTrek.API.Tests.SafetyMonitoring.Domain;
 public class EarlyWarningAlertTests
 {
 	private static readonly DateTimeOffset RaisedAt = new(2026, 11, 10, 12, 0, 0, TimeSpan.Zero);
+	private static readonly DateTimeOffset ActedAt = new(2026, 11, 10, 7, 15, 0, TimeSpan.FromHours(-5));
+	private const int UserId = 9;
 
 	private static RaiseEarlyWarningAlertCommand Command(int? checkpointId = 3, string description = "Group delayed",
 		AlertSeverity severity = AlertSeverity.High) =>
@@ -50,9 +52,9 @@ public class EarlyWarningAlertTests
 	public void Acknowledge_ThenResolve_IsResolved()
 	{
 		var alert = NewAlert();
-		alert.Acknowledge();
+		alert.Acknowledge(UserId, ActedAt);
 		Assert.Equal(AlertStatus.Acknowledged, alert.Status);
-		alert.Resolve();
+		alert.Resolve(UserId, ActedAt);
 		Assert.Equal(AlertStatus.Resolved, alert.Status);
 		Assert.False(alert.IsOpen);
 	}
@@ -60,15 +62,15 @@ public class EarlyWarningAlertTests
 	[Fact]
 	public void Resolve_WhenActive_ThrowsInvalidOperationException()
 	{
-		Assert.Throws<InvalidOperationException>(() => NewAlert().Resolve());
+		Assert.Throws<InvalidOperationException>(() => NewAlert().Resolve(UserId, ActedAt));
 	}
 
 	[Fact]
 	public void Dismiss_WhenAcknowledged_IsDismissed()
 	{
 		var alert = NewAlert();
-		alert.Acknowledge();
-		alert.Dismiss();
+		alert.Acknowledge(UserId, ActedAt);
+		alert.Dismiss(UserId, ActedAt);
 		Assert.Equal(AlertStatus.Dismissed, alert.Status);
 	}
 
@@ -76,17 +78,17 @@ public class EarlyWarningAlertTests
 	public void Dismiss_WhenResolved_ThrowsInvalidOperationException()
 	{
 		var alert = NewAlert();
-		alert.Acknowledge();
-		alert.Resolve();
-		Assert.Throws<InvalidOperationException>(() => alert.Dismiss());
+		alert.Acknowledge(UserId, ActedAt);
+		alert.Resolve(UserId, ActedAt);
+		Assert.Throws<InvalidOperationException>(() => alert.Dismiss(UserId, ActedAt));
 	}
 
 	[Fact]
 	public void Acknowledge_Twice_ThrowsInvalidOperationException()
 	{
 		var alert = NewAlert();
-		alert.Acknowledge();
-		Assert.Throws<InvalidOperationException>(() => alert.Acknowledge());
+		alert.Acknowledge(UserId, ActedAt);
+		Assert.Throws<InvalidOperationException>(() => alert.Acknowledge(UserId, ActedAt));
 	}
 
 	[Fact]
@@ -94,7 +96,7 @@ public class EarlyWarningAlertTests
 	{
 		var alert = new EarlyWarningAlert(Command(severity: AlertSeverity.Critical), 5, RaisedAt);
 		Assert.True(alert.IsCritical);
-		alert.Dismiss();
+		alert.Dismiss(UserId, ActedAt);
 		Assert.False(alert.IsCritical);
 	}
 
@@ -230,5 +232,92 @@ public class EarlyWarningAlertTests
 	public void ManualRule_DoesNotDetermineAnAlertType()
 	{
 		Assert.Throws<ArgumentException>(() => SafetyRule.Manual.ToAlertType());
+	}
+
+	private static EarlyWarningAlert DelayAlert(AlertSeverity severity = AlertSeverity.High) =>
+		new(new RecordEvaluatedAlertCommand(1, 2, 3, null, SafetyRule.CheckpointDelay, severity,
+			new AlertEvidence(70, null, 60, AlertEvidence.Minutes, CapturedAt), "3", "Delayed by 70 minutes."), 5, RaisedAt);
+
+	private static AlertEvidence ElapsedEvidence(int minutes) => new(minutes, null, 60, AlertEvidence.Minutes, CapturedAt);
+
+	[Fact]
+	public void Acknowledge_RecordsTheAuthorAndTheMomentInUtc()
+	{
+		var alert = NewAlert();
+		alert.Acknowledge(UserId, ActedAt);
+
+		Assert.Equal(UserId, alert.AcknowledgedByUserId);
+		Assert.Equal(ActedAt, alert.AcknowledgedAt);
+		Assert.Equal(TimeSpan.Zero, alert.AcknowledgedAt!.Value.Offset);
+		Assert.Null(alert.ClosedByUserId);
+	}
+
+	[Fact]
+	public void ResolveAndDismiss_RecordWhoClosedTheAlert()
+	{
+		var resolved = NewAlert();
+		resolved.Acknowledge(UserId, ActedAt);
+		resolved.Resolve(10, ActedAt.AddMinutes(20));
+		var dismissed = NewAlert();
+		dismissed.Dismiss(11, ActedAt.AddMinutes(5));
+
+		Assert.Equal((UserId, 10), (resolved.AcknowledgedByUserId!.Value, resolved.ClosedByUserId!.Value));
+		Assert.Equal(ActedAt.AddMinutes(20), resolved.ClosedAt);
+		Assert.Equal(11, dismissed.ClosedByUserId);
+		Assert.Null(dismissed.AcknowledgedByUserId);
+	}
+
+	[Fact]
+	public void Transition_WithoutAValidUser_ThrowsArgumentExceptionAndKeepsTheStatus()
+	{
+		var alert = NewAlert();
+		Assert.Throws<ArgumentException>(() => alert.Acknowledge(0, ActedAt));
+		Assert.Throws<ArgumentException>(() => alert.Dismiss(-1, ActedAt));
+		Assert.Equal(AlertStatus.Active, alert.Status);
+	}
+
+	[Fact]
+	public void Escalate_WorseDelay_RaisesSeverityAndRefreshesEvidenceWithoutChangingTheStatus()
+	{
+		var alert = DelayAlert();
+		alert.Acknowledge(UserId, ActedAt);
+
+		Assert.True(alert.Escalate(AlertSeverity.Critical, ElapsedEvidence(130), "Delayed by 130 minutes."));
+		Assert.Equal(AlertSeverity.Critical, alert.Severity);
+		Assert.Equal(130m, alert.Evidence!.ObservedValue);
+		Assert.Equal("Delayed by 130 minutes.", alert.Description);
+		Assert.Equal(AlertStatus.Acknowledged, alert.Status);
+	}
+
+	[Theory]
+	[InlineData(AlertSeverity.High)]
+	[InlineData(AlertSeverity.Medium)]
+	public void Escalate_SameOrLowerSeverity_LeavesTheAlertUnchanged(AlertSeverity severity)
+	{
+		var alert = DelayAlert();
+
+		Assert.False(alert.Escalate(severity, ElapsedEvidence(90), "Delayed by 90 minutes."));
+		Assert.Equal(AlertSeverity.High, alert.Severity);
+		Assert.Equal(70m, alert.Evidence!.ObservedValue);
+	}
+
+	[Fact]
+	public void Escalate_ClosedAlert_IsNeverReopenedOrChanged()
+	{
+		var alert = DelayAlert();
+		alert.Dismiss(UserId, ActedAt);
+
+		Assert.False(alert.Escalate(AlertSeverity.Critical, ElapsedEvidence(130), "Delayed by 130 minutes."));
+		Assert.Equal(AlertStatus.Dismissed, alert.Status);
+		Assert.Equal(AlertSeverity.High, alert.Severity);
+	}
+
+	[Fact]
+	public void Escalate_AlertOfAnotherRule_ThrowsInvalidOperationException()
+	{
+		Assert.Throws<InvalidOperationException>(() =>
+			new EarlyWarningAlert(Evaluated(), 5, RaisedAt).Escalate(AlertSeverity.Critical, ElapsedEvidence(130), "x"));
+		Assert.Throws<InvalidOperationException>(() =>
+			NewAlert().Escalate(AlertSeverity.Critical, ElapsedEvidence(130), "x"));
 	}
 }
