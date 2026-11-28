@@ -24,7 +24,7 @@ public static class ExpeditionSetupLocalizedOpenApiAssembler
         "GetAllExpeditionGroups", "GetExpeditionGroupById", "CreateExpeditionGroup", "AssignFieldGuide",
         "GetAllManifestEntries", "GetManifestEntryById", "CreateManifestEntry",
         "GetAllParticipantPreparations", "GetParticipantPreparationById", "AssignWearableDevice",
-        "RegisterEmergencyContact", "UpdateConsent"
+        "RegisterEmergencyContact", "UpdateConsent", "RegisterHealthInformation"
     ];
 
     private static readonly Dictionary<string, string> ResponseResources = new()
@@ -66,7 +66,8 @@ public static class ExpeditionSetupLocalizedOpenApiAssembler
         [typeof(ParticipantPreparationResource)] = "ParticipantPreparationSchema",
         [typeof(AssignWearableDeviceResource)] = "AssignWearableDeviceSchema",
         [typeof(EmergencyContactResource)] = "EmergencyContactSchema",
-        [typeof(UpdateConsentResource)] = "UpdateConsentSchema"
+        [typeof(UpdateConsentResource)] = "UpdateConsentSchema",
+        [typeof(HealthInformationResource)] = "HealthInformationSchema"
     };
 
     /// <summary>

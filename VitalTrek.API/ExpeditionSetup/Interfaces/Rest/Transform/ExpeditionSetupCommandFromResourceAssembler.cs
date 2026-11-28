@@ -45,7 +45,7 @@ public static class ExpeditionSetupCommandFromResourceAssembler
 
     /// <summary>Transforms a <see cref="CreateFieldGuideResource"/> into a <see cref="CreateFieldGuideCommand"/>.</summary>
     public static CreateFieldGuideCommand ToCommandFromResource(CreateFieldGuideResource resource, int agencyId) =>
-        new(agencyId, resource.Name);
+        new(agencyId, resource.Name, resource.Code);
 
     /// <summary>Transforms a <see cref="CreateExpeditionGroupResource"/> into a <see cref="CreateExpeditionGroupCommand"/>.</summary>
     public static CreateExpeditionGroupCommand ToCommandFromResource(CreateExpeditionGroupResource resource, int agencyId) =>
@@ -70,6 +70,11 @@ public static class ExpeditionSetupCommandFromResourceAssembler
     public static AssignWearableDeviceCommand ToCommandFromResource(AssignWearableDeviceResource resource,
         int participantPreparationId, AccessScope scope) =>
         new(scope.AgencyId, participantPreparationId, resource.WearableDeviceId, scope.FieldGuideId);
+
+    /// <summary>Transforms a <see cref="HealthInformationResource"/> into a <see cref="RegisterHealthInformationCommand"/>.</summary>
+    public static RegisterHealthInformationCommand ToCommandFromResource(HealthInformationResource resource,
+        int participantPreparationId, AccessScope scope) =>
+        new(scope.AgencyId, participantPreparationId, resource.HealthNotes, scope.IdentityDocument ?? string.Empty);
 
     /// <summary>Transforms an <see cref="EmergencyContactResource"/> into a <see cref="RegisterEmergencyContactCommand"/>.</summary>
     public static RegisterEmergencyContactCommand ToCommandFromResource(EmergencyContactResource resource,

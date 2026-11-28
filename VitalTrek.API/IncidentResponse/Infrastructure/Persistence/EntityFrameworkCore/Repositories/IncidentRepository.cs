@@ -14,27 +14,46 @@ namespace VitalTrek.API.IncidentResponse.Infrastructure.Persistence.EntityFramew
 public class IncidentRepository(AppDbContext context)
     : BaseRepository<Incident>(context), IIncidentRepository
 {
+    private IQueryable<Incident> WithHistory => Context.Set<Incident>().Include(incident => incident.StatusChanges);
+
     /// <inheritdoc />
     public async Task<Incident?> FindByIdAndAgencyIdAsync(int incidentId, int agencyId,
         CancellationToken cancellationToken = default) =>
-        await Context.Set<Incident>().FirstOrDefaultAsync(
+        await WithHistory.FirstOrDefaultAsync(
             incident => incident.Id == incidentId && incident.AgencyId == agencyId, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IEnumerable<Incident>> FindBySessionIdAndAgencyIdAsync(int sessionId, int agencyId,
         CancellationToken cancellationToken = default) =>
-        await Context.Set<Incident>()
+        await WithHistory
             .Where(incident => incident.SessionId == sessionId && incident.AgencyId == agencyId)
             .OrderBy(incident => incident.ReportedAt).ToListAsync(cancellationToken);
 
     /// <inheritdoc />
-    public async Task<IEnumerable<Incident>> FindOpenByAgencyIdAsync(int agencyId,
-        CancellationToken cancellationToken = default) =>
-        await Context.Set<Incident>()
-            .Where(incident => incident.AgencyId == agencyId &&
+    public async Task<IEnumerable<Incident>> FindOpenByAgencyIdAndGroupIdsAsync(int agencyId,
+        IReadOnlyCollection<int> groupIds, CancellationToken cancellationToken = default)
+    {
+        var ids = groupIds.ToArray();
+        return await WithHistory
+            .Where(incident => incident.AgencyId == agencyId && ids.Contains(incident.ExpeditionGroupId) &&
                                (incident.Status == IncidentStatus.Reported ||
-                                incident.Status == IncidentStatus.InResponse))
+                                incident.Status == IncidentStatus.Confirmed ||
+                                incident.Status == IncidentStatus.EmergencyDeclared))
             .OrderByDescending(incident => incident.ReportedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<Incident?> FindByAlertIdAsync(int agencyId, int alertId,
+        CancellationToken cancellationToken = default) =>
+        await Context.Set<Incident>().FirstOrDefaultAsync(
+            incident => incident.AgencyId == agencyId && incident.AlertId == alertId, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<Incident>> FindAllBySessionIdAsync(int agencyId, int sessionId,
+        CancellationToken cancellationToken = default) =>
+        await Context.Set<Incident>().AsNoTracking()
+            .Where(incident => incident.AgencyId == agencyId && incident.SessionId == sessionId)
             .ToListAsync(cancellationToken);
 
     /// <inheritdoc />
@@ -46,5 +65,6 @@ public class IncidentRepository(AppDbContext context)
         await Context.Set<Incident>().AnyAsync(
             incident => incident.SessionId == sessionId &&
                         (incident.Status == IncidentStatus.Reported ||
-                         incident.Status == IncidentStatus.InResponse), cancellationToken);
+                         incident.Status == IncidentStatus.Confirmed ||
+                         incident.Status == IncidentStatus.EmergencyDeclared), cancellationToken);
 }

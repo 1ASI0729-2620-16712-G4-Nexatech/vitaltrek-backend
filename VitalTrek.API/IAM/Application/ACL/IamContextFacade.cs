@@ -1,5 +1,6 @@
 using VitalTrek.API.IAM.Application.Services;
 using VitalTrek.API.IAM.Domain.Model.Queries;
+using VitalTrek.API.IAM.Domain.Model.ValueObjects;
 using VitalTrek.API.IAM.Interfaces.ACL;
 
 namespace VitalTrek.API.IAM.Application.ACL;
@@ -29,5 +30,16 @@ public class IamContextFacade(IUserQueryService userQueryService) : IIamContextF
     {
         var user = await userQueryService.Handle(new GetUserByIdQuery(userId), cancellationToken);
         return user?.IdentityDocument;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> IsAgencyStaffEmail(int agencyId, string email, CancellationToken cancellationToken = default)
+    {
+        if (agencyId <= 0 || string.IsNullOrWhiteSpace(email)) return false;
+        var normalized = email.Trim();
+        var users = await userQueryService.Handle(new GetAllUsersByAgencyIdQuery(agencyId), cancellationToken);
+        return users.Any(user => user.AgencyId == agencyId &&
+                                 user.Role is Role.OperationsAdministrator or Role.FieldGuide &&
+                                 string.Equals(user.Username.Value, normalized, StringComparison.OrdinalIgnoreCase));
     }
 }

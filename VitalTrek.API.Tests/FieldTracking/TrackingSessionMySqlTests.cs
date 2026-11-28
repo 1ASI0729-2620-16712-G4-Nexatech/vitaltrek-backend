@@ -213,8 +213,9 @@ internal sealed class LocalTrackingDatabase : IAsyncDisposable
             await create.ExecuteNonQueryAsync();
             database._created = true;
             await using var context = database.Open();
-            await context.GetService<IMigrator>().MigrateAsync(migration ??
-                (previousVersion ? "20261111043327_AddTourClosure" : null));
+            var target = migration ?? (previousVersion ? "20261111043327_AddTourClosure" : null);
+            await context.GetService<IMigrator>().MigrateAsync(target);
+            var temporaryColumns = target is null ? [] : await AddLaterSeedColumnsAsync(database.ConnectionString);
             var data = new TrackingStartData();
             context.Add(TrackingStartData.WithId(new Agency(new SignUpCommand("Test agency", "Admin",
                 new Username("admin@example.test"), "test-only-password")), 1));
@@ -228,12 +229,58 @@ internal sealed class LocalTrackingDatabase : IAsyncDisposable
             context.AddRange(data.Devices);
             context.AddRange(data.Preparations);
             await context.SaveChangesAsync();
+            await DropColumnsAsync(database.ConnectionString, temporaryColumns);
             return database;
         }
         catch
         {
             await database.DisposeAsync();
             throw;
+        }
+    }
+
+    // Columns written by the seed entities that later migrations introduced. Seeding an older schema adds them only for
+    // the insert and drops them again, so the pending migrations still run against the faithful older schema.
+    private static readonly (string Table, string Column, string Definition)[] SeedColumnsAddedLater =
+    [
+        ("field_guides", "code", "varchar(20) NOT NULL DEFAULT ''"),
+        ("participant_preparations", "health_notes", "varchar(500) NULL"),
+        ("participant_preparations", "health_notes_recorded_at", "datetime NULL")
+    ];
+
+    private static async Task<IReadOnlyList<(string Table, string Column)>> AddLaterSeedColumnsAsync(
+        string connectionString)
+    {
+        var added = new List<(string Table, string Column)>();
+        await using var connection = new MySqlConnection(connectionString);
+        await connection.OpenAsync();
+        foreach (var (table, column, definition) in SeedColumnsAddedLater)
+        {
+            await using var exists = new MySqlCommand("""
+                SELECT COUNT(*) FROM information_schema.columns
+                WHERE table_schema = DATABASE() AND table_name = @table AND column_name = @column;
+                """, connection);
+            exists.Parameters.AddWithValue("@table", table);
+            exists.Parameters.AddWithValue("@column", column);
+            if (Convert.ToInt64(await exists.ExecuteScalarAsync()) > 0) continue;
+            await using var add = new MySqlCommand($"ALTER TABLE `{table}` ADD COLUMN `{column}` {definition};", connection);
+            await add.ExecuteNonQueryAsync();
+            added.Add((table, column));
+        }
+
+        return added;
+    }
+
+    private static async Task DropColumnsAsync(string connectionString,
+        IReadOnlyList<(string Table, string Column)> columns)
+    {
+        if (columns.Count == 0) return;
+        await using var connection = new MySqlConnection(connectionString);
+        await connection.OpenAsync();
+        foreach (var (table, column) in columns)
+        {
+            await using var drop = new MySqlCommand($"ALTER TABLE `{table}` DROP COLUMN `{column}`;", connection);
+            await drop.ExecuteNonQueryAsync();
         }
     }
 

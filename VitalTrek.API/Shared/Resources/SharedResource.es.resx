@@ -808,7 +808,7 @@
         <value>Los datos del incidente no son validos. La hora de reporte no puede estar en el futuro.</value>
     </data>
     <data name="InvalidIncidentStatus" xml:space="preserve">
-        <value>El estado del incidente no es un estado conocido.</value>
+        <value>El estado del incidente no es un estado conocido. Usa confirmed, dismissed, emergency_declared, resolved o closed.</value>
     </data>
     <data name="IncidentNotFound" xml:space="preserve">
         <value>El incidente no existe en la agencia.</value>
@@ -823,7 +823,7 @@
         <value>El incidente esta cerrado y no admite mas notificaciones.</value>
     </data>
     <data name="InvalidIncidentNotificationRequest" xml:space="preserve">
-        <value>Los datos de la notificacion del incidente no son validos.</value>
+        <value>Los datos de la notificacion del incidente no son validos. Indica una sola direccion de correo y el tipo de destinatario agency_staff.</value>
     </data>
     <data name="RequiredIncidentType" xml:space="preserve">
         <value>Se requiere un tipo de incidente valido: medical, accident, missing o environmental.</value>
@@ -865,43 +865,43 @@
         <value>Lista los incidentes de una sesion de seguimiento, o los incidentes abiertos de la agencia si no se indica sesion.</value>
     </data>
     <data name="UpdateIncidentStatusSummary" xml:space="preserve">
-        <value>Actualizar el estado de un incidente</value>
+        <value>Ejecutar una transicion del incidente por estado destino</value>
     </data>
     <data name="UpdateIncidentStatusDescription" xml:space="preserve">
-        <value>Mueve un incidente a otro estado de su ciclo de vida.</value>
+        <value>Ejecuta la transicion que alcanza confirmed, dismissed, emergency_declared, resolved o closed. Se conserva por compatibilidad; el codigo heredado in_response confirma el incidente.</value>
     </data>
     <data name="ResolveIncidentSummary" xml:space="preserve">
         <value>Resolver un incidente</value>
     </data>
     <data name="ResolveIncidentDescription" xml:space="preserve">
-        <value>Resuelve un incidente abierto y registra el momento de su resolucion.</value>
+        <value>Resuelve un incidente confirmado o una emergencia declarada y registra el momento de su resolucion.</value>
     </data>
     <data name="SendIncidentNotificationSummary" xml:space="preserve">
-        <value>Enviar una notificacion de incidente</value>
+        <value>Solicitar una notificacion de incidente</value>
     </data>
     <data name="SendIncidentNotificationDescription" xml:space="preserve">
-        <value>Envia una notificacion sobre un incidente a un contacto de emergencia o a una entidad de rescate.</value>
+        <value>Persiste una notificacion pendiente por correo a una direccion autorizada del personal de la agencia y la entrega al proveedor. La aceptacion del proveedor no es entrega.</value>
     </data>
     <data name="GetIncidentNotificationsSummary" xml:space="preserve">
-        <value>Listar notificaciones de un incidente</value>
+        <value>Obtener las notificaciones de un incidente</value>
     </data>
     <data name="GetIncidentNotificationsDescription" xml:space="preserve">
-        <value>Lista las notificaciones enviadas por un incidente.</value>
+        <value>Devuelve las notificaciones solicitadas para un incidente con su estado de entrega.</value>
     </data>
     <data name="IncidentSchema" xml:space="preserve">
-        <value>Un incidente declarado durante una expedicion.</value>
+        <value>Un incidente con su estado de ciclo de vida y sus transiciones registradas.</value>
     </data>
     <data name="DeclareIncidentSchema" xml:space="preserve">
         <value>Datos requeridos para declarar un incidente.</value>
     </data>
     <data name="UpdateIncidentStatusSchema" xml:space="preserve">
-        <value>Datos requeridos para cambiar el estado de un incidente.</value>
+        <value>Estado destino de una transicion del incidente y una nota opcional.</value>
     </data>
     <data name="IncidentNotificationSchema" xml:space="preserve">
-        <value>Una notificacion enviada por un incidente.</value>
+        <value>Una notificacion de incidente: pendiente, aceptada por el proveedor, entregada o fallida.</value>
     </data>
     <data name="SendNotificationSchema" xml:space="preserve">
-        <value>Datos requeridos para enviar una notificacion de incidente.</value>
+        <value>Datos requeridos para solicitar una notificacion de incidente.</value>
     </data>
     <data name="TrackingGroupNotScheduled" xml:space="preserve"><value>El grupo debe estar programado y no tener un recorrido finalizado.</value></data>
     <data name="TrackingRouteNotReady" xml:space="preserve"><value>Habilita la ruta y configura al menos dos checkpoints con tiempos para cada tramo consecutivo.</value></data>
@@ -930,4 +930,157 @@
     <data name="InvalidCheckpointPassedAt" xml:space="preserve"><value>La hora del paso debe estar dentro de la sesión de seguimiento y no ser posterior a su sincronización.</value></data>
     <data name="CheckpointPassageOutOfSequence" xml:space="preserve"><value>El checkpoint anterior de la ruta no se ha pasado antes de este paso.</value></data>
     <data name="SyncBatchCheckpointArrivalRequired" xml:space="preserve"><value>Registra una llegada válida a este checkpoint antes de sincronizar un lote en él.</value></data>
+    <data name="IncidentTransitionForbidden" xml:space="preserve">
+        <value>Tu rol no puede ejecutar esta transicion del incidente. El guia asignado confirma o descarta y solo un administrador de operaciones declara la emergencia.</value>
+    </data>
+    <data name="IncidentAlertOutsideSession" xml:space="preserve">
+        <value>La alerta temprana pertenece a otra sesion de seguimiento o a otro grupo de expedicion.</value>
+    </data>
+    <data name="IncidentAlertDismissed" xml:space="preserve">
+        <value>La alerta temprana fue descartada y no puede originar un incidente.</value>
+    </data>
+    <data name="IncidentAlertAlreadyLinked" xml:space="preserve">
+        <value>Ya se reporto un incidente a partir de esta alerta temprana.</value>
+    </data>
+    <data name="InvalidIncidentAlertId" xml:space="preserve">
+        <value>El identificador de la alerta debe ser un numero positivo.</value>
+    </data>
+    <data name="IncidentTransitionNoteTooLong" xml:space="preserve">
+        <value>La nota no puede superar 500 caracteres.</value>
+    </data>
+    <data name="InvalidEvacuationActionRequest" xml:space="preserve">
+        <value>Los datos de la accion de evacuacion no son validos. La hora de captura no puede estar en el futuro.</value>
+    </data>
+    <data name="EvacuationActionForbidden" xml:space="preserve">
+        <value>Solo el guia asignado registra acciones de evacuacion.</value>
+    </data>
+    <data name="EvacuationRequiresEmergency" xml:space="preserve">
+        <value>Las acciones de evacuacion solo se registran para capturas realizadas mientras la emergencia del incidente estaba declarada.</value>
+    </data>
+    <data name="EvacuationActionIdentityConflict" xml:space="preserve">
+        <value>El identificador de la accion del cliente ya se uso con un contenido diferente.</value>
+    </data>
+    <data name="RequiredEvacuationClientActionId" xml:space="preserve">
+        <value>Se requiere un identificador de accion del cliente.</value>
+    </data>
+    <data name="RequiredEvacuationDescription" xml:space="preserve">
+        <value>Se requiere una descripcion de hasta 500 caracteres.</value>
+    </data>
+    <data name="EvacuationLocationTooLong" xml:space="preserve">
+        <value>La ubicacion no puede superar 200 caracteres.</value>
+    </data>
+    <data name="RequiredEvacuationStatus" xml:space="preserve">
+        <value>Se requiere un estado valido: in_progress, completed o aborted.</value>
+    </data>
+    <data name="RequiredEvacuationRecordedAt" xml:space="preserve">
+        <value>Se requiere la hora de captura.</value>
+    </data>
+    <data name="IncidentNotificationForbidden" xml:space="preserve">
+        <value>Solo un administrador de operaciones solicita comunicaciones externas.</value>
+    </data>
+    <data name="IncidentNotificationRequiresEmergency" xml:space="preserve">
+        <value>Las comunicaciones externas requieren un incidente con emergencia declarada.</value>
+    </data>
+    <data name="IncidentNotificationRecipientNotAllowed" xml:space="preserve">
+        <value>El destinatario no es una direccion autorizada del personal de la agencia.</value>
+    </data>
+    <data name="IncidentNotificationNotFound" xml:space="preserve">
+        <value>La notificacion no existe para este incidente.</value>
+    </data>
+    <data name="IncidentNotificationIdentityConflict" xml:space="preserve">
+        <value>El identificador de la notificacion ya se uso con un contenido diferente.</value>
+    </data>
+    <data name="IncidentNotificationAttemptInProgress" xml:space="preserve">
+        <value>Hay otro intento de esta notificacion en curso. Intentalo de nuevo en un momento.</value>
+    </data>
+    <data name="IncidentNotificationNotRetriable" xml:space="preserve">
+        <value>Solo se puede reintentar una notificacion pendiente.</value>
+    </data>
+    <data name="RequiredNotificationRecipientEmail" xml:space="preserve">
+        <value>Se requiere la direccion de correo del destinatario.</value>
+    </data>
+    <data name="ConfirmIncidentSummary" xml:space="preserve">
+        <value>Confirmar un incidente</value>
+    </data>
+    <data name="ConfirmIncidentDescription" xml:space="preserve">
+        <value>El guia asignado confirma un incidente reportado despues de verificarlo en campo.</value>
+    </data>
+    <data name="DismissIncidentSummary" xml:space="preserve">
+        <value>Descartar un incidente</value>
+    </data>
+    <data name="DismissIncidentDescription" xml:space="preserve">
+        <value>El guia asignado descarta un incidente reportado como falso. Un incidente descartado no admite mas transiciones.</value>
+    </data>
+    <data name="DeclareIncidentEmergencySummary" xml:space="preserve">
+        <value>Declarar una emergencia</value>
+    </data>
+    <data name="DeclareIncidentEmergencyDescription" xml:space="preserve">
+        <value>Un administrador de operaciones declara la emergencia de un incidente confirmado. Las acciones de evacuacion y las comunicaciones externas la requieren.</value>
+    </data>
+    <data name="CloseIncidentSummary" xml:space="preserve">
+        <value>Cerrar un incidente</value>
+    </data>
+    <data name="CloseIncidentDescription" xml:space="preserve">
+        <value>Cierra un incidente resuelto. Un incidente cerrado no admite mas cambios.</value>
+    </data>
+    <data name="RecordEvacuationActionSummary" xml:space="preserve">
+        <value>Registrar una accion de evacuacion</value>
+    </data>
+    <data name="RecordEvacuationActionDescription" xml:space="preserve">
+        <value>Registra una accion de evacuacion capturada por el guia asignado, posiblemente sin conexion. Un reintento con el mismo clientActionId y contenido devuelve el primer registro.</value>
+    </data>
+    <data name="GetEvacuationActionsSummary" xml:space="preserve">
+        <value>Obtener las acciones de evacuacion de un incidente</value>
+    </data>
+    <data name="GetEvacuationActionsDescription" xml:space="preserve">
+        <value>Devuelve las acciones de evacuacion de un incidente ordenadas por hora de captura.</value>
+    </data>
+    <data name="GetIncidentNotificationByIdSummary" xml:space="preserve">
+        <value>Obtener una notificacion de incidente</value>
+    </data>
+    <data name="GetIncidentNotificationByIdDescription" xml:space="preserve">
+        <value>Devuelve una notificacion de un incidente por su identidad.</value>
+    </data>
+    <data name="RetryIncidentNotificationSummary" xml:space="preserve">
+        <value>Reintentar una notificacion pendiente</value>
+    </data>
+    <data name="RetryIncidentNotificationDescription" xml:space="preserve">
+        <value>Reintenta una notificacion pendiente con la misma identidad y contenido, por ejemplo despues de un tiempo de espera agotado.</value>
+    </data>
+    <data name="RefreshIncidentNotificationStatusSummary" xml:space="preserve">
+        <value>Consultar el estado de entrega de una notificacion</value>
+    </data>
+    <data name="RefreshIncidentNotificationStatusDescription" xml:space="preserve">
+        <value>Consulta al proveedor el estado de una notificacion aceptada y guarda una entrega o un fallo confirmados.</value>
+    </data>
+    <data name="IncidentTransitionSchema" xml:space="preserve">
+        <value>Nota opcional de una transicion del incidente.</value>
+    </data>
+    <data name="IncidentStatusChangeSchema" xml:space="preserve">
+        <value>Una transicion registrada de un incidente: estado anterior y nuevo, actor, nota y momento.</value>
+    </data>
+    <data name="RecordEvacuationActionSchema" xml:space="preserve">
+        <value>Una accion de evacuacion capturada en campo, con su identidad de cliente y hora de captura.</value>
+    </data>
+    <data name="EvacuationActionSchema" xml:space="preserve">
+        <value>Una accion de evacuacion persistida con sus horas de captura y recepcion.</value>
+    </data>
+    <data name="FieldGuideCodeAlreadyExists" xml:space="preserve">
+        <value>Otro guia de la agencia ya usa ese codigo operativo.</value>
+    </data>
+    <data name="InvalidFieldGuideCode" xml:space="preserve">
+        <value>El codigo operativo debe tener de 2 a 20 letras, digitos o guiones.</value>
+    </data>
+    <data name="HealthNotesTooLong" xml:space="preserve">
+        <value>La informacion de salud no puede superar 500 caracteres.</value>
+    </data>
+    <data name="RegisterHealthInformationSummary" xml:space="preserve">
+        <value>Guardar mi informacion de salud</value>
+    </data>
+    <data name="RegisterHealthInformationDescription" xml:space="preserve">
+        <value>El turista autenticado guarda o borra informacion de salud opcional para la expedicion. Solo el guia asignado al grupo y los administradores de la agencia la consultan; nunca se incluye en resumenes ni notificaciones.</value>
+    </data>
+    <data name="HealthInformationSchema" xml:space="preserve">
+        <value>Informacion de salud opcional compartida por el participante, hasta 500 caracteres.</value>
+    </data>
 </root>

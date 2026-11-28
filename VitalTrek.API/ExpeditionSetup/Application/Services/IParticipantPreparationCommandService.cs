@@ -14,6 +14,9 @@ public interface IParticipantPreparationCommandService
     /// <summary>Registers the emergency contact of a participant.</summary>
     Task<Result<ParticipantPreparation, EParticipantPreparationError>> Handle(RegisterEmergencyContactCommand command, CancellationToken cancellationToken);
 
+    /// <summary>Saves or clears the optional health information of the requesting participant.</summary>
+    Task<Result<ParticipantPreparation, EParticipantPreparationError>> Handle(RegisterHealthInformationCommand command, CancellationToken cancellationToken);
+
     /// <summary>Grants or revokes the monitoring consent of a participant.</summary>
     Task<Result<ParticipantPreparation, EParticipantPreparationError>> Handle(UpdateConsentCommand command, CancellationToken cancellationToken);
 }

@@ -1,3 +1,5 @@
+using VitalTrek.API.SafetyMonitoring.Interfaces.ACL.Resources;
+
 namespace VitalTrek.API.SafetyMonitoring.Interfaces.ACL;
 
 /// <summary>
@@ -36,4 +38,13 @@ public interface ISafetyMonitoringContextFacade
     ///     exist in the agency or its evaluation stays pending for a retry.
     /// </returns>
     Task<bool> EvaluateSyncBatchAsync(int agencyId, int batchId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Returns the identifiers and status of an early warning alert of an agency, or null when it does not exist there.
+    /// </summary>
+    /// <param name="agencyId">The agency of the authenticated user.</param>
+    /// <param name="alertId">The alert identifier.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns>The alert reference, or <see langword="null"/>.</returns>
+    Task<AlertReference?> FindAlertReferenceAsync(int agencyId, int alertId, CancellationToken cancellationToken = default);
 }

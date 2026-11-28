@@ -8,7 +8,11 @@ namespace VitalTrek.API.IncidentResponse.Domain.Repositories;
 /// </summary>
 public interface IIncidentNotificationRepository : IBaseRepository<IncidentNotification>
 {
-    /// <summary>Finds the notifications of an incident in an agency ordered by dispatch time.</summary>
+    /// <summary>Finds the notifications of an incident in an agency ordered by request time.</summary>
     Task<IEnumerable<IncidentNotification>> FindByIncidentIdAndAgencyIdAsync(int incidentId, int agencyId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Finds a notification of an agency by its stable identity.</summary>
+    Task<IncidentNotification?> FindByNotificationIdAsync(int agencyId, Guid notificationId,
         CancellationToken cancellationToken = default);
 }

@@ -8,6 +8,9 @@ public enum ECreateFieldGuideError
     /// <summary>The field guide data is invalid.</summary>
     InvalidData,
 
+    /// <summary>The operational code is already used by another guide of the agency.</summary>
+    DuplicateCode,
+
     /// <summary>An unexpected persistence or system error occurred.</summary>
     UnexpectedError
 }

@@ -29,4 +29,14 @@ public interface IIamContextFacade
     /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
     /// <returns>The identity document, or <see langword="null"/> when the user is not an adventure tourist.</returns>
     Task<string?> FetchIdentityDocumentByUserId(int userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Checks whether an e-mail address is the username of a staff account (operations administrator or field
+    ///     guide) of an agency. Incident Response uses it to authorize notification recipients; it exposes no account data.
+    /// </summary>
+    /// <param name="agencyId">The agency identifier.</param>
+    /// <param name="email">The e-mail address to check.</param>
+    /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+    /// <returns><see langword="true"/> when a staff account of the agency uses that address.</returns>
+    Task<bool> IsAgencyStaffEmail(int agencyId, string email, CancellationToken cancellationToken = default);
 }

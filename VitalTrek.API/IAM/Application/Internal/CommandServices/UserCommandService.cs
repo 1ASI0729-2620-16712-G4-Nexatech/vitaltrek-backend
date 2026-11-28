@@ -37,6 +37,9 @@ public class UserCommandService(
     /// </summary>
     public const int MinimumPasswordLength = 6;
 
+    // Unique index that links a field guide profile to a single account (IAM persistence configuration).
+    private const string LinkedFieldGuideIndexName = "ux_users_agency_field_guide";
+
     /// <inheritdoc />
     public async Task<Result<User, ESignUpError>> Handle(SignUpCommand command, CancellationToken cancellationToken)
     {
@@ -157,7 +160,11 @@ public class UserCommandService(
         catch (DbUpdateException ex) when (ex.IsDuplicateKeyViolation())
         {
             logger.LogWarning(ex, "Duplicate key violation creating user {Username}", command.Username);
-            return new Result<User, ECreateUserError>.Failure(ECreateUserError.DuplicateUsername);
+            // A concurrent request linked the same field guide profile first; the unique index keeps one account.
+            return new Result<User, ECreateUserError>.Failure(
+                ex.ToString().Contains(LinkedFieldGuideIndexName, StringComparison.OrdinalIgnoreCase)
+                    ? ECreateUserError.LinkedIdentityAlreadyExists
+                    : ECreateUserError.DuplicateUsername);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

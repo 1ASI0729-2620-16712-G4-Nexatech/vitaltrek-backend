@@ -90,6 +90,26 @@ public class ParticipantPreparationCommandService(
     }
 
     /// <inheritdoc />
+    public async Task<Result<ParticipantPreparation, EParticipantPreparationError>> Handle(RegisterHealthInformationCommand command,
+        CancellationToken cancellationToken)
+    {
+        // Only the participant edits its own health information; the scope is resolved from its identity document.
+        var (preparation, error) = await FindTouristPreparationAsync(command.AgencyId, command.ParticipantPreparationId,
+            command.RequesterIdentityDocument, cancellationToken);
+        if (error is not null) return Failure(error.Value);
+
+        return await CommandExecutor.RunAsync(async () =>
+            {
+                preparation!.RegisterHealthInformation(command.HealthNotes, DateTimeOffset.UtcNow);
+                participantPreparationRepository.Update(preparation);
+                await unitOfWork.CompleteAsync(cancellationToken);
+                return preparation;
+            },
+            ex => ex is ArgumentException ? EParticipantPreparationError.InvalidData : null,
+            EParticipantPreparationError.UnexpectedError, logger, "register health information", cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task<Result<ParticipantPreparation, EParticipantPreparationError>> Handle(UpdateConsentCommand command,
         CancellationToken cancellationToken)
     {

@@ -45,9 +45,11 @@ using VitalTrek.API.IAM.Interfaces.Rest.Transform;
 using VitalTrek.API.IncidentResponse.Application.ACL;
 using VitalTrek.API.IncidentResponse.Interfaces.ACL;
 using VitalTrek.API.IncidentResponse.Application.Internal.CommandServices;
+using VitalTrek.API.IncidentResponse.Application.Internal.OutboundServices.Notifications;
 using VitalTrek.API.IncidentResponse.Application.Internal.QueryServices;
 using VitalTrek.API.IncidentResponse.Application.Services;
 using VitalTrek.API.IncidentResponse.Domain.Repositories;
+using VitalTrek.API.IncidentResponse.Infrastructure.Notifications;
 using VitalTrek.API.IncidentResponse.Infrastructure.Persistence.EntityFrameworkCore.Repositories;
 using VitalTrek.API.IncidentResponse.Interfaces.Rest.Transform;
 using VitalTrek.API.Shared.Resources;
@@ -253,8 +255,26 @@ builder.Services.AddScoped<IIncidentCommandService, IncidentCommandService>();
 builder.Services.AddScoped<IIncidentQueryService, IncidentQueryService>();
 builder.Services.AddScoped<IIncidentNotificationCommandService, IncidentNotificationCommandService>();
 builder.Services.AddScoped<IIncidentNotificationQueryService, IncidentNotificationQueryService>();
+builder.Services.AddScoped<IEvacuationActionRepository, EvacuationActionRepository>();
+builder.Services.AddScoped<IEvacuationActionCommandService, EvacuationActionCommandService>();
+builder.Services.AddScoped<IEvacuationActionQueryService, EvacuationActionQueryService>();
 builder.Services.AddScoped<VitalTrek.API.IncidentResponse.Application.Internal.OutboundServices.ACL.ExternalTrackingSessionService>();
+builder.Services.AddScoped<VitalTrek.API.IncidentResponse.Application.Internal.OutboundServices.ACL.ExternalExpeditionSetupService>();
+builder.Services.AddScoped<VitalTrek.API.IncidentResponse.Application.Internal.OutboundServices.ACL.ExternalSafetyMonitoringService>();
+builder.Services.AddScoped<VitalTrek.API.IncidentResponse.Application.Internal.OutboundServices.ACL.ExternalIamService>();
 builder.Services.AddScoped<IIncidentResponseContextFacade, IncidentResponseContextFacade>();
+builder.Services.Configure<IncidentNotificationSettings>(
+    builder.Configuration.GetSection(IncidentNotificationSettings.SectionName));
+builder.Services.PostConfigure<IncidentNotificationSettings>(settings =>
+{
+    var allowed = Environment.GetEnvironmentVariable(IncidentNotificationSettings.AllowedRecipientsEnvironmentVariable);
+    if (string.IsNullOrWhiteSpace(allowed)) return;
+    settings.AllowedRecipients = allowed.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .ToList();
+});
+// No external e-mail provider is registered yet: every notification stays pending with provider_not_configured.
+// The Resend adapter (task A04) replaces this registration with its typed HTTP client.
+builder.Services.AddScoped<IIncidentNotificationSender, UnconfiguredIncidentNotificationSender>();
 
 var app = builder.Build();
 
